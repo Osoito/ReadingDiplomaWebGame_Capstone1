@@ -1,3 +1,11 @@
+# Manually added entries
+package-lock.json
+.vscode/
+
+# Godot 4+ specific ignores
+.godot/
+/android/
+
 # Logs
 logs
 *.log
