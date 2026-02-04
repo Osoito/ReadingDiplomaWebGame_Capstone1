@@ -1,10 +1,12 @@
 # Manually added entries
 package-lock.json
 .vscode/
-
-# Godot 4+ specific ignores
-.godot/
+godot/
 /android/
+
+# Node.js specific ignores
+pnpm-lock.yaml
+yarn.lock
 
 # Logs
 logs
