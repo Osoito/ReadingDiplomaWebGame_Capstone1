@@ -21,7 +21,10 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "node --test",
-    "lint": "eslint ."
+    "lint": "eslint .",
+
+    "db:create": "node scripts/createDatabase.js",
+    "db:migrate": "npx knex migrate:latest"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

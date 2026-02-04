@@ -34,12 +34,12 @@ export default [
         */
 
       ],
-      '@stylistic/js/linebreak-style': [
+      /*'@stylistic/js/linebreak-style': [
         'error',
         'unix'
         // This can be changed in VSCode at the bottom right "LF" / "CRLF" (LF = unix, CRLF = windows)
         // The default value when creating new files can also be changed in VSCode settings
-      ],
+      ],*/
       '@stylistic/js/quotes': [
         'error',
         'single'
@@ -61,6 +61,6 @@ export default [
     },
   },
   {
-    ignores: ["dist/**", "build/**", "knex**"], // Ignores build files and knex files
+    ignores: ["dist/**", "build/**", "knex**", "scripts/**"], // Ignores build files and knex files
   },
 ];
