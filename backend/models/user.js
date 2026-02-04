@@ -13,11 +13,18 @@ const User = {
 
     async findByName(name) {
         // add SQL query here
+        const result = await db.query(
+            'SELECT name, avatar, currently_reading, grade, role FROM users WHERE name = $1',
+            [name]
+        )
         return result.rows[0] || null
     },
 
     async getAll() {
         // add SQL query here
+        const result = await db.query(
+            'SELECT name, avatar, currently_reading, grade, role FROM users WHERE role = "student"'
+        )
         return result.rows
     }
 }
