@@ -1,31 +1,33 @@
 // Update with your config settings.
 
+import "dotenv/config"
+
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-module.exports = {
 
-  development: {
+
+  export const development = {
     client: 'postgresql',
     connection: {
-      host: 'localhost',
-      database: 'rdiploma',
-      user: 'postgres',
-      password: 'yourpassword'
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD
     },
     migrations: {
       directory: './db/migrations',
       tableName: 'knex_migrations'
     }
-  },
+  }
 
-  staging: {
+   export const staging = {
     client: 'postgresql',
     connection: {
-      host: 'localhost',
-      database: 'rdiploma',
-      user: 'postgres',
-      password: 'yourpassword'
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD
     },
 
     pool: {
@@ -36,9 +38,9 @@ module.exports = {
       directory: './db/migrations',
       tableName: 'knex_migrations'
     }
-  },
+  }
 
-  production: {
+  export const production =  {
     client: 'postgresql',
     connection: {
       connectionString: process.env.DATABASE_URL,
@@ -54,4 +56,4 @@ module.exports = {
     }
   }
 
-};
+
