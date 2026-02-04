@@ -6,10 +6,11 @@ import 'dotenv/config'
 export const development = {
   client: 'postgresql',
   connection: {
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'rdiploma',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'yourpassword'
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT
   },
   migrations: {
     directory: './db/migrations',
@@ -20,10 +21,10 @@ export const development = {
 export const staging = {
   client: 'postgresql',
   connection: {
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'rdiploma',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'yourpassword'
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD
   },
 
   pool: {

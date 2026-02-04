@@ -4,9 +4,6 @@ package-lock.json
 godot/
 /android/
 
-# wanted to leave the migrations folder ignored for now, until they have been properly configured.
-backend/db/migrations/
-
 # Node.js specific ignores
 pnpm-lock.yaml
 yarn.lock
