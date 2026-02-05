@@ -6,7 +6,7 @@ export const up = async (knex) => {
     return knex.schema
         .createTable('users', function (table) {
             table.increments('userID').primary()
-            table.string('name', 255).notNullable()
+            table.string('name', 255).notNullable().unique()
             table.string('password_hash', 255).notNullable()
             table.string('avatar', 255).notNullable()
             table.integer('currently_reading', 255).notNullable()
