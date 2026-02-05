@@ -8,5 +8,5 @@ npm knex migrate:rollback --> to rollback last migration
 
 npm knex migrate:rollback migration_name_here --> to rollback a specific migration
 
-npm db:make --> to create a new migration file (fit with the ES module)
+npm db:make migration_name_here --> to create a new migration file (fit with the ES module)
 
