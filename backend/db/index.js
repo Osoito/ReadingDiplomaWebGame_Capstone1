@@ -3,10 +3,6 @@
 
 // PostgreSQL downloads: https://www.postgresql.org/download/
 
-// table creation in the schema.sql file
-// npx knex init to create knexfile.js
-// I can commit a template for that file, but the actual values should be filled in by each dev
-
 const { Pool } = require('pg')
 import logger from '../utils/logger'
 

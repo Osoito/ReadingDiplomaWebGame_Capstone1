@@ -1,5 +1,11 @@
 import 'dotenv/config'
 
+// npm knex migrate:status --> to check for any migrations
+// npm knex migrate:latest --> to run all new migrations
+// npm knex migrate:rollback --> to rollback last migration
+// npm db:make --> to create a new migration file
+// npm knex migrate:rollback migration_name_here --> to rollback a specific migration
+
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
@@ -15,6 +21,7 @@ export const development = {
   migrations: {
     directory: './db/migrations',
     tableName: 'knex_migrations'
+    //extension: 'js'
   },
   tableName: 'knex_migrations'
 };
@@ -34,6 +41,7 @@ export const staging = {
   migrations: {
     directory: './db/migrations',
     tableName: 'knex_migrations'
+    //extension: 'js'
   }
 };
 export const production = {
@@ -49,5 +57,6 @@ export const production = {
   migrations: {
     directory: './db/migrations',
     tableName: 'knex_migrations'
+    //extension: 'js'
   }
 };

@@ -24,7 +24,7 @@
     "lint": "eslint .",
 
     "db:create": "node scripts/createDatabase.js",
-    "db:migrate": "npx knex migrate:latest"
+    "db:make": "npx knex migrate:make --stub migration.stub --"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

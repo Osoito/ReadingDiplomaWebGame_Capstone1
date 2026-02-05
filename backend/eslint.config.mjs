@@ -42,7 +42,7 @@ export default [
       ],*/
       '@stylistic/js/quotes': [
         'error',
-        'single'
+        'single', 'backtick'
       ],
       '@stylistic/js/semi': [
         'error',
