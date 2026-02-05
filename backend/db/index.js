@@ -1,3 +1,4 @@
+/*
 // Followed this guide for making this db connection
 // https://node-postgres.com/guides/project-structure
 
@@ -53,3 +54,4 @@ export const getClient = async () => {
     }
     return client
 }
+    */

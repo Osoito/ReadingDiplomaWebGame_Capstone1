@@ -9,8 +9,8 @@ import 'dotenv/config'
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-export const development = {
-  client: 'postgresql',
+  const development = {
+  client: 'pg',
   connection: {
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
@@ -22,10 +22,10 @@ export const development = {
     directory: './db/migrations',
     tableName: 'knex_migrations'
     //extension: 'js'
-  },
-  tableName: 'knex_migrations'
+  }
 };
-export const staging = {
+
+const staging = {
   client: 'postgresql',
   connection: {
     host: process.env.DB_HOST,
@@ -43,8 +43,9 @@ export const staging = {
     tableName: 'knex_migrations'
     //extension: 'js'
   }
-};
-export const production = {
+}
+
+const production = {
   client: 'postgresql',
   connection: {
     connectionString: process.env.DATABASE_URL,
@@ -59,4 +60,8 @@ export const production = {
     tableName: 'knex_migrations'
     //extension: 'js'
   }
+}
+
+export default {
+  development, staging, production
 };

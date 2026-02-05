@@ -1,4 +1,4 @@
-require('dotenv').config()
+import 'dotenv/config'
 // can be used to get environment variables from a .env file in backend root
 
 // example of .env file content:

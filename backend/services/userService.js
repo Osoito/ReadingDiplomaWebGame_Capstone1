@@ -1,5 +1,6 @@
 import User from '../models/user.js'
-const bcrypt = require('bcrypt')
+import bcrypt from 'bcrypt'
+//const bcrypt = require('bcrypt')
 
 // Service layer for user related operations
 
