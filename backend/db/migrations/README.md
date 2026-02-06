@@ -1,12 +1,14 @@
-# migrations CLI commands
+# knex migrations CLI commands
 
-npm knex migrate:status --> to check for any migrations
+>Used for creating and updating any changes made to database tables
 
-npm knex migrate:latest --> to run all new migrations
+- npx knex migrate:status --> to check for any migrations
 
-npm knex migrate:rollback --> to rollback last migration
+- npx knex migrate:latest --> to run all new migrations
 
-npm knex migrate:rollback migration_name_here --> to rollback a specific migration
+- npx knex migrate:rollback --> to rollback last migration
 
-npm db:make migration_name_here --> to create a new migration file (fit with the ES module)
+- npx knex migrate:rollback migration_name_here --> to rollback a specific migration
+
+- npm run db:make migration_name_here --> to create a new migration file (fit with the ES module)
 
