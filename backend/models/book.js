@@ -1,8 +1,8 @@
 //import * as db from '../db/index.js'
-import db from "../db/db.js"
+import db from '../db/db.js'
 
 const Book = {
-    async create({ title, author, coverimage, booktype}) {
+    async create({ title, author, coverimage, booktype }) {
         /*
         const result = await db.query(
             `INSERT INTO users (title, author, coverimage, booktype)
@@ -12,9 +12,9 @@ const Book = {
         )
         return result.rows[0]
         */
-       return db('books')
-        .insert({ title, author, coverimage, booktype})
-        .returning('*')
+        return db('books')
+            .insert({ title, author, coverimage, booktype })
+            .returning('*')
     },
 
     async findByTitle(title) {
@@ -25,10 +25,10 @@ const Book = {
         )
         return result.rows[0] || null
         */
-       return db('books')
-        .select('title', 'author', 'coverimage', 'booktype')
-        .where({title})
-        .first()
+        return db('books')
+            .select('title', 'author', 'coverimage', 'booktype')
+            .where({ title })
+            .first()
     },
 
     async getAll() {
@@ -38,8 +38,8 @@ const Book = {
         )
         return result.rows
         */
-       return db('books')
-        .select('*')
+        return db('books')
+            .select('*')
     }
 }
 

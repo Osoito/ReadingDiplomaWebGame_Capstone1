@@ -5,7 +5,7 @@ const info = (...params) => {
 }
 
 const error = (...params) => {
-    console.error(...params)
+    console.error('Error:', ...params)
 }
 
 export default {

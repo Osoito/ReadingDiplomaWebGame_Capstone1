@@ -11,9 +11,9 @@ const User = {
         )
         return result.rows[0]
         */
-       return db('users')
-        .insert({ name, passwordHash, avatar, currentlyReading, grade, role})
-        .returning('*')
+        return db('users')
+            .insert({ name, passwordHash, avatar, currentlyReading, grade, role })
+            .returning('*')
     },
 
     async findByName(name) {
@@ -25,10 +25,10 @@ const User = {
         )
         return result.rows[0] || null
         */
-       return db('users')
-        .select('name', 'password_hash', 'avatar', 'currently_reading, grade, role')
-        .where({name})
-        .first()
+        return db('users')
+            .select('name', 'password_hash', 'avatar', 'currently_reading, grade, role')
+            .where({ name })
+            .first()
     },
 
     async getAll() {
@@ -39,8 +39,8 @@ const User = {
         )
         return result.rows
         */
-       return db('users')
-        .select('*')
+        return db('users')
+            .select('*')
     }
 }
 

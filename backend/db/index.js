@@ -4,7 +4,8 @@
 
 // PostgreSQL downloads: https://www.postgresql.org/download/
 
-const { Pool } = require('pg')
+import pg from 'pg'
+const { Pool } = pg
 import logger from '../utils/logger'
 
 // uses environment variables for configuration
@@ -54,4 +55,4 @@ export const getClient = async () => {
     }
     return client
 }
-    */
+*/

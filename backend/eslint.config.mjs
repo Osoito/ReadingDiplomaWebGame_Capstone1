@@ -1,5 +1,5 @@
 import js from '@eslint/js'
-import stylisticJs from '@stylistic/eslint-plugin-js'
+import stylisticJs from '@stylistic/eslint-plugin'
 import globals from 'globals'
 
 // Modify here the rules that determine the style the code should follow
@@ -26,7 +26,7 @@ export default [
     },
     rules: {
       '@stylistic/js/indent': [
-        'error',
+        'warn',
         4
         /*
             // An indent with 4 spaces
@@ -42,7 +42,8 @@ export default [
       ],*/
       '@stylistic/js/quotes': [
         'error',
-        'single', 'backtick'
+        'single',
+        { allowTemplateLiterals: true }
       ],
       '@stylistic/js/semi': [
         'error',

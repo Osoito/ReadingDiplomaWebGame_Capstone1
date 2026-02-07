@@ -5,9 +5,9 @@
 export const up = async (knex) => {
     return knex.schema
         .alterTable(
-            "books", (table) => { table.unique("title")
+            'books', (table) => { table.unique('title')
 
-    })
+            })
 }
 
 /**
@@ -17,7 +17,7 @@ export const up = async (knex) => {
 export const down = async (knex) => {
     return knex.schema
         .alterTable(
-            "books", (table) => { table.dropUnique("title")
+            'books', (table) => { table.dropUnique('title')
 
-        })
+            })
 }
