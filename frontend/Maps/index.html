@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lukudiplomi Journey</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background: #000; 
+            width: 100vw; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+        /* 关键：确保 Canvas 元素在视觉上占据 100% 空间 */
+        canvas { 
+            display: block; 
+            max-width: 100%; 
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
+    
+    <script src="data/book1.js"></script>
+    <script src="data/book2.js"></script>
+    <script src="data/book_arctic.js"></script>
+    <script src="data/book_antarctica.js"></script>
+    <script src="data/book_asia.js"></script>
+    <script src="data/book_north_america.js"></script>
+    <script src="data/book_south_america.js"></script>
+    <script src="data/book_oceania.js"></script>
+
+    <script src="scenes/BaseMapScene.js"></script>
+    <script src="scenes/WorldMapScene.js"></script>
+    <script src="scenes/EuropeMapScene.js"></script>
+    <script src="scenes/AsiaMapScene.js"></script>
+    <script src="scenes/AfricaMapScene.js"></script>
+    <script src="scenes/AntarcticaMapScene.js"></script>
+    <script src="scenes/ArcticMapScene.js"></script>
+    <script src="scenes/NorthAmericaMapScene.js"></script>
+    <script src="scenes/SouthAmericaMapScene.js"></script>
+    <script src="scenes/OceaniaMapScene.js"></script>
+    <script src="scenes/ReadingScene.js"></script>
+
+    <script src="main.js"></script>
+</body>
+</html>
+
+
+
