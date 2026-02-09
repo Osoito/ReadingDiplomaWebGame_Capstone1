@@ -30,7 +30,26 @@ const User = {
             .where({ name })
             .first()
     },
-
+    async findByEmail(email) {
+        /*
+        // add SQL query here
+        const result = await db.query(
+            'SELECT name, avatar, currently_reading, grade, role FROM users WHERE name = $1',
+            [name]
+        )
+        return result.rows[0] || null
+        */
+        return db('users')
+            .select('email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role')
+            .where({ email })
+            .first()
+    },
+    async findById(id){
+        return db('users')
+            .select('email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role')
+            .where({ id })
+            .first()
+    },
     async getAll() {
         /*
         // add SQL query here

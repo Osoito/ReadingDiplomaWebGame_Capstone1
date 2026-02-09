@@ -39,6 +39,18 @@ const UserService = {
         return User.getAll()
     },
 
+    async findByName(name){
+        return User.findByName(name)
+    },
+
+    async findByEmail(email){
+        return User.findByEmail(email)
+    },
+
+    async findById(id){
+        return User.findById(id)
+    },
+
     async findOrCreateFederatedCredentials(profile) {
         try {
             const user = await User.findOrCreateUserFromGoogle(profile)

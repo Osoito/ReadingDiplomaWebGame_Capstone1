@@ -8,7 +8,7 @@ import UserService from '../services/userService.js'
 import { z } from 'zod'
 import middleware from '../utils/middleware.js'
 const roles = z.enum(['student', 'teacher', 'principal'])
-/*
+
 const userUpdateSchema = z.object({
     email:z.email(),
     name: z.string(),
@@ -19,7 +19,7 @@ const userUpdateSchema = z.object({
     grade: z.number(),
     role: z.string().transform(str => str.toLowerCase()).pipe(roles)
 }).strict()
-*/
+
 
 const userRegisterSchema = z.object({
     email:z.email(),
@@ -71,13 +71,17 @@ usersRouter.post('/register', middleware.zValidate(userRegisterSchema), async (r
 // Uncomment the middleware once the update request works, for input validation.
 // For updating user profile. Needs to check if the user has needsOnboarding
 // Should have a check for the role of the user doing the request to update role
-/*
-usersRouter.put('/', middleware.zValidate(userUpdateSchema), async (request, response, next) => {
-    try {
 
+usersRouter.patch('/:id/role', middleware.authMiddleware, middleware.zValidate(userUpdateSchema), async (request, response, next) => {
+    try {
+        if(request.user.role !== 'teacher'){
+            return response.status(403).json({ error: 'Wrong credentials' })
+        }
+
+        //const { id } = request.params
     } catch (error) {
         next(error)
     }
-})*/
+})
 
 export default usersRouter
