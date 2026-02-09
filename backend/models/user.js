@@ -1,4 +1,4 @@
-import * as db from '../db/index.js'
+import db from '../db/db.js'
 
 const User = {
     async create({ name, passwordHash, avatar, currentlyReading, grade, role }) {
@@ -41,6 +41,44 @@ const User = {
         */
         return db('users')
             .select('*')
+    },
+
+    async findOrCreateUserFromGoogle(profile) {
+        return db.transaction(async trx => {
+            const provider = 'google'
+            const providerUserId = profile.id
+
+            // Check if federated account already exists
+            const existing = await trx('federated_credentials')
+                .where({ provider, provider_user_id: providerUserId })
+                .first()
+
+            // If federated account exists, return the associated user
+            if (existing) {
+                return trx('users')
+                    .where({ id: existing.user_id })
+                    .first()
+            }
+
+            // If federated account doesn't exist, create new user with empty details
+            const [user] = await trx('users')
+                .insert({
+                    email: profile.emails?.[0].value ?? null,
+                    name: '',
+                    avatar: '',
+                    role: 'student',
+                    grade: 1,
+                    currently_reading: null
+                })
+                .returning('*')
+
+            // Create federated credentials and associate the created user to it
+            await trx('federated_credentials').insert({
+                user_id: user.id,
+                provider,
+                provider_user_id: providerUserId
+            })
+        })
     }
 }
 

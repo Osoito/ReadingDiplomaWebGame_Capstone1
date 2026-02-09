@@ -34,6 +34,24 @@ const UserService = {
     // add more services here
     async getAllUsers() {
         return User.getAll()
+    },
+
+    async findOrCreateFederatedCredentials(profile) {
+        try {
+            const user = await User.findOrCreateUserFromGoogle(profile)
+
+            if (!user.name || !user.avatar) {
+                return { ...user, needsOnboarding: true }
+            }
+            return user
+
+        } catch (error) {
+            const err = new Error('User registration failed')
+            err.name = 'DatabaseError'
+            err.message = error.message
+            err.status = 500
+            throw err
+        }
     }
 }
 

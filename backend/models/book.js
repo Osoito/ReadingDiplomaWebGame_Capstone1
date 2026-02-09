@@ -1,4 +1,3 @@
-//import * as db from '../db/index.js'
 import db from '../db/db.js'
 
 const Book = {
@@ -42,7 +41,5 @@ const Book = {
             .select('*')
     }
 }
-
-// requests handled by the service layer
 
 export default Book
