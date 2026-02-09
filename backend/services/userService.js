@@ -2,9 +2,11 @@ import User from '../models/user.js'
 import bcrypt from 'bcrypt'
 
 // Service layer for user related operations
+const saltRounds = 12
+
 
 const UserService = {
-    async register({ name, password, avatar, currentlyReading, grade, role }) {
+    async register({ email, name, password, avatar, currently_reading, grade, role }) {
         const existing = await User.findByName(name)
         if (existing) {
             const err = new Error('Username already taken')
@@ -13,12 +15,13 @@ const UserService = {
             throw err
         }
         try {
-            const passwordHash = await bcrypt.hash(password, 10)
+            const password_hash = await bcrypt.hash(password, saltRounds)
             return User.create({
+                email,
                 name,
-                passwordHash,
+                password_hash,
                 avatar,
-                currentlyReading,
+                currently_reading,
                 grade,
                 role
             })

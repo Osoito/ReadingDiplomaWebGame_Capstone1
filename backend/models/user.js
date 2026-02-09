@@ -1,7 +1,7 @@
 import db from '../db/db.js'
 
 const User = {
-    async create({ name, passwordHash, avatar, currentlyReading, grade, role }) {
+    async create({ email, name,  password_hash, avatar, currently_reading, grade, role }) {
         /*
         const result = await db.query(
             `INSERT INTO users (name, password_hash, avatar, currently_reading, grade, role)
@@ -12,7 +12,7 @@ const User = {
         return result.rows[0]
         */
         return db('users')
-            .insert({ name, passwordHash, avatar, currentlyReading, grade, role })
+            .insert({ email, name, password_hash, avatar, currently_reading, grade, role })
             .returning('*')
     },
 
@@ -26,7 +26,7 @@ const User = {
         return result.rows[0] || null
         */
         return db('users')
-            .select('name', 'password_hash', 'avatar', 'currently_reading, grade, role')
+            .select('email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role')
             .where({ name })
             .first()
     },
@@ -41,6 +41,13 @@ const User = {
         */
         return db('users')
             .select('*')
+    },
+
+    async updateUserRole( id, role){
+        return db('users')
+            .where({ id })
+            .update({ role: role })
+            .returning('*')
     },
 
     async findOrCreateUserFromGoogle(profile) {
