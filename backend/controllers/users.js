@@ -1,16 +1,12 @@
 import express from 'express'
 const usersRouter = express.Router()
 import UserService from '../services/userService.js'
-
-// -- Not 100% sure if this works yet v
-// -- for input validation, once requests work --
-
 import { z } from 'zod'
 import middleware from '../utils/middleware.js'
 const roles = z.enum(['student', 'teacher', 'principal'])
 
 const userUpdateSchema = z.object({
-    email:z.email(),
+    email: z.email(),
     name: z.string(),
     // Makes sure the password includes at least 5 letters, 1 upper -and lowercase letter and a special character
     password: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/),
@@ -22,20 +18,15 @@ const userUpdateSchema = z.object({
 
 
 const userRegisterSchema = z.object({
-    email:z.email(),
+    email: z.email(),
     name: z.string(),
-    // Makes sure the password includes at least 5 letters, 1 upper -and lowercase letter and a special character
     password: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/),
     avatar: z.string(),
-    currently_reading:z.number().int().positive(),
     grade: z.number(),
-    role: z.string().transform(str => str.toLowerCase()).pipe(roles)
 }).strict()
 //.strict() means that anything not defined here causes an error.
 // The missing values should be filled by default values in the service.
 // We still need to figure out how the password should be when a user signs up with a Google
-// -- for input validation, once requests work --*/
-// -- Not 100% sure if this works yet ^
 
 usersRouter.get('/', async (request, response, next) => {
     try {
@@ -46,7 +37,6 @@ usersRouter.get('/', async (request, response, next) => {
     }
 })
 
-// Uncomment the middleware once the post request works, for input validation.
 usersRouter.post('/register', middleware.zValidate(userRegisterSchema), async (request, response, next) => {
     const { email, name, password, avatar, currently_reading, grade, role } = request.validated
 

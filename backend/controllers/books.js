@@ -14,7 +14,6 @@ const bookSchema = z.object({
     booktype: z.string().transform(str => str.toLowerCase()).pipe(booktypes)
 }).strict()
 
-// example route for getting all books
 booksRouter.get('/', async (request, response, next) => {
     try {
         const books = await BookService.getAllBooks()

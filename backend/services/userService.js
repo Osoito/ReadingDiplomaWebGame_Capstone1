@@ -1,15 +1,20 @@
 import User from '../models/user.js'
 import bcrypt from 'bcrypt'
 
-// Service layer for user related operations
 const saltRounds = 12
-
 
 const UserService = {
     async register({ email, name, password, avatar, currently_reading, grade, role }) {
-        const existing = await User.findByName(name)
-        if (existing) {
+        const existingName = await User.findByName(name)
+        if (existingName) {
             const err = new Error('Username already taken')
+            err.name = 'ValidationError'
+            err.status = 400
+            throw err
+        }
+        const existingEmail = await User.findByEmail(email)
+        if (existingEmail) {
+            const err = new Error('Email already taken')
             err.name = 'ValidationError'
             err.status = 400
             throw err
@@ -58,8 +63,33 @@ const UserService = {
             if (!user.name || !user.avatar) {
                 return { ...user, needsOnboarding: true }
             }
+
             return user
 
+        } catch (error) {
+            const err = new Error('User creation failed')
+            err.name = 'DatabaseError'
+            err.message = error.message
+            err.status = 500
+            throw err
+        }
+    },
+
+    async completeProfile({ id, name, avatar, grade }) {
+        const existingName = await User.findByName(name)
+        if (existingName) {
+            const err = new Error('Name already taken')
+            err.name = 'ValidationError'
+            err.status = 400
+            throw err
+        }
+        try {
+            return await User.completeUserProfile(
+                id,
+                name,
+                avatar,
+                grade
+            )
         } catch (error) {
             const err = new Error('User registration failed')
             err.name = 'DatabaseError'
@@ -69,7 +99,5 @@ const UserService = {
         }
     }
 }
-
-// service layer functions used by controllers
 
 export default UserService

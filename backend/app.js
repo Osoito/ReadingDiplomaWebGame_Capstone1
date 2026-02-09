@@ -27,7 +27,7 @@ app.use(middleware.requestLogger) // prints all requests in the console
 // -- NOT yet implemented!! v
 // Session middleware
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your_secret',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
 }))
@@ -36,6 +36,7 @@ app.use(session({
 // Passport middleware
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(middleware.authAndOnboardingGate) // requires the user to be logged in to access any page besides login pages
 
 // define routes here
 app.use('/api/users', usersRouter)

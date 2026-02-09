@@ -1,8 +1,10 @@
 import passport from 'passport'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
-import logger from './logger.js'
 import UserService from '../services/userService.js'
-
+import logger from './logger.js'
+// !! vv !!
+// After Google login, passport stores the user in request.user
+// !! ^^ !!
 passport.use(
     new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
@@ -12,7 +14,6 @@ passport.use(
 
     async function (accessToken, refreshToken, profile, done) {
         try {
-            logger.info(profile)
             const user = await UserService.findOrCreateFederatedCredentials(profile)
             // user.needsOnboarding can be used to redirect the user
             // to a sign in page where they will fill out their name, avatar and grade
@@ -29,19 +30,15 @@ passport.serializeUser((user, done) => {
 })
 
 passport.deserializeUser((user, done) => {
-    /*
     try {
-        const user = User.findByID(id)
+        if (!user.id) {
+            logger.error('user.id in passport deserialization is undefined')
+        }
+        const user = UserService.findById(user.id)
         done(null, user)
     } catch (error) {
         done(error, user)
-    }*/
-
-    /* Waiting for findByID functionality :/
-    User.findByID(id, function (error, user) {
-        done(error, user)
-    })
-    */
+    }
     done(null, user)
 })
 

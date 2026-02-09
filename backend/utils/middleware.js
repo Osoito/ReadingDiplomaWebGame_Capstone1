@@ -77,12 +77,13 @@ function zValidate(schema) {
                     return msg
                 })
             }
-
+            /*
             const err = new Error('Invalid request data. Unknown, missing or malformed fields. Please check your input.')
             err.name = 'ValidationError'
             err.status = 400
             err.details = flat
             throw err
+            */
         }
 
         request.validated = result.data
@@ -90,10 +91,46 @@ function zValidate(schema) {
     }
 }
 
+// Might be dangerous
+function authAndOnboardingGate(request, response, next) {
+    const publicPaths = [
+        '/login',
+        '/auth/login',
+        '/auth/google',
+        '/auth/google/callback',
+        '/auth/update-profile'
+    ]
+
+    // Allow public routes
+    if (publicPaths.some(path => request.path.startsWith(path))) {
+        return next()
+    }
+
+    // Require login
+    if (!request.user) {
+        logger.error('request.user is undefined')
+        return response.redirect('/login')
+    }
+
+    // Require onboarding
+    if (request.user && request.user.needsOnboarding) {
+        if (!request.user.id) {
+            // Handle missing id gracefully
+            logger.error('request.user.id is undefined')
+            return response.status(500).send({ error: 'User session invalid. Please login again.' })
+        }
+        return response.redirect(`/auth/update-profile/${request.user.id}`)
+    }
+
+    // Otherwise allow access
+    next()
+}
+
 export default {
     requestLogger,
     unknownEndpoint,
     errorHandler,
     zValidate,
-    authMiddleware
+    authMiddleware,
+    authAndOnboardingGate
 }
