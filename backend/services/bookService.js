@@ -27,12 +27,9 @@ const BookService = {
         }
     },
 
-    // add more services here
     async getAllBooks() {
         return Book.getAll()
     }
 }
-
-// service layer functions used by controllers
 
 export default BookService

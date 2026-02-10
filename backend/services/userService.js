@@ -1,24 +1,32 @@
 import User from '../models/user.js'
 import bcrypt from 'bcrypt'
 
-// Service layer for user related operations
+const saltRounds = 12
 
 const UserService = {
-    async register({ name, password, avatar, currentlyReading, grade, role }) {
-        const existing = await User.findByName(name)
-        if (existing) {
+    async register({ email, name, password, avatar, currently_reading, grade, role }) {
+        const existingName = await User.findByName(name)
+        if (existingName) {
             const err = new Error('Username already taken')
             err.name = 'ValidationError'
             err.status = 400
             throw err
         }
+        const existingEmail = await User.findByEmail(email)
+        if (existingEmail) {
+            const err = new Error('Email already taken')
+            err.name = 'ValidationError'
+            err.status = 400
+            throw err
+        }
         try {
-            const passwordHash = await bcrypt.hash(password, 10)
+            const password_hash = await bcrypt.hash(password, saltRounds)
             return User.create({
+                email,
                 name,
-                passwordHash,
+                password_hash,
                 avatar,
-                currentlyReading,
+                currently_reading,
                 grade,
                 role
             })
@@ -31,12 +39,97 @@ const UserService = {
         }
     },
 
-    // add more services here
     async getAllUsers() {
-        return User.getAll()
+        try {
+            return await User.getAll()
+            // This could include role based filtering
+        } catch (error) {
+            const err = new Error('User fetching failed')
+            err.name = 'DatabaseError'
+            err.message = error.message
+            err.status = 500
+            throw err
+        }
+    },
+
+    async findByName(name){
+        try {
+            return await User.findByName(name)
+        } catch (error) {
+            const err = new Error('User not found')
+            err.name = 'NotFound'
+            err.message = error.message
+            err.status = 404
+            throw err
+        }
+    },
+
+    async findByEmail(email){
+        try {
+            return await User.findByEmail(email)
+        } catch (error) {
+            const err = new Error('User not found')
+            err.name = 'NotFound'
+            err.message = error.message
+            err.status = 404
+            throw err
+        }
+    },
+
+    async findById(id){
+        try {
+            return await User.findUserById(id)
+        } catch (error) {
+            const err = new Error('User not found')
+            err.name = 'NotFound'
+            err.message = error.message
+            err.status = 404
+            throw err
+        }
+    },
+
+    async findOrCreateFederatedCredentials(profile) {
+        try {
+            const user = await User.findOrCreateUserFromGoogle(profile)
+
+            if (!user.name || !user.avatar) {
+                return { ...user, needsOnboarding: true }
+            }
+
+            return user
+
+        } catch (error) {
+            const err = new Error('User creation failed')
+            err.name = 'DatabaseError'
+            err.message = error.message
+            err.status = 500
+            throw err
+        }
+    },
+
+    async completeProfile({ id, name, avatar, grade }) {
+        const existingName = await User.findByName(name)
+        if (existingName) {
+            const err = new Error('Name already taken')
+            err.name = 'ValidationError'
+            err.status = 400
+            throw err
+        }
+        try {
+            return await User.completeUserProfile(
+                id,
+                name,
+                avatar,
+                grade
+            )
+        } catch (error) {
+            const err = new Error('User registration failed')
+            err.name = 'DatabaseError'
+            err.message = error.message
+            err.status = 500
+            throw err
+        }
     }
 }
-
-// service layer functions used by controllers
 
 export default UserService

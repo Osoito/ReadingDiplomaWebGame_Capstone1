@@ -8,7 +8,9 @@
 
 - npx knex migrate:rollback --> to rollback last migration
 
-- npx knex migrate:rollback migration_name_here --> to rollback a specific migration
+- npx knex migrate:rollback --all --> to rollback all migrations
 
 - npm run db:make migration_name_here --> to create a new migration file (fit with the ES module)
 
+>Quide for building table creationg schemas
+https://knexjs.org/guide/schema-builder.html#integer

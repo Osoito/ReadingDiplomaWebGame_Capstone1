@@ -19,8 +19,17 @@ DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=yourPostgresPassword
 DB_NAME=rdiploma
+
+GOOGLE_CLIENT_ID=123
+GOOGLE_CLIENT_SECRET=123
+
+JWT_SECRET=randomly generated value
+SESSION_SECRET=randomly generated value
 ```
-The DB_USER=postgres is the default PostgreSQL username and DB_PASSWORD should be the password you set when installing PostgreSQL
+The DB_USER=postgres is the default PostgreSQL username and DB_PASSWORD should be the password you set when installing PostgreSQL. GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are used for google authentication and i can't upload them to GitHub, but they will be provided to team members.
+
+You can use the command below to generate the SESSION and JWT SECRETS
+>node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```bash
 # Backend installation
 cd backend
