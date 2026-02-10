@@ -1,5 +1,5 @@
-// data/book_arctic.js
-window.bookArctic = {
+// Arctic map book data
+export default {
     id: 3,
     title: "Arctic Ice Expedition",
     author: "Polar Explorer",

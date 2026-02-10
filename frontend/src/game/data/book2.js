@@ -1,5 +1,5 @@
-// 非洲地图使用的书籍数据
-window.book2 = {
+// African map book data
+export default {
     id: 2,
     title: "African Savanna Adventures",
     author: "African Folklore",

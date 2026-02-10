@@ -1,5 +1,5 @@
-// 欧洲地图使用的书籍数据
-window.book1 = {
+// European map book data
+export default {
     id: 1,
     title: "The European Tales",
     author: "Hans Christian Andersen",
