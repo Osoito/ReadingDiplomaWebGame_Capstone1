@@ -39,21 +39,53 @@ const UserService = {
         }
     },
 
-    // add more services here
     async getAllUsers() {
-        return User.getAll()
+        try {
+            return await User.getAll()
+            // This could include role based filtering
+        } catch (error) {
+            const err = new Error('User fetching failed')
+            err.name = 'DatabaseError'
+            err.message = error.message
+            err.status = 500
+            throw err
+        }
     },
 
     async findByName(name){
-        return User.findByName(name)
+        try {
+            return await User.findByName(name)
+        } catch (error) {
+            const err = new Error('User not found')
+            err.name = 'NotFound'
+            err.message = error.message
+            err.status = 404
+            throw err
+        }
     },
 
     async findByEmail(email){
-        return User.findByEmail(email)
+        try {
+            return await User.findByEmail(email)
+        } catch (error) {
+            const err = new Error('User not found')
+            err.name = 'NotFound'
+            err.message = error.message
+            err.status = 404
+            throw err
+        }
     },
 
     async findById(id){
-        return User.findById(id)
+        try {
+            return await User.findUserById(id)
+        } catch (error) {
+            const err = new Error('User not found')
+            err.name = 'NotFound'
+            err.message = error.message
+            err.status = 404
+            throw err
+        }
     },
 
     async findOrCreateFederatedCredentials(profile) {

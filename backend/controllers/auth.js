@@ -2,8 +2,8 @@ import express from 'express'
 import passport from 'passport'
 import logger from '../utils/logger.js'
 import UserService from '../services/userService.js'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+// import bcrypt from 'bcrypt'
+// import jwt from 'jsonwebtoken'
 import { z } from 'zod'
 import middleware from '../utils/middleware.js'
 
@@ -15,13 +15,28 @@ const userUpdateSchema = z.object({
     grade: z.number(),
 }).strict()
 
-// How to use Google authentication in frontend
-// <a href="/auth/google">Continue with Google</a>
-
-
 // Basic authentication without google
-authRouter.post('/login', async (request, response) => {
-    const { email, password } = request.body
+authRouter.post('/login', async (request, response, next) => {
+    passport.authenticate('local', (error, user, info) => {
+        if (error) return next(error)
+
+        if (!user) {
+            return response.status(401).json({ error: info?.message || 'Invalid credentials' })
+        }
+
+        // Creates the session
+        request.logIn(user, (error) => {
+            if (error) return next(error)
+
+            return response.status(200).json({
+                id: user.id,
+                email: user.email,
+                username: user.name,
+                role: user.role
+            })
+        })
+    })(request, response, next)
+    /*const { email, password } = request.body
 
     let user = await UserService.findByEmail(email)
     if (!user) {
@@ -41,15 +56,7 @@ authRouter.post('/login', async (request, response) => {
 
     const token = jwt.sign(userForToken, process.env.JWT_SECRET)
 
-    response.status(200).send({ token, id: user.id, email: user.email, username: user.name, role: user.role })
-    // get user
-    /*
-    response.render('login')
-    if (!user.passwordHash) {
-        return response.status(400).json({
-            error: 'This account uses Google login. Please sign in with Google.'
-        })
-    }*/
+    response.status(200).send({ token, id: user.id, email: user.email, username: user.name, role: user.role })*/
 })
 
 authRouter.get('/logout', (request, response) => {
@@ -69,29 +76,22 @@ authRouter.get('/google/callback', passport.authenticate('google', {
     session: true // login state saved in session
 }), (request, response, next) => {
     // Successful authentication
-    //logger.info(request.user)
-    request.session.save(() => { // for modifying the session manually
-        try {
-            if (request.user?.needsOnboarding) {
-                logger.info('User needs onboarding. Redirecting to onboarding page...')
-                return response.redirect(`/auth/update-profile/${request.user.id}`)
-            }
-            response.redirect('/') // Redirect to your frontend or dashboard
-        } catch (error) {
-            next(error)
+    //request.session.save(() => { // for modifying the session manually
+    try {
+        if (request.user?.needsOnboarding) {
+            logger.info('User needs onboarding. Redirecting to onboarding page...')
+            return response.redirect(`/auth/update-profile/${request.user.id}`)
         }
-    })
+        response.redirect('/') // Redirect to your frontend or dashboard
+    } catch (error) {
+        next(error)
+    }
 })
 
 authRouter.get('/update-profile/:id', async (request, response, next) => {
     try {
-        // You can fetch user data here if needed, or just render a page
-        // For API: return user data (for frontend to render form)
-        // Example (API):
-        // const user = await UserService.findById(request.params.id)
-        // if (!user) return response.status(404).json({ error: 'User not found' })
-        // response.json(user)
-        response.status(200).json({ message: 'Onboarding page placeholder', userId: request.params.id })
+        const user = await UserService.findById(request.params.id)
+        response.json(user)
     } catch (error) {
         next(error)
     }

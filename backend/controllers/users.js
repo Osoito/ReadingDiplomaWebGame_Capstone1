@@ -74,4 +74,13 @@ usersRouter.patch('/:id/role', middleware.authMiddleware, middleware.zValidate(u
     }
 })
 
+usersRouter.get('/:id', async (request, response, next) => {
+    try {
+        const user = await UserService.findById(request.params.id)
+        response.json(user)
+    } catch (error) {
+        next(error)
+    }
+})
+
 export default usersRouter

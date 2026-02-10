@@ -6,6 +6,11 @@ import jwt from 'jsonwebtoken'
 // Might be good for user authentication as well
 
 const requestLogger = (request, response, next) => {
+    // If the user is logged in log requested info in console
+    if (request?.user) {
+        logger.info('Requested by (request.user): ', request?.user)
+        logger.info(' ')
+    }
     logger.info('Method:', request.method)
     logger.info('Path:  ', request.path)
     logger.info('Body:  ', request.body)
@@ -20,21 +25,20 @@ const unknownEndpoint = (request, response) => {
 const authMiddleware = (request, response, next) => {
     const auth = request.get('authorization')
 
-    if(!auth || !auth.toLowerCase().startsWith('bearer ')){
-        return response.status(401).json({ error:'token missing' })
+    if (!auth || !auth.toLowerCase().startsWith('bearer ')) {
+        return response.status(401).json({ error: 'token missing' })
     }
 
     const token = auth.substring(7)
 
-    try{
+    try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         request.user = decoded
         next()
-    } catch{
-        response.status(401).json({ error:'token invalid' })
+    } catch {
+        response.status(401).json({ error: 'token invalid' })
     }
 }
-
 
 const errorHandler = (error, request, response, next) => {
     logger.error(error.message)
@@ -48,6 +52,16 @@ const errorHandler = (error, request, response, next) => {
     } else if (error.name === 'TokenError') {
         // for token authentication, not implemented yet
         return response.status(401).send({ error: 'missing or invalid token' })
+    } else if (error.name === 'NotFound') {
+        return response.status(404).send({ error: 'Resource not found' })
+    } else if (error.name === 'AuthError') {
+        return response.status(401).send({ error: error.message })
+        /* -- Use this to get deny access to a path --
+            const err = new Error('Access denied')
+            err.name = 'AuthError'
+            err.status = 401
+            throw err
+        */
     }
 
     // pass the error to the default Express error handler if it's not handled above
@@ -91,7 +105,7 @@ function zValidate(schema) {
     }
 }
 
-// Might be dangerous
+// Might be dangerous, since if this function has problems it will cause problems for the whole application
 function authAndOnboardingGate(request, response, next) {
     const publicPaths = [
         '/login',
@@ -101,6 +115,23 @@ function authAndOnboardingGate(request, response, next) {
         '/auth/update-profile'
     ]
 
+    const loginPaths = [
+        '/login',
+        '/auth',
+        '/auth/login',
+        '/auth/google'
+    ]
+
+    // If logged in, deny access to login pages
+    if (request?.user && loginPaths.some(path => request.path.startsWith(path))) {
+        /*const err = new Error('Access denied')
+        err.name = 'AuthError'
+        err.status = 401
+        err.message = 'User is already logged in'
+        throw err*/
+        return response.redirect('/')
+    }
+
     // Allow public routes
     if (publicPaths.some(path => request.path.startsWith(path))) {
         return next()
@@ -108,7 +139,7 @@ function authAndOnboardingGate(request, response, next) {
 
     // Require login
     if (!request.user) {
-        logger.error('request.user is undefined')
+        logger.error('User needs to login')
         return response.redirect('/login')
     }
 

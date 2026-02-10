@@ -9,39 +9,36 @@ import usersRouter from './controllers/users.js'
 import booksRouter from './controllers/books.js'
 import authRouter from './controllers/auth.js'
 import session from 'express-session'
-// import passport from 'passport'
 import passport from './utils/passport.js'
 
 const app = express()
 
 logger.info('Connecting')
 
-// connect to db here
-
-
-
 app.use(cors())
 app.use(express.json())
-app.use(middleware.requestLogger) // prints all requests in the console
 
-// -- NOT yet implemented!! v
 // Session middleware
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
 }))
-// -- NOT yet implemented!! ^
 
 // Passport middleware
 app.use(passport.initialize())
 app.use(passport.session())
-app.use(middleware.authAndOnboardingGate) // requires the user to be logged in to access any page besides login pages
+
+// prints all requests in the console
+app.use(middleware.requestLogger)
+
+// Uncomment this v for production, it's very burdensome during development and testing
+// app.use(middleware.authAndOnboardingGate) // requires the user to be logged in to access any page besides login pages
 
 // define routes here
+app.use('/auth', authRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/books', booksRouter)
-app.use('/auth', authRouter)
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)

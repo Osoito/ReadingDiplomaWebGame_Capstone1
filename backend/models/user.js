@@ -9,25 +9,26 @@ const User = {
 
     async findByName(name) {
         return db('users')
-            .select('email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role')
+            .select('id', 'email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role')
             .where({ name })
             .first()
     },
     async findByEmail(email) {
         return db('users')
-            .select('email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role')
+            .select('id', 'email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role')
             .where({ email })
             .first()
     },
-    async findById(id) {
+    async findUserById(id) {
+        // Removed the password_hash from here
         return db('users')
-            .select('email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role')
+            .select('id', 'email', 'name', 'avatar', 'currently_reading', 'grade', 'role')
             .where({ id })
             .first()
     },
     async getAll() {
         return db('users')
-            .select('*')
+            .select('id', 'email', 'name', 'avatar', 'currently_reading', 'grade', 'role')
     },
 
     async updateUserRole(id, role) {
