@@ -58,6 +58,7 @@
       "cors": "CORS is used to enable cross-origin resource sharing, allowing the backend to handle requests from different origins",
       "express": "Web application framework for Node.js",
       "express-async-errors": "Async/await error handling support for express.js",
+      "express-session": "For storing session data server-side (https://expressjs.com/en/resources/middleware/session.html)",
       "knex": "SQL query builder for Node.js",
       "pg": "PostgreSQL client for Node.js",
       "zod": "Used in error handling (input validation). More documentation (https://zod.dev/)",

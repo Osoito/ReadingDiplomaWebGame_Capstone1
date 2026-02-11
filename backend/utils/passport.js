@@ -56,7 +56,9 @@ passport.use(
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: '/auth/google/callback',
     },
-
+    // The accessToken below would be used to make API calls to Google services on behalf of the user
+    // Services like Google calendar, Gmail, Google Drive
+    // The refreshToken would be used to refresh the accessToken that expires in 1 hour
     async function (accessToken, refreshToken, profile, done) {
         try {
             const user = await UserService.findOrCreateFederatedCredentials(profile)

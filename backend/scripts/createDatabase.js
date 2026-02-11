@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename);
 async function createDatabase() {
     const client = new Client({
         user: process.env.DB_USER || 'postgres',
-        password: process.env.DB_PASSWORD || 'yourpassword',
+        password: process.env.DB_PASSWORD,
         host: process.env.DB_HOST || 'localhost',
         database: 'postgres'
     })
