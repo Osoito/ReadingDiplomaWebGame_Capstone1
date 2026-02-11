@@ -32,6 +32,11 @@ const User = {
     },
 
     async updateUserRole(id, role) {
+        if(role === 'student'){
+            role = 'teacher'
+        } else if(role === 'teacher'){
+            role = 'student'
+        }
         return db('users')
             .where({ id })
             .update({ role: role })

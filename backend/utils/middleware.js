@@ -1,6 +1,6 @@
 import logger from './logger.js'
 import { z } from 'zod'
-import jwt from 'jsonwebtoken'
+//import jwt from 'jsonwebtoken'
 // middleware used for logging requests
 // can also be used for logging errors, handling unknown endpoints, etc.
 // Might be good for user authentication as well
@@ -21,7 +21,7 @@ const requestLogger = (request, response, next) => {
 const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })
 }
-
+/*
 const authMiddleware = (request, response, next) => {
     const auth = request.get('authorization')
 
@@ -39,6 +39,15 @@ const authMiddleware = (request, response, next) => {
         response.status(401).json({ error: 'token invalid' })
     }
 }
+*/
+
+function requireTeacherRole(request, response, next) {
+    if (request.isAuthenticated() && request.user.role === 'teacher') {
+        return next()
+    }
+    response.status(403).json({ error: 'Forbidden' })
+}
+
 
 const errorHandler = (error, request, response, next) => {
     logger.error(error.message)
@@ -162,6 +171,6 @@ export default {
     unknownEndpoint,
     errorHandler,
     zValidate,
-    authMiddleware,
+    requireTeacherRole,
     authAndOnboardingGate
 }

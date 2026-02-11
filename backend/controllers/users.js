@@ -62,11 +62,8 @@ usersRouter.post('/register', middleware.zValidate(userRegisterSchema), async (r
 // For updating user profile. Needs to check if the user has needsOnboarding
 // Should have a check for the role of the user doing the request to update role
 
-usersRouter.patch('/:id/role', middleware.authMiddleware, middleware.zValidate(userUpdateSchema), async (request, response, next) => {
+usersRouter.patch('/:id/role', middleware.requireTeacherRole, middleware.zValidate(userUpdateSchema), async (request, response, next) => {
     try {
-        if(request.user.role !== 'teacher'){
-            return response.status(403).json({ error: 'Wrong credentials' })
-        }
 
         //const { id } = request.params
     } catch (error) {

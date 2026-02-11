@@ -21,6 +21,15 @@ const UserService = {
         }
         try {
             const password_hash = await bcrypt.hash(password, saltRounds)
+            if(!grade){
+                grade = 1
+            }
+            if(!currently_reading){
+                currently_reading = 1
+            }
+            if(!role){
+                role = 'student'
+            }
             return User.create({
                 email,
                 name,
