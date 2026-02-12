@@ -31,6 +31,7 @@
     "dotenv": "^17.2.3",
     "express": "^4.16.2",
     "express-async-errors": "^3.1.1",
+    "express-rate-limit": "^8.2.1",
     "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3",
     "knex": "^3.1.0",
@@ -63,7 +64,8 @@
       "pg": "PostgreSQL client for Node.js",
       "zod": "Used in error handling (input validation). More documentation (https://zod.dev/)",
       "passport": "Used for authentication (https://www.npmjs.com/package/passport)",
-      "passport-local": "Plugins that the passport uses as strategies (https://github.com/jaredhanson/passport-local)"
+      "passport-local": "Plugins that the passport uses as strategies (https://github.com/jaredhanson/passport-local)",
+      "express-rate-limit": "Used to limit log-in attempts from IP addresses"
     }
   }
 }

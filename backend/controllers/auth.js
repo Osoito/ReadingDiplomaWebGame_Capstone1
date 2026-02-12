@@ -5,6 +5,7 @@ import UserService from '../services/userService.js'
 // import bcrypt from 'bcrypt'
 // import jwt from 'jsonwebtoken'
 import { z } from 'zod'
+import { rateLimit } from 'express-rate-limit'
 import middleware from '../utils/middleware.js'
 
 const authRouter = express.Router()
@@ -15,8 +16,15 @@ const userUpdateSchema = z.object({
     grade: z.number(),
 }).strict()
 
+const loginLimiter =rateLimit({
+    windowMs: 15 * 60 * 1000,  // 15 minutes
+    max: 5,                    // limit each IP
+    message: 'Too many login attempts, please try again later.'
+})
+
+
 // Basic authentication without google
-authRouter.post('/login', async (request, response, next) => {
+authRouter.post('/login', loginLimiter, middleware.requireNotAuthenticated ,async (request, response, next) => {
     passport.authenticate('local', (error, user, info) => {
         if (error) return next(error)
 
@@ -59,19 +67,19 @@ authRouter.post('/login', async (request, response, next) => {
     response.status(200).send({ token, id: user.id, email: user.email, username: user.name, role: user.role })*/
 })
 
-authRouter.get('/logout', (request, response) => {
+authRouter.get('/logout', middleware.requireAuthentication, (request, response) => {
     request.logout(() => {
         response.redirect('/login')
     })
 })
 
 // Start Google authentication
-authRouter.get('/google', passport.authenticate('google', {
+authRouter.get('/google', middleware.requireNotAuthenticated,passport.authenticate('google', {
     scope: ['profile', 'email']
 }))
 
 // Google callback
-authRouter.get('/google/callback', passport.authenticate('google', {
+authRouter.get('/google/callback', middleware.requireNotAuthenticated,passport.authenticate('google', {
     failureRedirect: '/login',
     session: true // login state saved in session
 }), (request, response, next) => {
@@ -88,7 +96,7 @@ authRouter.get('/google/callback', passport.authenticate('google', {
     }
 })
 
-authRouter.get('/update-profile/:id', async (request, response, next) => {
+authRouter.get('/update-profile/:id', middleware.requireAuthentication,async (request, response, next) => {
     try {
         const user = await UserService.findById(request.params.id)
         response.json(user)
@@ -99,6 +107,7 @@ authRouter.get('/update-profile/:id', async (request, response, next) => {
 
 authRouter.patch('/update-profile/:id',
     middleware.zValidate(userUpdateSchema),
+    middleware.requireAuthentication,
     async (request, response, next) => {
         const { name, avatar, grade } = request.validated
         const id = request.params.id

@@ -114,6 +114,20 @@ const UserService = {
         }
     },
 
+    async updateUserPassword(id, password){
+        console.log('Password after sending: ', password)
+        try{
+            const password_hash = await bcrypt.hash(password, saltRounds)
+            return await User.updateUserPassword(id, password_hash)
+        }catch(error){
+            const err = new Error('Password change failed')
+            err.name = 'PasswordChangeFail'
+            err.message = error.message
+            err.status = 500
+            throw err
+        }
+    },
+
     async findOrCreateFederatedCredentials(profile) {
         try {
             const user = await User.findOrCreateUserFromGoogle(profile)

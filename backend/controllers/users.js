@@ -3,6 +3,7 @@ const usersRouter = express.Router()
 import UserService from '../services/userService.js'
 import { z } from 'zod'
 import middleware from '../utils/middleware.js'
+import bcrypt from 'bcrypt'
 const roles = z.enum(['student', 'teacher', 'principal'])
 
 const userUpdateSchema = z.object({
@@ -10,6 +11,7 @@ const userUpdateSchema = z.object({
     name: z.string(),
     // Makes sure the password includes at least 5 letters, 1 upper -and lowercase letter and a special character
     password: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/),
+    currentPassword: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/),
     avatar: z.string(),
     currently_reading: z.number().int().positive(),
     grade: z.number(),
@@ -24,6 +26,11 @@ const userRegisterSchema = z.object({
     avatar: z.string(),
     grade: z.number(),
 }).strict()
+
+const userUpdatePasswordSchema = z.object({
+    currentPassword: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/),
+    password: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/)
+}).strict()
 //.strict() means that anything not defined here causes an error.
 // The missing values should be filled by default values in the service.
 // We still need to figure out how the password should be when a user signs up with a Google
@@ -37,7 +44,7 @@ usersRouter.get('/', async (request, response, next) => {
     }
 })
 
-usersRouter.post('/register', middleware.zValidate(userRegisterSchema), async (request, response, next) => {
+usersRouter.post('/register', middleware.requireNotAuthenticated,middleware.zValidate(userRegisterSchema), async (request, response, next) => {
     const { email, name, password, avatar, currently_reading, grade, role } = request.validated
 
     try {
@@ -74,7 +81,32 @@ usersRouter.patch('/:id/role', middleware.requireTeacherRole, middleware.zValida
     }
 })
 
-usersRouter.get('/:id', async (request, response, next) => {
+usersRouter.patch('/:id/change-password', middleware.requireAuthentication ,middleware.zValidate(userUpdatePasswordSchema), async(request, response, next) => {
+    try{
+        const { id } = request.params
+        if (request.user.id !== Number(id)) {
+            return response.status(403).json({ error: 'Forbidden' })
+        }
+        const { currentPassword, password } = request.validated
+        const user = await UserService.findById(id)
+        console.log('Here')
+        const match = await bcrypt.compare(currentPassword, user.password_hash)
+        console.log('Here2')
+        if(!match){
+            const err = new Error('Current password does not match')
+            err.name = 'ValidationError'
+            err.status = 400
+            throw err
+        }
+        console.log('Password before sending: ',password)
+        await UserService.updateUserPassword(id, password)
+        response.status(201).json('Password changed successfully')
+    } catch(error){
+        next(error)
+    }
+})
+
+usersRouter.get('/:id', middleware.requireAuthentication, async (request, response, next) => {
     try {
         const user = await UserService.findById(request.params.id)
         response.json(user)

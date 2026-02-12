@@ -45,9 +45,22 @@ function requireTeacherRole(request, response, next) {
     if (request.isAuthenticated() && request.user.role === 'teacher') {
         return next()
     }
-    response.status(403).json({ error: 'Forbidden' })
+    return response.status(403).json({ error: 'Forbidden' })
 }
 
+function requireAuthentication(request, response, next) {
+    if (request.isAuthenticated()) {
+        return next()
+    }
+    return response.status(403).json({ error: 'Forbidden' })
+}
+
+function requireNotAuthenticated(request, response, next) {
+    if (request.isAuthenticated()) {
+        return response.status(403).json({ error: 'Forbidden' })
+    }
+    return next()
+}
 
 const errorHandler = (error, request, response, next) => {
     logger.error(error.message)
@@ -116,6 +129,7 @@ function zValidate(schema) {
 
 // Might be dangerous, since if this function has problems it will cause problems for the whole application
 function authAndOnboardingGate(request, response, next) {
+    // Paths allowed if not logged in
     const publicPaths = [
         '/login',
         '/auth/login',
@@ -123,7 +137,7 @@ function authAndOnboardingGate(request, response, next) {
         '/auth/google/callback',
         '/auth/update-profile'
     ]
-
+    // Paths not allowed if logged in
     const loginPaths = [
         '/login',
         '/auth',
@@ -172,5 +186,7 @@ export default {
     errorHandler,
     zValidate,
     requireTeacherRole,
+    requireAuthentication,
+    requireNotAuthenticated,
     authAndOnboardingGate
 }

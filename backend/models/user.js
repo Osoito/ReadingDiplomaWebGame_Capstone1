@@ -22,7 +22,7 @@ const User = {
     async findUserById(id) {
         // Removed the password_hash from here
         return db('users')
-            .select('id', 'email', 'name', 'avatar', 'currently_reading', 'grade', 'role')
+            .select('id', 'email', 'name','password_hash', 'avatar', 'currently_reading', 'grade', 'role')
             .where({ id })
             .first()
     },
@@ -35,6 +35,13 @@ const User = {
         return db('users')
             .where({ id })
             .update({ role: role })
+            .returning('*')
+    },
+
+    async updateUserPassword(id, password_hash){
+        return db('users')
+            .where({ id })
+            .update({ password_hash: password_hash })
             .returning('*')
     },
 
