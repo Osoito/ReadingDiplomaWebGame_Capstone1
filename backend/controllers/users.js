@@ -64,8 +64,11 @@ usersRouter.post('/register', middleware.zValidate(userRegisterSchema), async (r
 
 usersRouter.patch('/:id/role', middleware.requireTeacherRole, middleware.zValidate(userUpdateSchema), async (request, response, next) => {
     try {
-
-        //const { id } = request.params
+        const { id } = request.params
+        const user = await UserService.findById(id)
+        await UserService.updateUserRole(id, user.role)
+        const updatedUser = await UserService.findById(id)
+        response.status(201).json(updatedUser)
     } catch (error) {
         next(error)
     }

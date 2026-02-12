@@ -59,6 +59,7 @@ npm run dev
 | GET    | `/api/users`               | Get all users                                           |
 | GET    | `/api/users/:id`           | Get a specific user                                     |
 | POST   | `/api/users/register`      | Create new user                                         |
+| PATCH  | `/api/users/:id/role`      | Swaps the user role                                     |
 | POST   | `/auth/login`              | Login using basic credentials (email/username, password)|
 | GET    | `/auth/logout`             | Logout                                                  |
 | GET    | `/auth/google`             | Sign up or login using Google account                   |

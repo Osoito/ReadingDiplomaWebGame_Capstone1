@@ -97,6 +97,23 @@ const UserService = {
         }
     },
 
+    async updateUserRole(id, role){
+        try{
+            if(role === 'student'){
+                role = 'teacher'
+            } else if(role === 'teacher'){
+                role = 'student'
+            }
+            return await User.updateUserRole(id,role)
+        }catch(error){
+            const err = new Error('Role change failed')
+            err.name = 'RoleChangeFail'
+            err.message = error.message
+            err.status = 500
+            throw err
+        }
+    },
+
     async findOrCreateFederatedCredentials(profile) {
         try {
             const user = await User.findOrCreateUserFromGoogle(profile)
