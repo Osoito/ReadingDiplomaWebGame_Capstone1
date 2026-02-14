@@ -57,7 +57,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 10
 
       - name: Ensure pnpm is available (fallback to Corepack if necessary)
         run: |
@@ -66,7 +66,7 @@ jobs:
           else
             echo "pnpm not found; enabling Corepack fallback"
             corepack enable
-            corepack prepare pnpm@latest --activate
+            corepack prepare pnpm@latest-10 --activate
             echo "pnpm now: $(pnpm -v)"
           fi
 
@@ -93,7 +93,7 @@ jobs:
 
       - name: Run migrations
         working-directory: backend
-        run: pnpm exec knex migrate:latest --knexfile ./knexfile.cjs
+        run: pnpm exec knex migrate:latest
 
       - name: Run tests
         working-directory: backend
