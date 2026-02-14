@@ -18,9 +18,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "node --test",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "dev": "cross-env NODE_ENV=development nodemon index.js",
+    "test": "cross-env  NODE_ENV=test node --test",
     "lint": "eslint .",
     "db:create": "node scripts/createDatabase.js",
     "db:make": "npx knex migrate:make --stub migration.stub --"
@@ -44,13 +44,15 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@stylistic/eslint-plugin": "^4.4.1",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
     "eslint-plugin": "^1.0.1",
     "globals": "^17.3.0",
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.11",
+    "supertest": "^7.2.2"
   },
   "comments": {
-    "type": "not sure if the type should be 'module' or 'commonjs'",
+    "type": "module/commonjs",
     "devDependencies": {
       "devDependencies": "packages used only in testing and development",
       "eslint": "ESLint is used to maintain code quality and consistency (automatic testing of code style)",
@@ -65,7 +67,9 @@
       "zod": "Used in error handling (input validation). More documentation (https://zod.dev/)",
       "passport": "Used for authentication (https://www.npmjs.com/package/passport)",
       "passport-local": "Plugins that the passport uses as strategies (https://github.com/jaredhanson/passport-local)",
-      "express-rate-limit": "Used to limit log-in attempts from IP addresses"
+      "express-rate-limit": "Used to limit log-in attempts from IP addresses",
+      "cross-env": "Required for NODE_ENV to work on Windows",
+      "supertest": "Module for testing HTTP, to allow using lower-level API provided by superagent"
     }
   }
 }
