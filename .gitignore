@@ -3,6 +3,7 @@ package-lock.json
 .vscode/
 godot/
 /android/
+CLAUDE.md
 
 # Node.js specific ignores
 # backend/pnpm-lock.yaml

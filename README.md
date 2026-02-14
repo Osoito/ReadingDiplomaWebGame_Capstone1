@@ -38,6 +38,12 @@ npm run db:create
 npm knex migrate:latest
 ```
 
+### Frontend
+```bash
+cd frontend
+npm install
+```
+
 ## Running the Application
 
 ### Development Mode
@@ -48,7 +54,63 @@ cd backend
 npm run dev
 # Backend runs on http://localhost:3001
 ```
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
+# Frontend runs on http://localhost:5173
+# API calls to /api are proxied to the backend automatically
+```
+
 >(**Optional**) To use psql for database functions (CRUD and data viewing) in the VSCode terminal, add your PostgreSQL installation (e.g. C:\Program Files\PostgreSQL\18\bin) to system environment Path variables. The use the command 'psql -U postgres rdiploma'
+
+### Production Build (Frontend)
+```bash
+cd frontend
+npm run build    # Output in dist/
+npm run preview  # Preview the production build locally
+```
+
+## Frontend
+
+The frontend is a React application with an embedded Phaser 3 game, built with Vite.
+
+### Tech Stack
+- **React 18** — UI framework
+- **Phaser 3** — 2D game engine (renders the interactive maps and reading interface)
+- **Vite** — Build tool and dev server
+
+### How It Works
+The React app renders a `PhaserGame` component that creates and manages the Phaser game canvas. The game consists of:
+
+- **World Map** — A hub scene with clickable buttons for each continent
+- **Continent Maps** — 8 map scenes (Europe, Asia, Africa, Antarctica, Arctic, North America, South America, Oceania) where users follow a path of checkpoints and open books to read
+- **Reading Scene** — An overlay that displays book content with scroll-based progress tracking
+
+Game state (reading progress per continent, books read) is managed by a shared singleton in `src/game/state.js`.
+
+### Project Structure
+```
+frontend/
+├── index.html                    # Vite entry point
+├── vite.config.js                # Vite config (API proxy to backend)
+├── package.json
+└── src/
+    ├── main.jsx                  # React entry
+    ├── App.jsx                   # Root component
+    ├── App.css                   # Global styles
+    ├── components/
+    │   └── PhaserGame.jsx        # React wrapper for Phaser canvas
+    ├── game/
+    │   ├── config.js             # Phaser game config factory
+    │   ├── state.js              # Shared game state (ReadingState)
+    │   ├── data/                 # Book content modules
+    │   └── scenes/               # All Phaser scene classes
+    └── assets/                   # Map images and token PNGs
+```
+
+## Backend
 
 ### Endpoints
 
