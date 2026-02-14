@@ -41,6 +41,7 @@ jobs:
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: testdb
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/testdb
       NODE_ENV: test
       GOOGLE_CLIENT_ID: 123
       GOOGLE_CLIENT_SECRET: 123
@@ -80,7 +81,7 @@ jobs:
 
       - name: Install depedencies
         working-directory: backend
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Wait for Postgres
         run: |
@@ -92,7 +93,7 @@ jobs:
 
       - name: Run migrations
         working-directory: backend
-        run: pnpm knex migrate:latest
+        run: pnpm exec knex migrate:latest --knexfile ./knexfile.cjs
 
       - name: Run tests
         working-directory: backend

@@ -1,11 +1,6 @@
-import 'dotenv/config'
+require('dotenv').config()
 
-// npm knex migrate:status --> to check for any migrations
-// npm knex migrate:latest --> to run all new migrations
-// npm knex migrate:rollback --> to rollback last migration
-// npm db:make --> to create a new migration file
-// npx knex migrate:rollback --all --> to rollback all migrations
-// npm run db:make migration_name_here --> to create a new migration file (fit with the ES module)
+// Solely for the GitHub action "Backend CI" pipeline to use
 
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
@@ -63,6 +58,6 @@ const production = {
   }
 }
 
-export default {
+module.exports = {
   development, staging, production
 };
