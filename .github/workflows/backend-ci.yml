@@ -1,0 +1,72 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+# Syntax for creating Workflows: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+
+name:  Backend CI # Node.js CI
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+    branches: [ "main" ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    services:
+      postgres:
+        image: postgres:17
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        options: >- # Waits until Postgres is ready before continuing
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      PORT: 3001
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: testdb
+      NODE_ENV: test
+      GOOGLE_CLIENT_ID: 123
+      GOOGLE_CLIENT_SECRET: 123
+      SESSION_SECRET: 0b00318059557b51a32b71a4b926c6faeaea37aaf748d3eb8ea00a25d9d45d7938d163180bcbd93d786474bf4a750ac2ef874e563b72a79e1af6710207f01de9
+      # ^^ DO NOT USE THIS SECRET IN YOUR .env, only in use for this CI pipeline
+
+      # These steps will run on each GitHub push
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install depedencies
+        working-directory: backend
+        run: npm install
+
+      - name: Run migrations
+        working-directory: backend
+        run: npx knex migrate:latest
+
+      - name: Run tests
+        working-directory: backend
+        run: npm test
+        
