@@ -1,4 +1,4 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# This workflow will do a clean installation of node dependencies, cache/restore them and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 # Syntax for creating Workflows: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
 
@@ -36,7 +36,7 @@ jobs:
           --health-retries=5
     env:
       PORT: 3001
-      DB_HOST: localhost
+      DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: postgres
@@ -53,16 +53,7 @@ jobs:
         uses: actions/checkout@v4
 
       # Decided to use pnpm here, since it's faster and has a smaller -lock file
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'  # expects to find a pnpm-lock.yaml file
-          cache-dependency-path: backend/pnpm-lock.yaml
-          # Without this the CI pipeline will run slower (fresh npm install everytime)
-          # and dependecies may change unexpectedly over time
-
-      - name: Try installing pnpm
+      - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: latest
@@ -78,19 +69,26 @@ jobs:
             echo "pnpm now: $(pnpm -v)"
           fi
 
-      - name: Debug pnpm-lock.yaml not found
-        if: failure()
-        run: |
-          node -v
-          npm -v
-          echo "PATH=$PATH"
-          command -v pnpm || echo "pnpm not found"
-          if [ -f backend/pnpm-lock.yaml ]; then echo "pnpm-lock.yaml exists"; else echo "pnpm-lock.yaml missing"; fi
-          ls -la backend | grep -E 'pnpm-lock.yaml|package.json' || true
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'  # expects to find a pnpm-lock.yaml file
+          cache-dependency-path: backend/pnpm-lock.yaml
+          # Without this the CI pipeline will run slower (fresh npm install everytime)
+          # and dependecies may change unexpectedly over time
 
       - name: Install depedencies
         working-directory: backend
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            pg_isready -h postgres -p 5432 -U postgres && break
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
 
       - name: Run migrations
         working-directory: backend
