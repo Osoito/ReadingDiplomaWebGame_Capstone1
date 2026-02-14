@@ -51,20 +51,42 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       # Decided to use pnpm here, since it's faster and has a smaller -lock file
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm' # expects to find a pnpm-lock.yaml file
+          cache: 'pnpm'  # expects to find a pnpm-lock.yaml file
+          cache-dependency-path: backend/pnpm-lock.yaml
           # Without this the CI pipeline will run slower (fresh npm install everytime)
-          # and dependecies may change unexpectedly over time      
+          # and dependecies may change unexpectedly over time
+
+      - name: Try installing pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Ensure pnpm is available (fallback to Corepack if necessary)
+        run: |
+          if command -v pnpm >/dev/null 2>&1; then
+            echo "pnpm already available: $(pnpm -v)"
+          else
+            echo "pnpm not found; enabling Corepack fallback"
+            corepack enable
+            corepack prepare pnpm@latest --activate
+            echo "pnpm now: $(pnpm -v)"
+          fi
+
+      - name: Debug pnpm-lock.yaml not found
+        if: failure()
+        run: |
+          node -v
+          npm -v
+          echo "PATH=$PATH"
+          command -v pnpm || echo "pnpm not found"
+          if [ -f backend/pnpm-lock.yaml ]; then echo "pnpm-lock.yaml exists"; else echo "pnpm-lock.yaml missing"; fi
+          ls -la backend | grep -E 'pnpm-lock.yaml|package.json' || true
 
       - name: Install depedencies
         working-directory: backend
