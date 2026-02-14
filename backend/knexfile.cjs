@@ -5,7 +5,7 @@ require('dotenv').config()
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-  const development = {
+const development = {
   client: 'pg',
   connection: {
     host: process.env.DB_HOST,
@@ -20,6 +20,22 @@ require('dotenv').config()
     //extension: 'js'
   }
 };
+
+const test = {
+  client: 'pg',
+  connection: {
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT
+  },
+  migrations: {
+    directory: './db/migrations',
+    tableName: 'knex_migrations'
+    //extension: 'js'
+  }
+}
 
 const staging = {
   client: 'postgresql',
@@ -59,5 +75,5 @@ const production = {
 }
 
 module.exports = {
-  development, staging, production
+  development, test, staging, production
 };

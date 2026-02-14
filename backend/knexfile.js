@@ -46,6 +46,22 @@ const staging = {
   }
 }
 
+const test = {
+  client: 'pg',
+  connection: {
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT
+  },
+  migrations: {
+    directory: './db/migrations',
+    tableName: 'knex_migrations'
+    //extension: 'js'
+  }
+}
+
 const production = {
   client: 'postgresql',
   connection: {
@@ -64,5 +80,5 @@ const production = {
 }
 
 export default {
-  development, staging, production
+  development, test, staging, production
 };
