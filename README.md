@@ -6,16 +6,18 @@ Repo for the course Capstone Project 1. The project is a web-based reading diplo
 
 ### Prerequisites
 
-- Node.js 18+ and npm
-- PostgreSQL (https://www.postgresql.org/download/)
+- Node.js 18 or newer and npm
+- PostgreSQL (https://www.postgresql.org/download/) installed and running
 
 ### Installation
+### Backend
 Create a .env file in the root of your backend which contains these parameters
 ```
 PORT=3001                           #<--- Port where the backend will run
+NODE_ENV=development                #<--- Environment mode (development/test/production)
 
 DB_HOST=localhost
-DB_PORT=5432                        #<--- Port where your PostgreSQL database is running
+DB_PORT=5432                        #<--- Port where your PostgreSQL database is running (5432=default)
 DB_USER=postgres                    #<--- PostgreSQL username (postgres by default)
 DB_PASSWORD=yourPostgresPassword    #<--- Password set when installing PostgreSQL (password for DB_USER)
 DB_NAME=rdiploma                    #<--- Name of the database (rdiploma, if created using the script)
@@ -23,12 +25,11 @@ DB_NAME=rdiploma                    #<--- Name of the database (rdiploma, if cre
 GOOGLE_CLIENT_ID=123
 GOOGLE_CLIENT_SECRET=123
 
-#JWT_SECRET=randomly generated value <--- Currently not in use
-SESSION_SECRET=randomly generated value
+SESSION_SECRET=randomlyGeneratedStringOfCharacters
 ```
 GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are used for google authentication and i can't upload them to GitHub, but they will be provided to team members.
 
-You can use the command below to generate the SESSION and JWT SECRETS
+You can use the command below to generate the SESSION SECRET for the .env. Generators can be found online as well (e.g. [it-tools.tech/token-generator](https://it-tools.tech/token-generator))
 >node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```bash
 # Backend installation
@@ -62,8 +63,18 @@ npm run dev
 # Frontend runs on http://localhost:5173
 # API calls to /api are proxied to the backend automatically
 ```
+---
+### psql from VSCode terminal (**optional**)
+(**Optional**) To use psql for database functions (CRUD and data viewing) in the VSCode terminal, add your PostgreSQL installation (e.g. C:\Program Files\PostgreSQL\18\bin) to system environment Path variables.
 
->(**Optional**) To use psql for database functions (CRUD and data viewing) in the VSCode terminal, add your PostgreSQL installation (e.g. C:\Program Files\PostgreSQL\18\bin) to system environment Path variables. The use the command 'psql -U postgres rdiploma'
+Instructions for Windows: [https://commandprompt.com/education/how-to-set-windows-path-for-postgres-tools](https://www.commandprompt.com/education/how-to-set-windows-path-for-postgres-tools/)
+
+**useful psql commands**
+- **psql -U postgres rdiploma** <-- to open the rdiploma database in psql and make requests to it. (e.g. SELECT * FROM books;)
+- **\l** <-- to view all databases
+- **\dt** <-- to view all tables
+- **\q** <-- to close psql
+---
 
 ### Production Build (Frontend)
 ```bash
@@ -134,11 +145,11 @@ frontend/
 ```json
 {
   "id": 1,
-  "email": "email@email.com",
-  "name": "Kalle",
-  "password_hash": "asdfasdfjjo1jopjee9fru82ujwår¨rfa",
+  "email": "john@doe.com",
+  "name": "John",
+  "password_hash": "asdfasdfjjo1jopjee9fru82ujwarprfaa",
   "avatar": "path/avatar1.jpg",
-  "current_reading": 1,
+  "currently_reading": 1,
   "grade": 1,
   "role": "student"
 }
@@ -151,9 +162,8 @@ frontend/
 ```bash
 curl -X POST http://localhost:3001/api/users \
   -d '{
-    "email": "email@email.com",
-    "name": "Kalle",
-    "name": "email@email.com",
+    "email": "john@doe.com",
+    "name": "John",
     "password": "Password-1",
     "avatar": "path/avatar1.jpg",
     "grade": 1
@@ -165,7 +175,20 @@ curl -X POST http://localhost:3001/api/users \
 ```bash
 curl -X POST http://localhost:3001/auth/login \
   -d '{
-    "identifier": "email@email.com",
+    "identifier": "john@doe.com",
     "password": "Password-1"
     }'
 ```
+
+## Troubleshooting
+
+**If migrations (in backend) have been edited**
+- run 'npx knex migrate:rollback --all' --> to rollback all migrations, then run 'npx knex migrate:latest' to rerun all new migrations
+
+**If new migrations have been added (in backend)**
+- run 'npx knex migrate:latest' to run all new migrations
+
+**Can't connect to database (Constant internal server errors on requests)**
+- On Windows: open services, find postgresql, ensure it says running.
+- Ensure you have a .env file in the backend root, which contains the values mentioned above ([Installation](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#installation)).
+- PostgreSQL might not always be running on port:5432 (e.g. if it's already in use). Check which port PostgreSQL is running on. With psql run:  **psql -h localhost -U postgres**, then run: **SHOW port;** Then update the port number to your .env file DB_PORT. [psql from VSCode terminal](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#psql-from-VSCode-terminal-optional)
