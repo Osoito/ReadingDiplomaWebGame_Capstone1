@@ -1,22 +1,18 @@
 import Progress from '../models/progress.js'
 
 const ProgressService = {
-    async addNewProgress({ user, book }) {
-        console.log('user at point 2: ', user)
-        console.log('book at point 2: ', book)
-        const existing = await Progress.findByUser(user)
+    async addNewProgress({ level, user, book }) {
+        const existing = await Progress.findByLevel(level,user)
         if (existing) {
-            const err = new Error('This user already has a progress entry')
+            const err = new Error('This user already has a progress entry for this level')
             err.name = 'ValidationError'
             err.status = 400
             throw err
         }
 
         try {
-            console.log('user at point 3: ', user)
-            console.log('book at point 3: ', book)
             return Progress.create({
-                level:1,
+                level,
                 user,
                 book,
                 current_page:0,

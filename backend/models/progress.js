@@ -10,6 +10,11 @@ const Progress = {
         return db('progress')
             .select('level', 'user', 'book', 'current_page', 'level_status')
             .where({ user:user })
+    },
+    async findByLevel(level, user){
+        return db('progress')
+            .select('level', 'user', 'book', 'current_page', 'level_status')
+            .where({ level:level, user:user })
             .first()
     },
     async getAll(){

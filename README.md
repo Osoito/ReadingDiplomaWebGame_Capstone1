@@ -135,7 +135,7 @@ frontend/
 | POST   | `/api/users/register`            | Create new user                                         |
 | PATCH  | `/api/users/:id/role`            | Swaps the user role                                     |
 | PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword,password  |
-| POST   | `/api/progress/add-entry`        | Add a progression new entry(might need some changes)    |
+| POST   | `/api/progress/add-entry`        | Add a progression new entry                             |
 | POST   | `/auth/login`                    | Login using basic credentials (email/username, password)|
 | GET    | `/auth/logout`                   | Logout                                                  |
 | GET    | `/auth/google`                   | Sign up or login using Google account                   |
