@@ -24,9 +24,6 @@ const UserService = {
             if(!grade){
                 grade = 1
             }
-            if(!currently_reading){
-                currently_reading = 1
-            }
             if(!role){
                 role = 'student'
             }
@@ -96,7 +93,19 @@ const UserService = {
             throw err
         }
     },
-
+    /*
+    async findStudentsByTeacherID(teacherID){
+        try {
+            return await User.findByRole(role)
+        } catch(error){
+            const err = new Error('No Users Found')
+            err.name = 'NotFound'
+            err.message = error.message
+            err.status = 404
+            throw err
+        }
+    },
+    */
     async updateUserRole(id, role){
         try{
             if(role === 'student'){

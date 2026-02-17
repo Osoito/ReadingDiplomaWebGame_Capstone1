@@ -35,7 +35,7 @@ const userUpdatePasswordSchema = z.object({
 // The missing values should be filled by default values in the service.
 // We still need to figure out how the password should be when a user signs up with a Google
 
-usersRouter.get('/', async (request, response, next) => {
+usersRouter.get('/', middleware.requireAuthentication(true),async (request, response, next) => {
     try {
         const users = await UserService.getAllUsers()
         response.json(users)
@@ -44,7 +44,7 @@ usersRouter.get('/', async (request, response, next) => {
     }
 })
 
-usersRouter.post('/register', middleware.requireNotAuthenticated,middleware.zValidate(userRegisterSchema), async (request, response, next) => {
+usersRouter.post('/register', middleware.requireAuthentication(false),middleware.zValidate(userRegisterSchema), async (request, response, next) => {
     const { email, name, password, avatar, currently_reading, grade, role } = request.validated
 
     try {
@@ -81,7 +81,7 @@ usersRouter.patch('/:id/role', middleware.requireTeacherRole, middleware.zValida
     }
 })
 
-usersRouter.patch('/:id/change-password', middleware.requireAuthentication ,middleware.zValidate(userUpdatePasswordSchema), async(request, response, next) => {
+usersRouter.patch('/:id/change-password', middleware.requireAuthentication(true) ,middleware.zValidate(userUpdatePasswordSchema), async(request, response, next) => {
     try{
         const { id } = request.params
         if (request.user.id !== Number(id)) {
@@ -106,7 +106,7 @@ usersRouter.patch('/:id/change-password', middleware.requireAuthentication ,midd
     }
 })
 
-usersRouter.get('/:id', middleware.requireAuthentication, async (request, response, next) => {
+usersRouter.get('/:id', middleware.requireAuthentication(true), async (request, response, next) => {
     try {
         const user = await UserService.findById(request.params.id)
         response.json(user)

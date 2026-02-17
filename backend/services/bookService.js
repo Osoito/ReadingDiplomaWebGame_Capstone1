@@ -29,6 +29,10 @@ const BookService = {
 
     async getAllBooks() {
         return Book.getAll()
+    },
+
+    async findBookById(id){
+        return Book.findBookById(id)
     }
 }
 

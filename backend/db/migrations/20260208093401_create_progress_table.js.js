@@ -20,7 +20,7 @@ export const up = async (knex) => {
             table.integer('current_page')
             table.string('level_status').notNullable()
             // Allowed fields for level_status: 'incomplete', 'complete', 'reviewed'
-            table.check('level_status IN (\'incomplete\', \'complete\', \'reviewed\')')
+            table.check('level_status IN (\'incomplete\', \'complete\')')
         })
 }
 

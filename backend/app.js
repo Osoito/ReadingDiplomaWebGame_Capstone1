@@ -8,6 +8,7 @@ import cors from 'cors'
 import usersRouter from './controllers/users.js'
 import booksRouter from './controllers/books.js'
 import authRouter from './controllers/auth.js'
+import progressRouter from './controllers/progressController.js'
 import session from 'express-session'
 import passport from './utils/passport.js'
 
@@ -39,6 +40,8 @@ app.use(middleware.requestLogger)
 app.use('/auth', authRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/books', booksRouter)
+app.use('/api/progress', progressRouter)
+
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)

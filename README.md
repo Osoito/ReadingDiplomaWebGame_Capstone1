@@ -129,11 +129,13 @@ frontend/
 |--------|----------------------------------|---------------------------------------------------------|
 | GET    | `/api/books`                     | Get all books                                           |
 | POST   | `/api/books`                     | Add new book                                            |
+| GET    | `/api/books/:id`                 | Get book info based on id                               |
 | GET    | `/api/users`                     | Get all users                                           |
 | GET    | `/api/users/:id`                 | Get a specific user                                     |
 | POST   | `/api/users/register`            | Create new user                                         |
 | PATCH  | `/api/users/:id/role`            | Swaps the user role                                     |
 | PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword,password  |
+| POST   | `/api/progress/add-entry`        | Add a progression new entry(might need some changes)    |
 | POST   | `/auth/login`                    | Login using basic credentials (email/username, password)|
 | GET    | `/auth/logout`                   | Logout                                                  |
 | GET    | `/auth/google`                   | Sign up or login using Google account                   |

@@ -24,7 +24,7 @@ const loginLimiter =rateLimit({
 
 
 // Basic authentication without google
-authRouter.post('/login', loginLimiter, middleware.requireNotAuthenticated ,async (request, response, next) => {
+authRouter.post('/login', loginLimiter, middleware.requireAuthentication(false) ,async (request, response, next) => {
     passport.authenticate('local', (error, user, info) => {
         if (error) return next(error)
 
@@ -67,19 +67,19 @@ authRouter.post('/login', loginLimiter, middleware.requireNotAuthenticated ,asyn
     response.status(200).send({ token, id: user.id, email: user.email, username: user.name, role: user.role })*/
 })
 
-authRouter.get('/logout', middleware.requireAuthentication, (request, response) => {
+authRouter.get('/logout', middleware.requireAuthentication(true), (request, response) => {
     request.logout(() => {
         response.redirect('/login')
     })
 })
 
 // Start Google authentication
-authRouter.get('/google', middleware.requireNotAuthenticated,passport.authenticate('google', {
+authRouter.get('/google', middleware.requireAuthentication(false),passport.authenticate('google', {
     scope: ['profile', 'email']
 }))
 
 // Google callback
-authRouter.get('/google/callback', middleware.requireNotAuthenticated,passport.authenticate('google', {
+authRouter.get('/google/callback', middleware.requireAuthentication(false),passport.authenticate('google', {
     failureRedirect: '/login',
     session: true // login state saved in session
 }), (request, response, next) => {
@@ -96,7 +96,7 @@ authRouter.get('/google/callback', middleware.requireNotAuthenticated,passport.a
     }
 })
 
-authRouter.get('/update-profile/:id', middleware.requireAuthentication,async (request, response, next) => {
+authRouter.get('/update-profile/:id', middleware.requireAuthentication(true),async (request, response, next) => {
     try {
         const user = await UserService.findById(request.params.id)
         response.json(user)
@@ -107,7 +107,7 @@ authRouter.get('/update-profile/:id', middleware.requireAuthentication,async (re
 
 authRouter.patch('/update-profile/:id',
     middleware.zValidate(userUpdateSchema),
-    middleware.requireAuthentication,
+    middleware.requireAuthentication(true),
     async (request, response, next) => {
         const { name, avatar, grade } = request.validated
         const id = request.params.id
