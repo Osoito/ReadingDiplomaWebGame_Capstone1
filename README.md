@@ -21,6 +21,7 @@ DB_PORT=5432                        #<--- Port where your PostgreSQL database is
 DB_USER=postgres                    #<--- PostgreSQL username (postgres by default)
 DB_PASSWORD=yourPostgresPassword    #<--- Password set when installing PostgreSQL (password for DB_USER)
 DB_NAME=rdiploma                    #<--- Name of the database (rdiploma, if created using the script)
+TEST_DB_NAME=rdiplomatest           #<--- Name of the database, used by model tests
 
 GOOGLE_CLIENT_ID=123
 GOOGLE_CLIENT_SECRET=123
@@ -70,6 +71,7 @@ npm run dev
 Instructions for Windows: [https://commandprompt.com/education/how-to-set-windows-path-for-postgres-tools](https://www.commandprompt.com/education/how-to-set-windows-path-for-postgres-tools/)
 
 **useful psql commands**
+- **psql -U postgres** <-- to open psql terminal interface (with the postgres user)
 - **psql -U postgres rdiploma** <-- to open the rdiploma database in psql and make requests to it. (e.g. SELECT * FROM books;)
 - **\l** <-- to view all databases
 - **\dt** <-- to view all tables
@@ -129,7 +131,6 @@ frontend/
 |--------|----------------------------------|---------------------------------------------------------|
 | GET    | `/api/books`                     | Get all books                                           |
 | POST   | `/api/books`                     | Add new book                                            |
-| GET    | `/api/books/:id`                 | Get book info based on id                               |
 | GET    | `/api/users`                     | Get all users                                           |
 | GET    | `/api/users/:id`                 | Get a specific user                                     |
 | POST   | `/api/users/register`            | Create new user                                         |

@@ -1,0 +1,23 @@
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+export async function seed(knex) {
+    // Deletes ALL existing entries
+    return await knex('table_name').del()
+        // Inserts entries one by one
+        .then(async () => {
+            return await knex('table_name').insert({
+                name: 'kalle'
+            })
+            /* -- For inserting entries all at once --
+            return await knex('users').insert([
+                { id: 1, name: 'Kalle' },
+                { id: 2, name: 'Alice' },
+            ])*/
+        }).then(async () => {
+            return await knex('table_name').insert({
+                name: 'Alice'
+            })
+        })
+}
