@@ -8,12 +8,11 @@ export default defineConfig({
         setupFiles: ['./tests/vitest.setup.js'],
         include: ['tests/**/*.test.js'],
         passWithNoTests: true,
-        coverage: {
+        /*coverage: {
             clean: true,
             reportsDirectory: './tests/coverage',
             reporter: [
-                
             ]
-        }
+        }*/
     }
 })

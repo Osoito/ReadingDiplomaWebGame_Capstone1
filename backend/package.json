@@ -20,7 +20,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
-    "test": "cross-env NODE_ENV=test vitest --coverage.enabled",
+    "test": "cross-env NODE_ENV=test vitest",
     "pretest": "cross-env NODE_ENV=test node scripts/createDatabase.js",
     "lint": "eslint .",
     "db:create": "node scripts/createDatabase.js",
