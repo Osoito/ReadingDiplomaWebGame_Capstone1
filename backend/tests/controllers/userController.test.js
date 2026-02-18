@@ -8,7 +8,7 @@ vi.mock('../../utils/middleware.js', async (importOriginal) => {
     return {
         default: {
             ...actual.default,
-            requireNotAuthenticated: (req, res, next) => next(),
+            requireAuthentication: () => (request, response, next) => next(),
             zValidate: () => (req, res, next) => {
                 req.validated = req.body
                 next()
