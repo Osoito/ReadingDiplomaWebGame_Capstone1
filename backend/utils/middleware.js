@@ -116,13 +116,12 @@ function zValidate(schema) {
                     return msg
                 })
             }
-            /*
+
             const err = new Error('Invalid request data. Unknown, missing or malformed fields. Please check your input.')
             err.name = 'ValidationError'
             err.status = 400
             err.details = flat
             throw err
-            */
         }
 
         request.validated = result.data
