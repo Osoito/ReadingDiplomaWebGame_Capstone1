@@ -127,22 +127,22 @@ frontend/
 
 ### Endpoints
 
-| Method | Endpoint                         | Description                                             |
-|--------|----------------------------------|---------------------------------------------------------|
-| GET    | `/api/books`                     | Get all books                                           |
-| POST   | `/api/books`                     | Add new book                                            |
-| GET    | `/api/users`                     | Get all users                                           |
-| GET    | `/api/users/:id`                 | Get a specific user                                     |
-| POST   | `/api/users/register`            | Create new user                                         |
-| PATCH  | `/api/users/:id/role`            | Swaps the user role                                     |
-| PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword,password  |
-| POST   | `/api/progress/add-entry`        | Add a progression new entry                             |
-| PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                |
-| POST   | `/auth/login`                    | Login using basic credentials (email/username, password)|
-| GET    | `/auth/logout`                   | Logout                                                  |
-| GET    | `/auth/google`                   | Sign up or login using Google account                   |
-| GET    | `/auth/update-profile/:id`       | Redirect here after sign up with Gmail                  |
-| PATCH  | `/auth/update-profile/:id`       | Set name, avatar, grade after sign up with Gmail        |
+| Method | Endpoint                         | Description                                                |
+|--------|----------------------------------|------------------------------------------------------------|
+| GET    | `/api/books`                     | Get all books                                              |
+| POST   | `/api/books`                     | Add new book                                               |
+| GET    | `/api/users`                     | Get all users                                              |
+| GET    | `/api/users/:id`                 | Get a specific user                                        |
+| POST   | `/api/users/register`            | Create new user(also creates progress entries for new user)|
+| PATCH  | `/api/users/:id/role`            | Swaps the user role                                        |
+| PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword,password     |
+| POST   | `/api/progress/add-entry`        | Add a progression new entry                                |
+| PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                   |
+| POST   | `/auth/login`                    | Login using basic credentials (email/username, password)   |
+| GET    | `/auth/logout`                   | Logout                                                     |
+| GET    | `/auth/google`                   | Sign up or login using Google account                      |
+| GET    | `/auth/update-profile/:id`       | Redirect here after sign up with Gmail                     |
+| PATCH  | `/auth/update-profile/:id`       | Set name, avatar, grade after sign up with Gmail           |
 
 ### User model
 

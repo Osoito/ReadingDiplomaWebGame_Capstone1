@@ -4,6 +4,7 @@ import UserService from '../services/userService.js'
 import { z } from 'zod'
 import middleware from '../utils/middleware.js'
 import bcrypt from 'bcrypt'
+import ProgressService from '../services/progressService.js'
 const roles = z.enum(['student', 'teacher', 'principal'])
 
 const userUpdateSchema = z.object({
@@ -57,8 +58,14 @@ usersRouter.post('/register', middleware.requireAuthentication(false),middleware
             grade,
             role
         }
-
-        await UserService.register(newUser)
+        const createdUser = await UserService.register(newUser)
+        const levelAmount = 6
+        for(let i = 1; i <= levelAmount; i++){
+            await ProgressService.addNewProgress({
+                level: i,
+                user: createdUser[0].id
+            })
+        }
         response.status(201).json(newUser)
     } catch (error) {
         next(error)
