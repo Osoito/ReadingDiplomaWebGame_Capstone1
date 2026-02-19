@@ -12,7 +12,7 @@ export const up = async (knex) => {
                 .references('id')
                 .inTable('users')
                 .onDelete('CASCADE')
-            table.integer('book').notNullable()
+            table.integer('book').nullable()
                 .unsigned()
                 .references('id')
                 .inTable('books')
