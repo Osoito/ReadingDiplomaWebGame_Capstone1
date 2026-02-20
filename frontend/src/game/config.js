@@ -14,6 +14,10 @@ export default function createGameConfig(parent) {
     return {
         type: Phaser.AUTO,
         parent,
+        // ⭐ This line must be added, otherwise `this.add.dom` in `BaseMapScene` will throw an error.
+        dom: {
+            createContainer: true
+        },
         scale: {
             mode: Phaser.Scale.FIT,
             autoCenter: Phaser.Scale.CENTER_BOTH,

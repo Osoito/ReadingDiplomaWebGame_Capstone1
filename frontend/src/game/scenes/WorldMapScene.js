@@ -8,7 +8,7 @@ class WorldMapScene extends Phaser.Scene {
     }
 
     preload() {
-        // Vite 下必须使用 import 的资源
+        // Resources that must be imported in Vite
         this.load.image('worldMap', worldmapImg);
     }
 

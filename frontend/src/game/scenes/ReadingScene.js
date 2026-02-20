@@ -24,12 +24,12 @@ class ReadingScene extends Phaser.Scene {
     create() {
         const { width, height } = this.scale;
 
-        // 背景遮罩
+        // Background mask
         this.add.rectangle(0, 0, width, height, 0x000000, 0.9)
             .setOrigin(0)
             .setInteractive();
 
-        // 纸张背景
+        // Paper background
         const paperWidth = Math.min(width * 0.92, 600);
         const paperHeight = Math.min(height * 0.88, 800);
         const centerX = width / 2;
@@ -39,7 +39,7 @@ class ReadingScene extends Phaser.Scene {
             .setOrigin(0.5)
             .setStrokeStyle(2, 0xe6e0d0);
 
-        // 标题
+        // Title
         const titleY = centerY - paperHeight * 0.43;
 
         this.add.text(centerX, titleY, this.bookData.title, {
@@ -57,7 +57,7 @@ class ReadingScene extends Phaser.Scene {
 
         this.add.rectangle(centerX, titleY + 60, paperWidth * 0.8, 1, 0xe6e0d0).setOrigin(0.5);
 
-        // 内容区域
+        // Content area
         const contentStartY = titleY + 80;
         const contentWindowHeight = paperHeight * 0.72;
 
@@ -71,7 +71,7 @@ class ReadingScene extends Phaser.Scene {
         );
         const contentMask = maskGraphics.createGeometryMask();
 
-        // 内容文本
+        // Content text
         this.contentBody = this.add.text(centerX, contentStartY, this.bookData.content, {
             fontSize: '20px',
             color: '#2b2b2b',
@@ -81,17 +81,17 @@ class ReadingScene extends Phaser.Scene {
         }).setOrigin(0.5, 0);
         this.contentBody.setMask(contentMask);
 
-        // ⭐⭐⭐ 先定义 maxScroll
+        // ⭐⭐⭐ First define maxScroll
         const maxScroll = Math.max(0, this.contentBody.height - contentWindowHeight);
 
-        // ⭐⭐⭐ 恢复阅读进度
+        // ⭐⭐⭐ Resume reading progress
         const savedPct = ReadingState.bookProgress[this.bookData.id] || 0;
         this.currentScrollOffset = maxScroll * (savedPct / 100);
         this.contentBody.y = contentStartY - this.currentScrollOffset;
 
         ReadingState.progress = savedPct;
 
-        // 进度条
+        // Progress bar
         const barW = paperWidth * 0.7;
         const barY = centerY + paperHeight * 0.38;
 
@@ -109,7 +109,7 @@ class ReadingScene extends Phaser.Scene {
             color: '#8d6e63'
         }).setOrigin(0.5);
 
-        // 滚动逻辑
+        // Scrolling logic
         const updateScroll = (deltaY) => {
             this.currentScrollOffset += deltaY;
             this.currentScrollOffset = Phaser.Math.Clamp(this.currentScrollOffset, 0, maxScroll);
@@ -135,7 +135,7 @@ class ReadingScene extends Phaser.Scene {
             }
         });
 
-        // 关闭按钮
+        // Close button
         const closeBtn = this.add.text(
             centerX,
             centerY + paperHeight * 0.45,
@@ -151,10 +151,10 @@ class ReadingScene extends Phaser.Scene {
         closeBtn.on('pointerdown', () => {
             const finalPct = ReadingState.progress || 0;
 
-            // 保存阅读进度
+            // Save reading progress
             ReadingState.bookProgress[this.bookData.id] = finalPct;
 
-            // ⭐⭐⭐ 只读模式：不更新地图、不解锁洲 ⭐⭐⭐
+            // ⭐⭐⭐ Read-only mode: No map updates, no continent unlocks ⭐⭐⭐
             if (this.readOnly) {
                 this.scene.resume(this.sourceMap);
                 this.scene.get(this.sourceMap).input.enabled = true;
@@ -162,7 +162,7 @@ class ReadingScene extends Phaser.Scene {
                 return;
             }
 
-            // ⭐⭐⭐ 正常模式：更新地图进度 ⭐⭐⭐
+            // ⭐⭐⭐ Normal Mode: Update Map Progress ⭐⭐⭐
             if (this.sourceMap) {
                 const cfg = ReadingState.mapConfig[this.sourceMap];
 
