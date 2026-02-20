@@ -13,13 +13,14 @@ import globals from 'globals'
 export default [
   js.configs.recommended,
   {
-    files: ["**/*.js"], // Applies to all .js files
+    files: ['**/*.js'], // Applies to all .js files
     languageOptions: {
-      sourceType: "module",
+      sourceType: 'module',
       globals: {
-        ...globals.node
+        ...globals.node,
+        ...globals.vitest,
       },
-      ecmaVersion: "latest",
+      ecmaVersion: 'latest',
     },
     plugins: {
       '@stylistic/js': stylisticJs
@@ -62,6 +63,6 @@ export default [
     },
   },
   {
-    ignores: ["dist/**", "build/**", "knex**", "scripts/**"], // Ignores build files and knex files
+    ignores: ['dist/**', 'build/**', 'knex**', 'scripts/**'], // Ignores build files and knex files
   },
 ];

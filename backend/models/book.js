@@ -17,6 +17,13 @@ const Book = {
     async getAll() {
         return db('books')
             .select('*')
+    },
+
+    async findBookById(id){
+        return db('books')
+            .select('title', 'author', 'coverimage', 'booktype')
+            .where({ id })
+            .first()
     }
 }
 

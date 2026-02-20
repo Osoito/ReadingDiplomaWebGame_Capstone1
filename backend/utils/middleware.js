@@ -48,18 +48,15 @@ function requireTeacherRole(request, response, next) {
     return response.status(403).json({ error: 'Forbidden' })
 }
 
-function requireAuthentication(request, response, next) {
-    if (request.isAuthenticated()) {
-        return next()
-    }
-    return response.status(403).json({ error: 'Forbidden' })
-}
-
-function requireNotAuthenticated(request, response, next) {
-    if (request.isAuthenticated()) {
+function requireAuthentication(required) {
+    return function(request, response, next){
+        if (request.isAuthenticated() && required) {
+            return next()
+        }else if(!request.isAuthenticated() && !required){
+            return next()
+        }
         return response.status(403).json({ error: 'Forbidden' })
     }
-    return next()
 }
 
 const errorHandler = (error, request, response, next) => {
@@ -84,6 +81,12 @@ const errorHandler = (error, request, response, next) => {
             err.status = 401
             throw err
         */
+    } else if(error.name === 'RoleChangeFail'){
+        return response.status(500).send({ error: 'Role change failed' })
+    } else if(error.name === 'PasswordChangeFail'){
+        return response.status(500).send({ error:'Password change failed' })
+    } else if(error.name === 'LevelAlreadyComplete'){
+        return response.status(500).send({ error:'Level is already completed' })
     }
 
     // pass the error to the default Express error handler if it's not handled above
@@ -113,13 +116,12 @@ function zValidate(schema) {
                     return msg
                 })
             }
-            /*
+
             const err = new Error('Invalid request data. Unknown, missing or malformed fields. Please check your input.')
             err.name = 'ValidationError'
             err.status = 400
             err.details = flat
             throw err
-            */
         }
 
         request.validated = result.data
@@ -187,6 +189,5 @@ export default {
     zValidate,
     requireTeacherRole,
     requireAuthentication,
-    requireNotAuthenticated,
     authAndOnboardingGate
 }

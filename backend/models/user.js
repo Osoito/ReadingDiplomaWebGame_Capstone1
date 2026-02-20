@@ -26,6 +26,13 @@ const User = {
             .where({ id })
             .first()
     },
+    /*
+    async findStudentsByTeacherID(teacherID){
+        return db('users')
+            .select('id', 'email', 'name', 'avatar', 'currently_reading', 'grade', 'role')
+            .where({  })
+    },
+    */
     async getAll() {
         return db('users')
             .select('id', 'email', 'name', 'avatar', 'currently_reading', 'grade', 'role')

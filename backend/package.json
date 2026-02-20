@@ -20,10 +20,12 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
-    "test": "cross-env  NODE_ENV=test node --test",
+    "test": "cross-env NODE_ENV=test vitest",
+    "pretest": "cross-env NODE_ENV=test node scripts/createDatabase.js",
     "lint": "eslint .",
     "db:create": "node scripts/createDatabase.js",
-    "db:make": "npx knex migrate:make --stub migration.stub --"
+    "db:make": "npx knex migrate:make --stub migration.stub --",
+    "db:seed": "npx knex seed:make --stub seed.stub --"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -49,7 +51,8 @@
     "eslint-plugin": "^1.0.1",
     "globals": "^17.3.0",
     "nodemon": "^3.1.11",
-    "supertest": "^7.2.2"
+    "supertest": "^7.2.2",
+    "vitest": "^4.0.18"
   },
   "comments": {
     "type": "module/commonjs",
@@ -69,7 +72,8 @@
       "passport-local": "Plugins that the passport uses as strategies (https://github.com/jaredhanson/passport-local)",
       "express-rate-limit": "Used to limit log-in attempts from IP addresses",
       "cross-env": "Required for NODE_ENV to work on Windows",
-      "supertest": "Module for testing HTTP, to allow using lower-level API provided by superagent"
+      "supertest": "Module for testing HTTP, to allow using lower-level API provided by superagent",
+      "vitest": "Module for unit -and integration testing"
     }
   }
 }

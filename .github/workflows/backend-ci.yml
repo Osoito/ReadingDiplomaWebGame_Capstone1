@@ -7,7 +7,7 @@ name:  Backend CI # Node.js CI
 on:
   push:
     paths:
-      - "backend/**"
+      - "backend/**" # This GitHub action will only run when changes are made to the backend
       - ".github/workflows/backend-ci.yml"
     branches: [ "main" ]
 
@@ -28,7 +28,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: testdb
+          POSTGRES_DB: rdiplomatest
         options: >- # Waits until Postgres is ready before continuing
           --health-cmd="pg_isready -U postgres"
           --health-interval=10s
@@ -40,8 +40,9 @@ jobs:
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: postgres
-      DB_NAME: testdb
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/testdb
+      DB_NAME: rdiplomatest
+      TEST_DB_NAME: rdiplomatest
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/testdb #<-- I think this part is only used by knex in a "staging" environment.
       NODE_ENV: test
       GOOGLE_CLIENT_ID: 123
       GOOGLE_CLIENT_SECRET: 123
@@ -90,6 +91,10 @@ jobs:
             echo "Waiting for Postgres..."
             sleep 2
           done
+
+      - name: Check that database for model tests exists
+        working-directory: backend
+        run: node scripts/createDatabase.js
 
       - name: Run migrations
         working-directory: backend

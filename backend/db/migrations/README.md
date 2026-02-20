@@ -12,5 +12,7 @@
 
 - npm run db:make migration_name_here --> to create a new migration file (fit with the ES module)
 
+- npm run db:seed seed_name_here --> to create a new seed file (fit with the ES module) for filling tables with data. (Useful in testing)
+
 >Quide for building table creationg schemas
 https://knexjs.org/guide/schema-builder.html#integer

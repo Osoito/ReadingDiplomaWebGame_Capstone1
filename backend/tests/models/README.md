@@ -1,0 +1,1 @@
+## **npm test**, runs **db:create** script before activating, to create an rdiplomatest database if not exists, used by the model tests
