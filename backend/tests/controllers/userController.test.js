@@ -1,6 +1,9 @@
-import { vi, test, expect, describe } from 'vitest'
+import { vi, test, expect, describe, assert } from 'vitest'
 import supertest from 'supertest'
 import express from 'express'
+import userService from '../../services/userService.js'
+import progressService from '../../services/progressService.js'
+import usersRouter from '../../controllers/users.js'
 
 // Mock Auth and Validation middleware
 vi.mock('../../utils/middleware.js', async (importOriginal) => {
@@ -8,7 +11,7 @@ vi.mock('../../utils/middleware.js', async (importOriginal) => {
     return {
         default: {
             ...actual.default,
-            requireAuthentication: () => (request, response, next) => next(),
+            requireAuthentication: () => (req, res, next) => next(),
             zValidate: () => (req, res, next) => {
                 req.validated = req.body
                 next()
@@ -17,56 +20,87 @@ vi.mock('../../utils/middleware.js', async (importOriginal) => {
     }
 })
 
-// Mock the whole service layer
-//vi.mock('../../services/userService.js')
+// Mock the addNewProgress from the progressService
+vi.mock('../../services/progressService.js', async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+        default: {
+            ...actual.default,
+            addNewProgress: vi.fn()
+        }
+    }
+})
+
+// Mock the whole userService
+// vi.mock('../../services/userService.js')
 
 // Mock the register service
 vi.mock('../../services/userService.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
         default: {
-            ...actual,
+            ...actual.default,
             register: vi.fn()
         }
     }
 })
 
+const app = express()
+app.use(express.json())
+app.use('/api/users', usersRouter)
 
-import userService from '../../services/userService.js'
-import usersRouter from '../../controllers/users.js'
+const api = supertest(app)
 
-describe('POST /api/users', () => {
+describe('User registration', () => {
     beforeEach(() => {
-        vi.resetAllMocks()
+        vi.clearAllMocks()
     })
 
-    test('/register creates a new user', async () => {
+    test('A new user can be created', async () => {
         const input = {
             email: 'john@doe.com',
             name: 'John',
             password: 'secret',
             avatar: 'avatars/avatar1.jpg',
-            grade: 1
+            grade: 1,
         }
 
-        // Mock service response
-        userService.register.mockResolvedValue(input)
+        // For some reason this is returned as an array from userService.register
+        const createdUser = [
+            {
+                id: 1,
+                email: 'john@doe.com',
+                name: 'John',
+                password_hash: 'mocked_hash',
+                avatar: 'avatars/avatar1.jpg',
+                currently_reading: null,
+                grade: 1,
+                role: 'student'
+            }
+        ]
 
-        // Build a test app
-        const app = express()
-        app.use(express.json())
-        app.use('/api/users', usersRouter)
+        // When userService.register is called, this resolved value will be returned
+        userService.register.mockResolvedValue(createdUser)
 
-        const api = supertest(app)
+        progressService.addNewProgress.mockResolvedValue({})
 
         const response = await api
-            .post('/api/users/register', usersRouter)
+            .post('/api/users/register')
             .send(input)
             .expect(201)
             .expect('Content-Type', /application\/json/)
 
-        expect(response.body).toEqual(input)
+        //expect(response.body).toEqual(input) -- expect vs. assert
+        assert.deepStrictEqual(response.body, input)
         expect(userService.register).toHaveBeenCalledWith(input)
+
+        expect(progressService.addNewProgress).toHaveBeenCalledTimes(6)
+        for (let i = 1; i <= 6; i++) {
+            expect(progressService.addNewProgress).toHaveBeenCalledWith({
+                level: i,
+                user: createdUser[0].id
+            })
+        }
     })
 })
 
