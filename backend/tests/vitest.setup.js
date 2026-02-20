@@ -1,12 +1,13 @@
 import db from '../db/db.js'
 
-// Creates all the necessary tables
+// runs before every test folder
 beforeAll(async () => {
+    // Creates all the necessary tables
     await db.migrate.latest()
-    //await db.seed.run()
 })
 
-// Terminates the knex connection
+// runs after every test folder
 afterAll(async () => {
+    // Terminates the knex connection
     await db.destroy()
 })

@@ -4,6 +4,7 @@ import express from 'express'
 import userService from '../../services/userService.js'
 import progressService from '../../services/progressService.js'
 import usersRouter from '../../controllers/users.js'
+import middleware from '../../utils/middleware.js'
 
 // Mock Auth and Validation middleware
 vi.mock('../../utils/middleware.js', async (importOriginal) => {
@@ -11,11 +12,7 @@ vi.mock('../../utils/middleware.js', async (importOriginal) => {
     return {
         default: {
             ...actual.default,
-            requireAuthentication: () => (req, res, next) => next(),
-            zValidate: () => (req, res, next) => {
-                req.validated = req.body
-                next()
-            }
+            requireAuthentication: () => (req, res, next) => next()
         }
     }
 })
@@ -49,6 +46,9 @@ const app = express()
 app.use(express.json())
 app.use('/api/users', usersRouter)
 
+// Use this to print errors to console
+app.use(middleware.errorHandler)
+
 const api = supertest(app)
 
 describe('User registration', () => {
@@ -60,7 +60,7 @@ describe('User registration', () => {
         const input = {
             email: 'john@doe.com',
             name: 'John',
-            password: 'secret',
+            password: 'Secret-1',
             avatar: 'avatars/avatar1.jpg',
             grade: 1,
         }
@@ -101,6 +101,42 @@ describe('User registration', () => {
                 user: createdUser[0].id
             })
         }
+    })
+
+    test('User registration fails, if name or password is missing', async () => {
+        const inputWithNoName = {
+            email: 'john@doe.com',
+            password: 'Secret-1',
+            avatar: 'avatars/avatar1.jpg',
+            grade: 1,
+        }
+
+        const noNamePost = await api
+            .post('/api/users/register')
+            .send(inputWithNoName)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
+
+        //assert.deepStrictEqual(noNamePost.body, inputWithNoName)
+        //console.log(response.body.details)
+        assert(noNamePost.body.error.includes('Invalid request data. Unknown, missing or malformed fields. Please check your input.'))
+        assert(noNamePost.body.details.fieldErrors.name.includes('Invalid input: expected string, received undefined'))
+
+        const inputWithNoPassword = {
+            email: 'john@doe.com',
+            name: 'John',
+            avatar: 'avatars/avatar1.jpg',
+            grade: 1,
+        }
+
+        const noPasswordPost = await api
+            .post('/api/users/register')
+            .send(inputWithNoPassword)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
+
+        assert(noPasswordPost.body.error.includes('Invalid request data. Unknown, missing or malformed fields. Please check your input.'))
+        assert(noPasswordPost.body.details.fieldErrors.password.includes('Invalid input: expected string, received undefined'))
     })
 })
 

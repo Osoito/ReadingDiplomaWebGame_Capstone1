@@ -20,8 +20,9 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
-    "test": "cross-env NODE_ENV=test vitest",
+    "test": "cross-env NODE_ENV=test vitest --coverage",
     "pretest": "cross-env NODE_ENV=test node scripts/createDatabase.js",
+    "posttest": "cross-env NODE_ENV=test node scripts/removeTestDB.js",
     "lint": "eslint .",
     "db:create": "node scripts/createDatabase.js",
     "db:make": "npx knex migrate:make --stub migration.stub --",
@@ -46,6 +47,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@stylistic/eslint-plugin": "^4.4.1",
+    "@vitest/coverage-v8": "^4.0.18",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
     "eslint-plugin": "^1.0.1",

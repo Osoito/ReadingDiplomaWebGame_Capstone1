@@ -24,7 +24,7 @@ async function createDatabase() {
     await client.connect()
 
     if (process.env.NODE_ENV === 'test') {
-        const testDbName = process.env.TEST_DB_NAME
+        const testDbName = process.env.TEST_DB_NAME || 'rdiplomatest'
 
         const testResult = await client.query(
             `SELECT 1 FROM pg_database WHERE datname = $1`,
@@ -39,7 +39,7 @@ async function createDatabase() {
             console.log(`Database "${testDbName}" already exists.`)
         }
     } else {
-        const dbName = process.env.DB_NAME
+        const dbName = process.env.DB_NAME || 'rdiploma'
 
         const result = await client.query(
             `SELECT 1 FROM pg_database WHERE datname = $1`,
@@ -66,7 +66,7 @@ async function createDatabase() {
     await client.end()
 }
 
-createDatabase().catch((err) => {
+await createDatabase().catch((err) => {
     console.error(err)
     process.exit(1)
 })
