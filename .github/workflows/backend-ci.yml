@@ -2,6 +2,8 @@
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 # Syntax for creating Workflows: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
 
+# To disable emails sent by GitHub actions: https://github.com/settings/notifications and see System section for Actions
+
 name:  Backend CI # Node.js CI
 
 on:

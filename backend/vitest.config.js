@@ -10,7 +10,8 @@ export default defineConfig({
         include: ['tests/**/*.test.js'],
         passWithNoTests: true,
         coverage: {
-            provider: 'v8',
+            enabled: true,
+            provider: 'istanbul', // v8 is not supported by Node.js 18, changed this to istanbul
             clean: true,
             include: ['./controllers', './models', './services', './utils/middleware'],
             exclude: ['./controllers/README.md', './models/README.md', './services/README.md']
