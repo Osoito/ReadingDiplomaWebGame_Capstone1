@@ -1,0 +1,66 @@
+.welcome-page {
+    min-height: 100vh;
+    background: #EBF3FE;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2.5rem;
+}
+
+.role-cards {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.role-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem 3rem;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-width: 220px;
+}
+
+.role-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.role-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.role-card h2 {
+    margin: 0 0 0.5rem;
+    color: #333;
+    font-size: 1.3rem;
+}
+
+.role-card p {
+    margin: 0;
+    color: #888;
+    font-size: 0.95rem;
+}
+
+.welcome-footer {
+    margin-top: 2.5rem;
+    color: #999;
+    font-size: 0.85rem;
+}

@@ -36,7 +36,49 @@ const userUpdatePasswordSchema = z.object({
 // The missing values should be filled by default values in the service.
 // We still need to figure out how the password should be when a user signs up with a Google
 
-usersRouter.get('/', middleware.requireAuthentication(true),async (request, response, next) => {
+const studentCreateSchema = z.object({
+    name: z.string().min(3),
+    password: z.string().min(3),
+}).strict()
+
+// Must be defined BEFORE /:id route
+usersRouter.get('/my-students', middleware.requireTeacherRole, async (request, response, next) => {
+    try {
+        const students = await UserService.getStudentsByTeacher(request.user.id)
+        response.json(students)
+    } catch (error) {
+        next(error)
+    }
+})
+
+usersRouter.post('/students', middleware.requireTeacherRole, middleware.zValidate(studentCreateSchema), async (request, response, next) => {
+    try {
+        const { name, password } = request.validated
+        const student = await UserService.createStudent({
+            name,
+            password,
+            teacherId: request.user.id
+        })
+        response.status(201).json(student)
+    } catch (error) {
+        next(error)
+    }
+})
+
+usersRouter.delete('/students/:id', middleware.requireTeacherRole, async (request, response, next) => {
+    try {
+        const student = await UserService.findById(request.params.id)
+        if (!student || student.teacher_id !== request.user.id) {
+            return response.status(403).json({ error: 'Forbidden' })
+        }
+        await UserService.deleteStudent(request.params.id)
+        response.status(204).end()
+    } catch (error) {
+        next(error)
+    }
+})
+
+usersRouter.get('/', middleware.requireAuthentication(true), async (request, response, next) => {
     try {
         const users = await UserService.getAllUsers()
         response.json(users)

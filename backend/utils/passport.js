@@ -23,19 +23,31 @@ passport.use(new LocalStrategy(
     /*
         <input name="identifier" placeholder="Email or username">
         <input name="password" type="password">
+        Optional: <input name="teacher_name"> for student login under a teacher
     */
-    { usernameField: 'identifier' },
-    async (identifier, password, done) => {
+    { usernameField: 'identifier', passReqToCallback: true },
+    async (req, identifier, password, done) => {
         try {
             let user
+            const teacherName = req.body.teacher_name
 
-            //Check if identifier looks like an email
-            const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)
-
-            if (isEmail) {
-                user = await UserService.findByEmail(identifier)
+            if (teacherName) {
+                // Student login: look up teacher by name, then find student under that teacher
+                const User = (await import('../models/user.js')).default
+                const teacher = await User.findTeacherByName(teacherName)
+                if (!teacher) {
+                    return done(null, false, { message: 'Invalid credentials' })
+                }
+                user = await User.findStudentByNameAndTeacher(identifier, teacher.id)
             } else {
-                user = await UserService.findByName(identifier)
+                //Check if identifier looks like an email
+                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)
+
+                if (isEmail) {
+                    user = await UserService.findByEmail(identifier)
+                } else {
+                    user = await UserService.findByName(identifier)
+                }
             }
 
             if (!user) return done(null, false, { message: 'Invalid credentials' })

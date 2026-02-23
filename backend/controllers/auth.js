@@ -23,6 +23,21 @@ const loginLimiter =rateLimit({
 })
 
 
+// Returns the current user session for the frontend auth check
+authRouter.get('/me', (request, response) => {
+    if (request.isAuthenticated()) {
+        return response.json({
+            id: request.user.id,
+            email: request.user.email,
+            name: request.user.name,
+            role: request.user.role,
+            avatar: request.user.avatar,
+            grade: request.user.grade
+        })
+    }
+    return response.status(401).json({ error: 'Not authenticated' })
+})
+
 // Basic authentication without google
 authRouter.post('/login', loginLimiter, middleware.requireAuthentication(false) ,async (request, response, next) => {
     passport.authenticate('local', (error, user, info) => {

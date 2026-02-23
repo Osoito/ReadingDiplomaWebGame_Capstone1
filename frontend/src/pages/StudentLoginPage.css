@@ -1,0 +1,88 @@
+.student-login-page {
+    min-height: 100vh;
+    background: #EBF3FE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.student-login-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem 3rem;
+    min-width: 320px;
+    max-width: 400px;
+}
+
+.student-login-card h2 {
+    margin: 0 0 0.5rem;
+    color: #333;
+    text-align: center;
+}
+
+.student-login-card .subtitle {
+    color: #888;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #555;
+    font-weight: 500;
+}
+
+.form-group input {
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #4A90D9;
+}
+
+.login-submit {
+    background: #4A90D9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.2s;
+}
+
+.login-submit:hover {
+    background: #3a7bc8;
+}
+
+.login-submit:disabled {
+    background: #a0c4e8;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: #D32F2F;
+    font-size: 0.9rem;
+    text-align: center;
+    margin: 0;
+}

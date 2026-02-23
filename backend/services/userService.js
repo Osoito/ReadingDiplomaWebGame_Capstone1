@@ -156,6 +156,40 @@ const UserService = {
         }
     },
 
+    async createStudent({ name, password, teacherId }) {
+        const existing = await User.findStudentByNameAndTeacher(name, teacherId)
+        if (existing) {
+            const err = new Error('Student name already taken for this teacher')
+            err.name = 'ValidationError'
+            err.status = 400
+            throw err
+        }
+        try {
+            const password_hash = await bcrypt.hash(password, saltRounds)
+            return User.create({
+                name,
+                password_hash,
+                role: 'student',
+                grade: 1,
+                teacher_id: teacherId
+            })
+        } catch (error) {
+            const err = new Error('Student creation failed')
+            err.name = 'DatabaseError'
+            err.message = error.message
+            err.status = 500
+            throw err
+        }
+    },
+
+    async getStudentsByTeacher(teacherId) {
+        return await User.findStudentsByTeacher(teacherId)
+    },
+
+    async deleteStudent(id) {
+        return await User.deleteUser(id)
+    },
+
     async completeProfile({ id, name, avatar, grade }) {
         const existingName = await User.findByName(name)
         if (existingName) {

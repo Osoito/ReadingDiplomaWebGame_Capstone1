@@ -23,7 +23,7 @@ function PhaserGame() {
     return (
         <div
             ref={containerRef}
-            style={{ width: '100vw', height: '100vh' }}
+            className="game-container"
         />
     );
 }

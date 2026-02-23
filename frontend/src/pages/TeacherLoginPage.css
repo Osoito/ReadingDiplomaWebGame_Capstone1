@@ -1,0 +1,61 @@
+.teacher-login-page {
+    min-height: 100vh;
+    background: #EBF3FE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem 3rem;
+    text-align: center;
+    min-width: 320px;
+    max-width: 400px;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: #4A90D9;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+.back-button:hover {
+    text-decoration: underline;
+}
+
+.login-card h2 {
+    margin: 0 0 0.5rem;
+    color: #333;
+}
+
+.login-card p {
+    color: #888;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+.google-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #4A90D9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.google-button:hover {
+    background: #3a7bc8;
+}

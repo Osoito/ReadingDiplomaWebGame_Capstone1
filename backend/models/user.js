@@ -1,9 +1,9 @@
 import db from '../db/db.js'
 
 const User = {
-    async create({ email, name, password_hash, avatar, currently_reading, grade, role }) {
+    async create({ email, name, password_hash, avatar, currently_reading, grade, role, teacher_id }) {
         return db('users')
-            .insert({ email, name, password_hash, avatar, currently_reading, grade, role })
+            .insert({ email, name, password_hash, avatar, currently_reading, grade, role, teacher_id })
             .returning('*')
     },
 
@@ -22,7 +22,7 @@ const User = {
     async findUserById(id) {
         // Removed the password_hash from here
         return db('users')
-            .select('id', 'email', 'name','password_hash', 'avatar', 'currently_reading', 'grade', 'role')
+            .select('id', 'email', 'name','password_hash', 'avatar', 'currently_reading', 'grade', 'role', 'teacher_id')
             .where({ id })
             .first()
     },
@@ -95,6 +95,32 @@ const User = {
             })
             return user
         })
+    },
+
+    async findTeacherByName(name) {
+        return db('users')
+            .select('id', 'email', 'name', 'role')
+            .where({ name, role: 'teacher' })
+            .first()
+    },
+
+    async findStudentByNameAndTeacher(name, teacherId) {
+        return db('users')
+            .select('id', 'email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role', 'teacher_id')
+            .where({ name, teacher_id: teacherId })
+            .first()
+    },
+
+    async findStudentsByTeacher(teacherId) {
+        return db('users')
+            .select('id', 'name', 'avatar', 'grade', 'role')
+            .where({ teacher_id: teacherId, role: 'student' })
+    },
+
+    async deleteUser(id) {
+        return db('users')
+            .where({ id })
+            .del()
     },
 
     async completeUserProfile(id, name, avatar, grade) {
