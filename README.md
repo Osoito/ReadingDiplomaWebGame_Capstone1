@@ -94,6 +94,18 @@ The frontend is a React application with an embedded Phaser 3 game, built with V
 - **Phaser 3** — 2D game engine (renders the interactive maps and reading interface)
 - **Vite** — Build tool and dev server
 
+### Routing
+The app uses React Router. Users land on a welcome page and choose a role:
+- `/` — WelcomePage (role selection)
+- `/login/teacher` — Teacher login (email + password)
+- `/login/student` — Student login (teacher name + student name + password)
+- `/teacher/dashboard` — Teacher dashboard (protected, teacher role only)
+- `/game` — Phaser game (protected, student role only)
+
+Auth state is managed by `AuthContext` (`src/contexts/AuthContext.jsx`) which checks the session via `GET /auth/me` on load.
+
+> **Note:** Google OAuth is not currently functional. Use the browser console snippets in the [Testing](#testing-without-google-auth) section to log in during development.
+
 ### How It Works
 The React app renders a `PhaserGame` component that creates and manages the Phaser game canvas. The game consists of:
 
@@ -114,7 +126,16 @@ frontend/
     ├── App.jsx                   # Root component
     ├── App.css                   # Global styles
     ├── components/
-    │   └── PhaserGame.jsx        # React wrapper for Phaser canvas
+    │   ├── PhaserGame.jsx        # React wrapper for Phaser canvas
+    │   ├── StudentManager.jsx    # Teacher dashboard: manage students
+    │   └── BookManager.jsx       # Teacher dashboard: manage books
+    ├── contexts/
+    │   └── AuthContext.jsx       # Session auth state (useAuth hook)
+    ├── pages/
+    │   ├── WelcomePage.jsx       # Role selection landing page
+    │   ├── TeacherLoginPage.jsx  # Teacher login form
+    │   ├── StudentLoginPage.jsx  # Student login form
+    │   └── TeacherDashboard.jsx  # Teacher dashboard
     ├── game/
     │   ├── config.js             # Phaser game config factory
     │   ├── state.js              # Shared game state (ReadingState)
@@ -140,9 +161,13 @@ frontend/
 | PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                   |
 | POST   | `/auth/login`                    | Login using basic credentials (email/username, password)   |
 | GET    | `/auth/logout`                   | Logout                                                     |
+| GET    | `/auth/me`                       | Returns current session user                               |
 | GET    | `/auth/google`                   | Sign up or login using Google account                      |
 | GET    | `/auth/update-profile/:id`       | Redirect here after sign up with Gmail                     |
 | PATCH  | `/auth/update-profile/:id`       | Set name, avatar, grade after sign up with Gmail           |
+| GET    | `/api/users/my-students`         | Get all students belonging to the logged-in teacher        |
+| POST   | `/api/users/students`            | Create a student under the logged-in teacher               |
+| DELETE | `/api/users/students/:id`        | Delete a student (teacher must own the student)            |
 
 ### User model
 
@@ -184,7 +209,32 @@ curl -X POST http://localhost:3001/auth/login \
     }'
 ```
 
+## Testing without Google auth
+
+Google OAuth is not functional in the current dev setup. To log in and test the frontend, run these snippets in the browser console at `http://localhost:5173`.
+
+**Teacher dashboard:**
+```js
+fetch('/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identifier: 'TestTeacher', password: 'Test123!' })
+}).then(r => r.json()).then(d => { console.log(d); window.location.href = '/teacher/dashboard' })
+```
+
+**Map scene (student) — first create a student via the teacher dashboard, then:**
+```js
+fetch('/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identifier: '<student_name>', password: '<student_password>', teacher_name: 'TestTeacher' })
+}).then(r => r.json()).then(d => { console.log(d); window.location.href = '/game' })
+```
+
 ## Troubleshooting
+
+**New migration added: `teacher_id` column on users table**
+- Run `npx knex migrate:latest` in `backend/` to apply it
 
 **If migrations (in backend) have been edited**
 - run 'npx knex migrate:rollback --all' --> to rollback all migrations, then run 'npx knex migrate:latest' to rerun all new migrations
