@@ -169,6 +169,70 @@ frontend/
 | POST   | `/api/users/students`            | Create a student under the logged-in teacher               |
 | DELETE | `/api/users/students/:id`        | Delete a student (teacher must own the student)            |
 
+### Backend file structure
+```
+backend/
+├── app.js                                                        # Backend main entry point
+├── eslint.config.mjs                                             # Configuration file for a linter
+├── index.js                                                      # Boots up server and loads app.js
+├── knexfile.js                                                   # Configuration file for knex
+├── package.json
+├── pnpm-lock.yaml                                                # Dependencies for the test environment 
+├── vitest.config.js                                              # Configuration file for vitest
+├── .env                                                          # File with secret environmental variables(not found on github)
+├── controllers/
+│   ├── auth.js                                                   # Authentication controller
+│   ├── books.js                                                  # Book controller
+│   ├── progressController.js                                     # Progress controller
+│   ├── users.js                                                  # User controller
+│   └── README.md
+├── db/
+│   ├── db.js                                                     # Creates and exports the knex database connection
+│   ├── migrations/                                               # Contains knex migrations (used to create and update database schema)
+│   │   ├── 20260204170229_create_books_table.js                  # Creates the books table
+│   │   ├── 20260204180349_create_users_table.js                  # Creates the users table
+│   │   ├── 20260205100000_add_role_constraint.js                 # Modifies users table to have a constraint on role column
+│   │   ├── 20260205143543_make_book_title_unique.js              # Modifies books table to make the title column unique
+│   │   ├── 20260205144237_add_type_constraints.js                # Modifies books table to add a constraint on the type column
+│   │   ├── 20260208093401_create_progress_table.js               # Creates the progress table
+│   │   ├── 20260208104008_create_rewards_table.js                # Creates the rewards table
+│   │   ├── 20260208165338_create_federated_credentials_table.js  # Creates the federated credentials table
+│   │   ├── 20260214120000_add_teacher_id_to_users.js             # Modifies the users table to have the teacher_id column
+│   │   ├── migration.stub                                        # Template for the migration files
+│   │   └── README.md
+│   └── seeds/
+│       ├── users_seed.js                                         # Populates database with users for testing
+│       └── seed.stub                                             # Template for seed files
+├── models/                                                       # Models are used to make SQL requests to the database
+│   ├── book.js                                                   # Model for book functions
+│   ├── progress.js                                               # Model for progress functions
+│   ├── user.js                                                   # Model for user functions
+│   └── README.md
+├── scripts/                                                      # Various scripts, used to automate actions (also used in testing)
+│   ├── createDatabase.js                                         # Creates the postgre database
+│   └── removeTestDB.js                                           # Removes the database created when running tests
+├── services/                                                     # Services are used in controllers to do actions
+│   ├── bookService.js                                            # Service for book related actions
+│   ├── progressService.js                                        # Service for progress related actions
+│   ├── userService.js                                            # Service for user related actions
+│   └── README.md
+├── tests/
+│   ├── controllers/                                              # Controller tests
+│   │   └── userController.test.js                                # Tests for user controller
+│   ├── models/                                                   # Model tests
+│   │   └── userModel.test.js                                     # Tests for user model
+│   ├── services/                                                 # Service tests
+│   │   └── userService.test.js                                   # Tests for user service
+│   ├── globalSetup.js                                            # Prepares test database
+│   └── vitest.setup.js                                           # File containing actions done before and after tests are run
+└── utils/
+    ├── config.js                                                 # Loads .env environmental variables
+    ├── logger.js                                                 # Logs events into the console
+    ├── middleware.js                                             # Contains middleware actions like checking user authentication.
+    └── passport.js                                               # Passport for local and google authentication
+
+```
+
 ### User model
 
 ```json
