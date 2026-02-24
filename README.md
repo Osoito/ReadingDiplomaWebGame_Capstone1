@@ -177,9 +177,9 @@ backend/
 ├── index.js                                                      # Boots up server and loads app.js
 ├── knexfile.js                                                   # Configuration file for knex
 ├── package.json
-├── pnpm-lock.yaml                                                # Dependencies for the test enviorement
+├── pnpm-lock.yaml                                                # Dependencies for the test environment 
 ├── vitest.config.js                                              # Configuration file for vitest
-├── .env                                                          # File with secret envioremental variables(not found on github)
+├── .env                                                          # File with secret environmental variables(not found on github)
 ├── controllers/
 │   ├── auth.js                                                   # Authentication controller
 │   ├── books.js                                                  # Book controller
@@ -187,11 +187,11 @@ backend/
 │   ├── users.js                                                  # User controller
 │   └── README.md
 ├── db/
-│   ├── db.js                                                     # Creates and exports the knex database connection.
-│   ├── migrations/                                               # Contains knex migrations(used to create and update database schema)
+│   ├── db.js                                                     # Creates and exports the knex database connection
+│   ├── migrations/                                               # Contains knex migrations (used to create and update database schema)
 │   │   ├── 20260204170229_create_books_table.js                  # Creates the books table
 │   │   ├── 20260204180349_create_users_table.js                  # Creates the users table
-│   │   ├── 20260205100000_add_role_constraint.js                 # Modifies users table to have a constraint on roles column
+│   │   ├── 20260205100000_add_role_constraint.js                 # Modifies users table to have a constraint on role column
 │   │   ├── 20260205143543_make_book_title_unique.js              # Modifies books table to make the title column unique
 │   │   ├── 20260205144237_add_type_constraints.js                # Modifies books table to add a constraint on the type column
 │   │   ├── 20260208093401_create_progress_table.js               # Creates the progress table
@@ -208,7 +208,7 @@ backend/
 │   ├── progress.js                                               # Model for progress functions
 │   ├── user.js                                                   # Model for user functions
 │   └── README.md
-├── scripts/                                                      # Various scirpts, used to automate actions(also used in testing)
+├── scripts/                                                      # Various scripts, used to automate actions (also used in testing)
 │   ├── createDatabase.js                                         # Creates the postgre database
 │   └── removeTestDB.js                                           # Removes the database created when running tests
 ├── services/                                                     # Services are used in controllers to do actions
@@ -226,7 +226,7 @@ backend/
 │   ├── globalSetup.js                                            # Prepares test database
 │   └── vitest.setup.js                                           # File containing actions done before and after tests are run
 └── utils/
-    ├── config.js                                                 # Loads .env enioremental variables
+    ├── config.js                                                 # Loads .env environmental variables
     ├── logger.js                                                 # Logs events into the console
     ├── middleware.js                                             # Contains middleware actions like checking user authentication.
     └── passport.js                                               # Passport for local and google authentication
