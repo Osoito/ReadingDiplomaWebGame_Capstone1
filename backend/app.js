@@ -33,9 +33,6 @@ app.use(passport.session())
 // prints all requests in the console
 app.use(middleware.requestLogger)
 
-// Uncomment this v for production, it's very burdensome during development and testing
-// app.use(middleware.authAndOnboardingGate) // requires the user to be logged in to access any page besides login pages
-
 // define routes here
 app.use('/auth', authRouter)
 app.use('/api/users', usersRouter)

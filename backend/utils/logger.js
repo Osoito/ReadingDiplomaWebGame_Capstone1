@@ -1,3 +1,4 @@
+import 'dotenv/config'
 // logger for printing messages to console
 
 const info = (...params) => {
@@ -5,7 +6,10 @@ const info = (...params) => {
 }
 
 const error = (...params) => {
+    // Add this check to remove console errors when testing.
+    //if (process.env.NODE_ENV !== 'test') {
     console.error('Error:', ...params)
+    //}
 }
 
 export default {

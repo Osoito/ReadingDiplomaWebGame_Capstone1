@@ -5,7 +5,7 @@ import { z } from 'zod'
 import middleware from '../utils/middleware.js'
 import bcrypt from 'bcrypt'
 import ProgressService from '../services/progressService.js'
-const roles = z.enum(['student', 'teacher', 'principal'])
+/*const roles = z.enum(['student', 'teacher', 'principal'])
 
 const userUpdateSchema = z.object({
     email: z.email(),
@@ -17,7 +17,7 @@ const userUpdateSchema = z.object({
     currently_reading: z.number().int().positive(),
     grade: z.number(),
     role: z.string().transform(str => str.toLowerCase()).pipe(roles)
-}).strict()
+}).strict()*/
 
 
 const userRegisterSchema = z.object({
@@ -118,13 +118,13 @@ usersRouter.post('/register', middleware.requireAuthentication(false),middleware
 // For updating user profile. Needs to check if the user has needsOnboarding
 // Should have a check for the role of the user doing the request to update role
 
-usersRouter.patch('/:id/role', middleware.requireTeacherRole, middleware.zValidate(userUpdateSchema), async (request, response, next) => {
+usersRouter.patch('/:id/role', middleware.requireTeacherRole, /*middleware.zValidate(userUpdateSchema),*/ async (request, response, next) => {
     try {
         const { id } = request.params
         const user = await UserService.findById(id)
-        await UserService.updateUserRole(id, user.role)
-        const updatedUser = await UserService.findById(id)
-        response.status(201).json(updatedUser)
+        const updatedUser = await UserService.updateUserRole(id, user.role)
+        //const updatedUser = await UserService.findById(id)
+        response.status(200).json(updatedUser)
     } catch (error) {
         next(error)
     }

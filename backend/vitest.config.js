@@ -4,9 +4,9 @@ export default defineConfig({
     test: {
         env: { 'NODE_ENV': 'test' },
         globals: true,
-        globalSetup: ['./tests/globalSetup.js'],
+        globalSetup: ['./tests/testConfig/globalSetup.js'],
         environment: 'node',
-        setupFiles: ['./tests/vitest.setup.js'],
+        setupFiles: ['./tests/testConfig/vitest.setup.js'],
         include: ['tests/**/*.test.js'],
         passWithNoTests: true,
         coverage: {
