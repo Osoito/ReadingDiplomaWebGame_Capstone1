@@ -17,11 +17,10 @@ PORT=3001                           #<--- Port where the backend will run
 NODE_ENV=development                #<--- Environment mode (development/test/production)
 
 DB_HOST=localhost
-DB_PORT=5432                        #<--- Port where your PostgreSQL database is running (5432=default)
+DB_PORT=5432                        #<--- Port where your PostgreSQL database is running (5432 by default)
 DB_USER=postgres                    #<--- PostgreSQL username (postgres by default)
 DB_PASSWORD=yourPostgresPassword    #<--- Password set when installing PostgreSQL (password for DB_USER)
-DB_NAME=rdiploma                    #<--- Name of the database (rdiploma, if created using the script)
-TEST_DB_NAME=rdiplomatest           #<--- Name of the database, used by model tests
+DB_NAME=rdiploma                    #<--- Name of the database (Currently optional, 'rdiploma' if not defined)
 
 GOOGLE_CLIENT_ID=123
 GOOGLE_CLIENT_SECRET=123
@@ -36,7 +35,6 @@ You can use the command below to generate the SESSION SECRET for the .env. Gener
 # Backend installation
 cd backend
 npm install
-npm run db:create
 npm knex migrate:latest
 ```
 
@@ -160,7 +158,7 @@ frontend/
 | POST   | `/api/progress/add-entry`        | Add a progression new entry                                |
 | PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                   |
 | POST   | `/auth/login`                    | Login using basic credentials (email/username, password)   |
-| GET    | `/auth/logout`                   | Logout                                                     |
+| POST   | `/auth/logout`                   | Logout                                                     |
 | GET    | `/auth/me`                       | Returns current session user                               |
 | GET    | `/auth/google`                   | Sign up or login using Google account                      |
 | GET    | `/auth/update-profile/:id`       | Redirect here after sign up with Gmail                     |
@@ -168,69 +166,64 @@ frontend/
 | GET    | `/api/users/my-students`         | Get all students belonging to the logged-in teacher        |
 | POST   | `/api/users/students`            | Create a student under the logged-in teacher               |
 | DELETE | `/api/users/students/:id`        | Delete a student (teacher must own the student)            |
+| POST   | `/api/rewards/add-reward`        | Add a reward (avatar?) for user                            |
 
 ### Backend file structure
 ```
 backend/
-├── app.js                                                        # Backend main entry point
-├── eslint.config.mjs                                             # Configuration file for a linter
-├── index.js                                                      # Boots up server and loads app.js
-├── knexfile.js                                                   # Configuration file for knex
+├── app.js                              # Backend main entry point
+├── eslint.config.mjs                   # Configuration file for JavaScript linter
+├── index.js                            # Boots up server and loads app.js
+├── knexfile.js                         # Configuration file for knex
 ├── package.json
-├── pnpm-lock.yaml                                                # Dependencies for the test environment 
-├── vitest.config.js                                              # Configuration file for vitest
-├── .env                                                          # File with secret environmental variables(not found on github)
-├── controllers/
-│   ├── auth.js                                                   # Authentication controller
-│   ├── books.js                                                  # Book controller
-│   ├── progressController.js                                     # Progress controller
-│   ├── users.js                                                  # User controller
+├── pnpm-lock.yaml                      # Required by the 'Backend CI' GitHub action
+├── vitest.config.js                    # Configuration file for testing environment
+├── .env                                # File with secret environmental variables (not found on github)
+├── controllers/                        # controllers/ includes all the API routes (get, post etc.)
+│   ├── auth.js
+│   ├── books.js
+│   ├── progressController.js
+│   ├── users.js
 │   └── README.md
 ├── db/
-│   ├── db.js                                                     # Creates and exports the knex database connection
-│   ├── migrations/                                               # Contains knex migrations (used to create and update database schema)
-│   │   ├── 20260204170229_create_books_table.js                  # Creates the books table
-│   │   ├── 20260204180349_create_users_table.js                  # Creates the users table
-│   │   ├── 20260205100000_add_role_constraint.js                 # Modifies users table to have a constraint on role column
-│   │   ├── 20260205143543_make_book_title_unique.js              # Modifies books table to make the title column unique
-│   │   ├── 20260205144237_add_type_constraints.js                # Modifies books table to add a constraint on the type column
-│   │   ├── 20260208093401_create_progress_table.js               # Creates the progress table
-│   │   ├── 20260208104008_create_rewards_table.js                # Creates the rewards table
-│   │   ├── 20260208165338_create_federated_credentials_table.js  # Creates the federated credentials table
-│   │   ├── 20260214120000_add_teacher_id_to_users.js             # Modifies the users table to have the teacher_id column
-│   │   ├── migration.stub                                        # Template for the migration files
+│   ├── db.js                           # Creates and exports the knex database connection
+│   ├── migrations/                     # Contains knex migrations (used to create and update database schema) 
+│   │   ...
+│   │   ├── migration.stub              # Template for the migration files
 │   │   └── README.md
 │   └── seeds/
-│       ├── users_seed.js                                         # Populates database with users for testing
-│       └── seed.stub                                             # Template for seed files
-├── models/                                                       # Models are used to make SQL requests to the database
-│   ├── book.js                                                   # Model for book functions
-│   ├── progress.js                                               # Model for progress functions
-│   ├── user.js                                                   # Model for user functions
+│       ├── users_seed.js               # Populates database with users for testing (currently not in use)
+│       └── seed.stub                   # Template for seed files
+├── models/                             # Models are used to make SQL requests to the database (called by services)
+│   ├── book.js                         
+│   ├── progress.js                     
+│   ├── user.js                         
 │   └── README.md
-├── scripts/                                                      # Various scripts, used to automate actions (also used in testing)
-│   ├── createDatabase.js                                         # Creates the postgre database
-│   └── removeTestDB.js                                           # Removes the database created when running tests
-├── services/                                                     # Services are used in controllers to do actions
-│   ├── bookService.js                                            # Service for book related actions
-│   ├── progressService.js                                        # Service for progress related actions
-│   ├── userService.js                                            # Service for user related actions
+├── scripts/                            # Various scripts, used to automate actions (also used in testing)
+│   ├── createDatabase.js               # Creates the postgres database for development and testing
+│   └── removeTestDB.js                 # Removes the test database created after running tests
+├── services/                           # Services are used by controllers to clean data, handle errors etc.
+│   ├── bookService.js                  
+│   ├── progressService.js              
+│   ├── userService.js                  
 │   └── README.md
 ├── tests/
-│   ├── controllers/                                              # Controller tests
-│   │   └── userController.test.js                                # Tests for user controller
-│   ├── models/                                                   # Model tests
-│   │   └── userModel.test.js                                     # Tests for user model
-│   ├── services/                                                 # Service tests
-│   │   └── userService.test.js                                   # Tests for user service
-│   ├── globalSetup.js                                            # Prepares test database
-│   └── vitest.setup.js                                           # File containing actions done before and after tests are run
+│   ├── models/                         # Tests for database interaction
+│   │   └── userModel.test.js           
+│   ├── services/                       # Unit tests for service functions
+│   │   └── userService.test.js         
+│   ├── testConfig/                     # Test configuration files
+│   │   ├── globalSetup.js              # Runs once when tests are started (Currently prepares testDB)
+│   │   ├── passport-mock.js            # Mocks local authentication
+│   │   ├── test-strategy.js            # Used by the passport-mock to simulate local login
+│   │   ├── testHelper.js               # Currently just mocks users in Database
+│   │   └── vitest.setup.js             # Runs before every test file
+│   └── user_api.test.js                # user related integration tests
 └── utils/
-    ├── config.js                                                 # Loads .env environmental variables
-    ├── logger.js                                                 # Logs events into the console
-    ├── middleware.js                                             # Contains middleware actions like checking user authentication.
-    └── passport.js                                               # Passport for local and google authentication
-
+    ├── config.js                       # Loads .env environmental variables
+    ├── logger.js                       # Logs events and errors into the console
+    ├── middleware.js                   # Contains middleware related to e.g. user authentication, error handling.
+    └── passport.js                     # Passport for local- and google authentication
 ```
 
 ### User model
@@ -244,7 +237,8 @@ backend/
   "avatar": "path/avatar1.jpg",
   "currently_reading": 1,
   "grade": 1,
-  "role": "student"
+  "role": "student",
+  "teacher_id": 2
 }
 ```
 
@@ -268,7 +262,7 @@ curl -X POST http://localhost:3001/api/users \
 ```bash
 curl -X POST http://localhost:3001/auth/login \
   -d '{
-    "identifier": "john@doe.com",
+    "identifier": "John",
     "password": "Password-1"
     }'
 ```
@@ -297,6 +291,9 @@ fetch('/auth/login', {
 
 ## Troubleshooting
 
+**'Command failed with exit code 1.' when running `npm install` or `npm run db:create` in backend/**
+- Create a .env file in `backend/` and add the required fields to it mentioned in the [Installation](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#installation) part. After that, run `npm install` in `backend/` to create the required database..
+
 **New migration added: `teacher_id` column on users table**
 - Run `npx knex migrate:latest` in `backend/` to apply it
 
@@ -310,3 +307,10 @@ fetch('/auth/login', {
 - On Windows: open services, find postgresql, ensure it says running.
 - Ensure you have a .env file in the backend root, which contains the values mentioned above ([Installation](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#installation)).
 - PostgreSQL might not always be running on port:5432 (e.g. if it's already in use). Check which port PostgreSQL is running on. With psql run:  **psql -h localhost -U postgres**, then run: **SHOW port;** Then update the port number to your .env file DB_PORT. [psql from VSCode terminal](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#psql-from-VSCode-terminal-optional)
+
+[ Not sure if this is needed anymore
+    fetch('/auth/update-profile/9', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Bartholomew', avatar: 'path/avatar1.jpg', grade: 1 })
+}) ]: #
