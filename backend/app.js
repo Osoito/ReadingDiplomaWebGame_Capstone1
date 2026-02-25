@@ -9,6 +9,7 @@ import usersRouter from './controllers/users.js'
 import booksRouter from './controllers/books.js'
 import authRouter from './controllers/auth.js'
 import progressRouter from './controllers/progressController.js'
+import rewardsRouter from './controllers/rewards.js'
 import session from 'express-session'
 import passport from './utils/passport.js'
 
@@ -38,6 +39,7 @@ app.use('/auth', authRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/books', booksRouter)
 app.use('/api/progress', progressRouter)
+app.use('/api/rewards', rewardsRouter)
 
 
 app.use(middleware.unknownEndpoint)
