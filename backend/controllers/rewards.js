@@ -26,4 +26,24 @@ rewardsRouter.post('/add-reward', middleware.requireAuthentication(true), middle
     }
 })
 
+rewardsRouter.get('/:id', middleware.requireTeacherRole, async(request, response, next) => {
+    const id = request.params.id
+
+    try{
+        const rewards = await RewardService.getUserRewards(id)
+        response.status(201).json(rewards)
+    } catch(error){
+        next(error)
+    }
+})
+
+rewardsRouter.get('/', middleware.requireAuthentication(true), async(request, response, next) => {
+    try {
+        const rewards = await RewardService.getUserRewards(request.user.id)
+        response.status(201).json(rewards)
+    } catch(error){
+        next(error)
+    }
+})
+
 export default rewardsRouter

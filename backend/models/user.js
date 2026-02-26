@@ -22,7 +22,7 @@ const User = {
     async findUserById(id) {
         // Removed the password_hash from here
         return db('users')
-            .select('id', 'email', 'name','password_hash', 'avatar', 'currently_reading', 'grade', 'role', 'teacher_id')
+            .select('id', 'email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role', 'teacher_id')
             .where({ id })
             .first()
     },

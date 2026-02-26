@@ -167,6 +167,8 @@ frontend/
 | POST   | `/api/users/students`            | Create a student under the logged-in teacher               |
 | DELETE | `/api/users/students/:id`        | Delete a student (teacher must own the student)            |
 | POST   | `/api/rewards/add-reward`        | Add a reward (avatar?) for user                            |
+| GET    | `/api/rewards/:id`               | Fetches all of user's rewards (requires teacher role)      |
+| GET    | `/api/rewards/`                  | Fetches all of current user's rewards                      |
 
 ### Backend file structure
 ```

@@ -8,12 +8,16 @@ const Reward = {
     },
 
     async getByRewardAndUser(owner, reward){
-        console.log('owner: ', owner)
-        console.log('reward: ', reward)
         return db('rewards')
             .select('owner', 'reward_type', 'reward')
             .where({ owner:Number(owner), reward:String(reward) })
             .first()
+    },
+
+    async getUserRewards(owner){
+        return db('rewards')
+            .select('reward_type', 'reward')
+            .where({ owner: owner })
     }
 
 }

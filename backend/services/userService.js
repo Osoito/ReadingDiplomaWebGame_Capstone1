@@ -124,7 +124,6 @@ const UserService = {
     },
 
     async updateUserPassword(id, password) {
-        console.log('Password after sending: ', password)
         try {
             const password_hash = await bcrypt.hash(password, saltRounds)
             return await User.updateUserPassword(id, password_hash)

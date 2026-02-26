@@ -4,7 +4,7 @@ const ProgressService = {
     async addNewProgress({ level, user, book }) {
         //console.log('Level id: ', level)
         //console.log('User id: ', user)
-        const existing = await Progress.findByLevel(level,user)
+        const existing = await Progress.findByLevel(level, user)
         //console.log(existing)
         if (existing) {
             const err = new Error('This user already has a progress entry for this level')
@@ -30,7 +30,7 @@ const ProgressService = {
         }
     },
 
-    async completeLevel( level,{ user }){
+    async completeLevel( level, { user }){
         //console.log('Level id: ', level)
         //console.log('User id: ', user)
         const existing = await Progress.findByLevel(level, user)

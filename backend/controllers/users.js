@@ -59,6 +59,14 @@ usersRouter.post('/students', middleware.requireTeacherRole, middleware.zValidat
             password,
             teacherId: request.user.id
         })
+
+        const levelAmount = 8
+        for(let i = 1; i <= levelAmount; i++){
+            await ProgressService.addNewProgress({
+                level: i,
+                user: student[0].id
+            })
+        }
         response.status(201).json(student)
     } catch (error) {
         next(error)
@@ -87,7 +95,7 @@ usersRouter.get('/', middleware.requireAuthentication(true), async (request, res
     }
 })
 
-usersRouter.post('/register', middleware.requireAuthentication(false),middleware.zValidate(userRegisterSchema), async (request, response, next) => {
+usersRouter.post('/register', middleware.requireAuthentication(false), middleware.zValidate(userRegisterSchema), async (request, response, next) => {
     const { email, name, password, avatar, currently_reading, grade, role } = request.validated
 
     try {
@@ -101,7 +109,7 @@ usersRouter.post('/register', middleware.requireAuthentication(false),middleware
             role
         }
         const createdUser = await UserService.register(newUser)
-        const levelAmount = 6
+        const levelAmount = 8
         for(let i = 1; i <= levelAmount; i++){
             await ProgressService.addNewProgress({
                 level: i,
@@ -130,7 +138,7 @@ usersRouter.patch('/:id/role', middleware.requireTeacherRole, /*middleware.zVali
     }
 })
 
-usersRouter.patch('/:id/change-password', middleware.requireAuthentication(true) ,middleware.zValidate(userUpdatePasswordSchema), async(request, response, next) => {
+usersRouter.patch('/:id/change-password', middleware.requireAuthentication(true), middleware.zValidate(userUpdatePasswordSchema), async(request, response, next) => {
     try{
         const { id } = request.params
         if (request.user.id !== Number(id)) {
@@ -138,16 +146,13 @@ usersRouter.patch('/:id/change-password', middleware.requireAuthentication(true)
         }
         const { currentPassword, password } = request.validated
         const user = await UserService.findById(id)
-        console.log('Here')
         const match = await bcrypt.compare(currentPassword, user.password_hash)
-        console.log('Here2')
         if(!match){
             const err = new Error('Current password does not match')
             err.name = 'ValidationError'
             err.status = 400
             throw err
         }
-        console.log('Password before sending: ',password)
         await UserService.updateUserPassword(id, password)
         response.status(201).json('Password changed successfully')
     } catch(error){
