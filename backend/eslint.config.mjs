@@ -59,6 +59,9 @@ export default [
       'arrow-spacing': [ // like this: (a) => {}  Not like this: (a)=>{}
         'error', { 'before': true, 'after': true },
       ],
+      'comma-spacing': [
+        'error', { 'before': false, 'after': true }, // alt + shift + f
+      ],
       'no-console': 'off', // Allows the use of console.log()
     },
   },
