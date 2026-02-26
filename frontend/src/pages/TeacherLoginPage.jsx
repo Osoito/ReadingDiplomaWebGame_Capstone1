@@ -10,6 +10,7 @@ function TeacherLoginPage() {
 
     return (
         <div className="teacher-login-page">
+            <h1 className="site-logo">Lukudiplomi</h1>
             <div className="login-card">
                 <button className="back-button" onClick={() => navigate('/')}>
                     &larr; Takaisin

@@ -5,18 +5,57 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding: 2rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Top wave decoration — blue */
+.welcome-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 160px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160'%3E%3Cpath fill='%234A90D9' fill-opacity='0.14' d='M0,48L60,64C120,80,240,112,360,112C480,112,600,80,720,64C840,48,960,48,1080,58C1200,69,1320,90,1380,101L1440,112L1440,0L0,0Z'/%3E%3C/svg%3E") no-repeat top center;
+    background-size: cover;
+    pointer-events: none;
+}
+
+/* Bottom wave decoration — orange */
+.welcome-page::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 160px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160'%3E%3Cpath fill='%23F97316' fill-opacity='0.10' d='M0,112L60,98C120,85,240,58,360,48C480,38,600,48,720,64C840,80,960,101,1080,101C1200,101,1320,80,1380,69L1440,58L1440,160L0,160Z'/%3E%3C/svg%3E") no-repeat bottom center;
+    background-size: cover;
+    pointer-events: none;
 }
 
 .welcome-title {
-    font-size: 2rem;
-    color: #333;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    color: #2c5f8a;
     margin-bottom: 0.5rem;
+    text-align: center;
+    text-shadow: 1px 3px 8px rgba(0, 0, 0, 0.13);
+    letter-spacing: 0.02em;
+    position: relative;
+    z-index: 1;
 }
 
 .welcome-subtitle {
-    font-size: 1.1rem;
-    color: #666;
-    margin-bottom: 2.5rem;
+    font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+    color: #555;
+    margin-bottom: 3rem;
+    text-align: center;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
 }
 
 .role-cards {
@@ -24,43 +63,78 @@
     gap: 2rem;
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
+    max-width: 720px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Side-by-side on screens wider than 560px */
+@media (min-width: 560px) {
+    .role-cards {
+        flex-wrap: nowrap;
+    }
 }
 
 .role-card {
     background: white;
     border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    padding: 2.5rem 3rem;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.09);
+    padding: clamp(2rem, 5vw, 3rem) clamp(2rem, 6vw, 4rem);
     text-align: center;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
-    min-width: 220px;
+    flex: 1 1 220px;
+    max-width: 320px;
+    border-top: 4px solid transparent;
+}
+
+/* Teacher card — blue accent */
+.role-card:nth-child(1) {
+    border-top-color: #4A90D9;
+}
+
+/* Student card — orange accent */
+.role-card:nth-child(2) {
+    border-top-color: #F97316;
 }
 
 .role-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+}
+
+.role-card:nth-child(1):hover {
+    box-shadow: 0 8px 24px rgba(74, 144, 217, 0.22);
+}
+
+.role-card:nth-child(2):hover {
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.2);
 }
 
 .role-icon {
-    font-size: 3.5rem;
+    font-size: clamp(3rem, 8vw, 5rem);
     margin-bottom: 1rem;
 }
 
 .role-card h2 {
     margin: 0 0 0.5rem;
-    color: #333;
-    font-size: 1.3rem;
+    color: #1e3a5f;
+    font-size: clamp(1.3rem, 3vw, 1.65rem);
+    font-weight: 700;
 }
 
 .role-card p {
     margin: 0;
-    color: #888;
-    font-size: 0.95rem;
+    color: #777;
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
 }
 
 .welcome-footer {
-    margin-top: 2.5rem;
-    color: #999;
-    font-size: 0.85rem;
+    margin-top: 3rem;
+    color: #888;
+    font-size: 0.95rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
 }

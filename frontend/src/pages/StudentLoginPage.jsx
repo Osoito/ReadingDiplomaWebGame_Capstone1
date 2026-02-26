@@ -45,6 +45,7 @@ function StudentLoginPage() {
 
     return (
         <div className="student-login-page">
+            <h1 className="site-logo">Lukudiplomi</h1>
             <div className="student-login-card">
                 <button className="back-button" onClick={() => navigate('/')}>
                     &larr; Takaisin

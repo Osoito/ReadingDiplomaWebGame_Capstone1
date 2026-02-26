@@ -293,6 +293,20 @@ fetch('/auth/login', {
 
 ## Troubleshooting
 
+**Login page redirects straight to `/teacher/dashboard` or `/game`**
+- Your browser still holds a session cookie from a previous login. The app correctly treats you as logged in and redirects you.
+- **Option A (easiest):** Click the logout button in the Teacher Dashboard or Student game view to clear the session properly.
+- **Option B (manual):** Open DevTools (`F12`) → **Application** tab → **Cookies** → `http://localhost:5173` → delete the session cookie entry → refresh the page.
+- **Option C (console):** Run this snippet in the browser console to log out programmatically:
+  ```js
+  fetch('/auth/logout', { method: 'POST' }).then(() => window.location.href = '/')
+  ```
+
+**Dev server starts on port 5176 (or 5174/5175) instead of 5173**
+- Multiple Vite instances are running from previous `npm run dev` calls that weren't stopped.
+- Close all terminal windows that were running `npm run dev`, then start a fresh one. Port 5173 will be available again.
+- Alternatively, in PowerShell: `Get-NetTCPConnection -LocalPort 5174,5175,5176 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`
+
 **'Command failed with exit code 1.' when running `npm install` or `npm run db:create` in backend/**
 - Create a .env file in `backend/` and add the required fields to it mentioned in the [Installation](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#installation) part. After that, run `npm install` in `backend/` to create the required database..
 
