@@ -61,15 +61,18 @@ authRouter.post('/login', loginLimiter, middleware.requireAuthentication(false),
 
 // vvv Changed this to post, since no data is being fetched here, it can be changed back if this is too bothersome
 authRouter.post('/logout', middleware.requireAuthentication(true), (request, response, next) => {
+    response.clearCookie('connect.sid')
     request.logout((error) => {
         if (error) return next(error)
-        return response.redirect('/')
+        request.session.destroy()
+        return response.redirect(302, '/')
     })
 })
 
 // Start Google authentication
 authRouter.get('/google', middleware.requireAuthentication(false), passport.authenticate('google', {
-    scope: ['profile', 'email']
+    scope: ['profile', 'email'],
+    prompt: 'select_account'
 }))
 
 // Google callback
@@ -80,12 +83,16 @@ authRouter.get('/google/callback', middleware.requireAuthentication(false), pass
     // Successful authentication
     //request.session.save(() => { // for modifying the session manually
     try {
+        // Commented this out, until '/update-profile/:id' has a frontend page, **if it needs to be implemented**.
+        // Maybe that could be converted to profile updating, if we need that
         if (request.user?.needsOnboarding) {
-            logger.info('User needs onboarding. Redirecting to onboarding page...')
-            return response.redirect(`/auth/update-profile/${request.user.id}`)
+            logger.info('User needs onboarding. '/*Redirecting to onboarding page...'*/)
+            //return response.redirect(`/auth/update-profile/${request.user.id}`)
         }
-        // I don't think it's good to have these redirects hardcoded, might be better to create a backend endpoint vvv
-        return response.redirect('http://localhost:5173/teacher/dashboard') // Redirect to teacher dashboard
+        // Not sure what would be a good way to redirect to frontend url from here.
+        // I don't think it's good to have these redirects hardcoded, might be better to do this in the frontend vvv
+        return response.redirect(302, 'http://localhost:5173/teacher/dashboard') // Redirect to teacher dashboard
+        // With this '/teacher/dashboard' it would redirect to ...:3001/teacher/dashboard
     } catch (error) {
         next(error)
     }
@@ -117,7 +124,7 @@ authRouter.patch('/update-profile/:id',
 
             await UserService.completeProfile(updatedUser)
             // Redirect to teacher dashboard after updating profile information
-            return response.redirect('http://localhost:5173/teacher/dashboard')
+            return response.redirect(302, 'http://localhost:5173/teacher/dashboard')
         } catch (error) {
             next(error)
         }

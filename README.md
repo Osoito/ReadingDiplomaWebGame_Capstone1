@@ -294,6 +294,9 @@ fetch('/auth/login', {
 **'Command failed with exit code 1.' when running `npm install` or `npm run db:create` in backend/**
 - Create a .env file in `backend/` and add the required fields to it mentioned in the [Installation](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#installation) part. After that, run `npm install` in `backend/` to create the required database..
 
+**26.2.2026 New migration added: `avatar` column on users table changed to nullable**
+- Run `npx knex migrate:latest` in `backend/` to apply it
+
 **New migration added: `teacher_id` column on users table**
 - Run `npx knex migrate:latest` in `backend/` to apply it
 
@@ -309,8 +312,13 @@ fetch('/auth/login', {
 - PostgreSQL might not always be running on port:5432 (e.g. if it's already in use). Check which port PostgreSQL is running on. With psql run:  **psql -h localhost -U postgres**, then run: **SHOW port;** Then update the port number to your .env file DB_PORT. [psql from VSCode terminal](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#psql-from-VSCode-terminal-optional)
 
 [ Not sure if this is needed anymore
-    fetch('/auth/update-profile/9', {
+fetch('/auth/update-profile/9', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: 'Bartholomew', avatar: 'path/avatar1.jpg', grade: 1 })
+}) ]: #
+
+[ To log a student out, until logout button is implemented
+fetch('/auth/logout', {
+    method: 'POST',
 }) ]: #

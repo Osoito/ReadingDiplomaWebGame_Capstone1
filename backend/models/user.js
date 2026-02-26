@@ -73,13 +73,13 @@ const User = {
             const avatar = profile.photos?.[0]?.value
                 ? `${profile.photos[0].value}?sz=200`
                 : ''
-            // If federated account doesn't exist, create new user with empty details
+            // If federated account doesn't exist, create new user (teacher) with details from Gmail
             const [user] = await trx('users')
                 .insert({
                     email: profile.emails?.[0].value ?? null,
-                    name: '',
+                    name: profile.name?.givenName || (profile?.displayName ? profile.displayName.split(' ')[0] : '') || '',
                     avatar: avatar,
-                    role: 'student',
+                    role: 'teacher',
                     grade: 1,
                     currently_reading: null
                 })
@@ -93,7 +93,7 @@ const User = {
                 provider,
                 provider_user_id: providerUserId
             })
-            return user
+            return { ...user, needsOnboarding: true }
         })
     },
 

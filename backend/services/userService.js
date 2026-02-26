@@ -21,10 +21,10 @@ const UserService = {
         }
         try {
             const password_hash = await bcrypt.hash(password, saltRounds)
-            if(!grade){
+            if (!grade) {
                 grade = 1
             }
-            if(!role){
+            if (!role) {
                 role = 'student'
             }
             return User.create({
@@ -58,7 +58,7 @@ const UserService = {
         }
     },
 
-    async findByName(name){
+    async findByName(name) {
         try {
             return await User.findByName(name)
         } catch (error) {
@@ -70,7 +70,7 @@ const UserService = {
         }
     },
 
-    async findByEmail(email){
+    async findByEmail(email) {
         try {
             return await User.findByEmail(email)
         } catch (error) {
@@ -82,7 +82,7 @@ const UserService = {
         }
     },
 
-    async findById(id){
+    async findById(id) {
         try {
             return await User.findUserById(id)
         } catch (error) {
@@ -106,15 +106,15 @@ const UserService = {
         }
     },
     */
-    async updateUserRole(id, role){
-        try{
-            if(role === 'student'){
+    async updateUserRole(id, role) {
+        try {
+            if (role === 'student') {
                 role = 'teacher'
-            } else if(role === 'teacher'){
+            } else if (role === 'teacher') {
                 role = 'student'
             }
-            return await User.updateUserRole(id,role)
-        }catch(error){
+            return await User.updateUserRole(id, role)
+        } catch (error) {
             const err = new Error('Role change failed')
             err.name = 'RoleChangeFail'
             err.message = error.message
@@ -123,12 +123,12 @@ const UserService = {
         }
     },
 
-    async updateUserPassword(id, password){
+    async updateUserPassword(id, password) {
         console.log('Password after sending: ', password)
-        try{
+        try {
             const password_hash = await bcrypt.hash(password, saltRounds)
             return await User.updateUserPassword(id, password_hash)
-        }catch(error){
+        } catch (error) {
             const err = new Error('Password change failed')
             err.name = 'PasswordChangeFail'
             err.message = error.message
@@ -139,14 +139,7 @@ const UserService = {
 
     async findOrCreateFederatedCredentials(profile) {
         try {
-            const user = await User.findOrCreateUserFromGoogle(profile)
-
-            if (!user.name || !user.avatar) {
-                return { ...user, needsOnboarding: true }
-            }
-
-            return user
-
+            return await User.findOrCreateUserFromGoogle(profile)
         } catch (error) {
             const err = new Error('User creation failed')
             err.name = 'DatabaseError'
