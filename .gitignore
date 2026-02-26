@@ -4,6 +4,7 @@ package-lock.json
 godot/
 /android/
 CLAUDE.md
+.claude/
 
 # Node.js specific ignores
 # backend/pnpm-lock.yaml
