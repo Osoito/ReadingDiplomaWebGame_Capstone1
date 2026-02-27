@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import StudentManager from '../components/StudentManager'
 import BookManager from '../components/BookManager'
+import homeBG from '../assets/HomeBG1.jpg'
 import './TeacherDashboard.css'
 
 function TeacherDashboard() {
@@ -14,7 +15,7 @@ function TeacherDashboard() {
     }
 
     return (
-        <div className="dashboard">
+        <div className="dashboard" style={{ backgroundImage: `linear-gradient(rgba(235,243,254,0.82), rgba(235,243,254,0.82)), url(${homeBG})` }}>
             <header className="dashboard-header">
                 <h1>Opettajan hallintapaneeli</h1>
                 <div className="header-right">

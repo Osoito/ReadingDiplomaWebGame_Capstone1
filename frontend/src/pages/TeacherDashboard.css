@@ -1,23 +1,63 @@
+/* ── Page Shell ─────────────────────────────────────────── */
 .dashboard {
     min-height: 100vh;
-    background: #EBF3FE;
+    background-color: #EBF3FE;
+    background-size: cover;
+    background-position: center;
+    position: relative;
 }
 
+/* Top ocean waves — fixed so they persist while scrolling */
+.dashboard::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 200px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220'%3E%3Cpath fill='%234A90D9' fill-opacity='0.08' d='M0,110L80,98C160,86,320,62,480,74C640,86,800,130,960,142C1120,154,1280,128,1360,116L1440,104L1440,0L0,0Z'/%3E%3Cpath fill='%232c5f8a' fill-opacity='0.12' d='M0,66L80,82C160,98,320,130,480,124C640,118,800,82,960,68C1120,54,1280,72,1360,80L1440,88L1440,0L0,0Z'/%3E%3C/svg%3E") no-repeat top center;
+    background-size: cover;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Bottom earth waves — fixed */
+.dashboard::after {
+    content: '';
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 200px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220'%3E%3Cpath fill='%23C4973A' fill-opacity='0.07' d='M0,110L80,122C160,134,320,158,480,148C640,138,800,92,960,80C1120,68,1280,88,1360,98L1440,108L1440,220L0,220Z'/%3E%3Cpath fill='%239E7A2A' fill-opacity='0.09' d='M0,144L80,132C160,120,320,96,480,108C640,120,800,152,960,160C1120,168,1280,144,1360,132L1440,120L1440,220L0,220Z'/%3E%3C/svg%3E") no-repeat bottom center;
+    background-size: cover;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Captain's Bridge — Sticky Header ───────────────────── */
 .dashboard-header {
-    background: white;
-    padding: 1rem 2rem;
+    background: linear-gradient(180deg, #162d4e 0%, #1e3a5f 55%, #2c5f8a 100%);
+    border-bottom: 2px solid #C4973A;
+    padding: 1.25rem 2.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     flex-wrap: wrap;
     gap: 0.75rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow:
+        0 4px 24px rgba(22, 45, 78, 0.45),
+        0 1px 0 rgba(196, 151, 58, 0.25) inset;
 }
 
 .dashboard-header h1 {
-    font-size: clamp(1.1rem, 3vw, 1.4rem);
-    color: #333;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    color: #D8B25A;
     margin: 0;
+    letter-spacing: 0.05em;
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(196, 151, 58, 0.2);
 }
 
 .header-right {
@@ -28,76 +68,138 @@
 }
 
 .header-right span {
-    color: #666;
-    font-size: clamp(0.9rem, 2vw, 1rem);
+    color: rgba(235, 243, 254, 0.68);
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
+    font-style: italic;
+    letter-spacing: 0.03em;
 }
 
+/* Logout — ghost brass */
 .logout-button {
-    background: none;
-    border: 1px solid #D32F2F;
-    color: #D32F2F;
-    border-radius: 8px;
-    padding: 0.5rem 1.25rem;
+    background: transparent;
+    border: 1.5px solid rgba(196, 151, 58, 0.6);
+    color: #C4973A;
+    border-radius: 4px;
+    padding: 0.55rem 1.2rem;
     cursor: pointer;
     font-size: 0.95rem;
-    transition: background 0.2s;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: all 0.2s;
     white-space: nowrap;
 }
 
 .logout-button:hover {
-    background: #D32F2F;
-    color: white;
+    background: rgba(196, 151, 58, 0.15);
+    border-color: #D8B25A;
+    color: #D8B25A;
 }
 
+/* ── Dashboard Content ───────────────────────────────────── */
 .dashboard-content {
-    padding: clamp(1rem, 3vw, 2rem);
-    max-width: 1000px;
+    padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 2.5rem);
+    max-width: 1100px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 2.5rem;
+    position: relative;
+    z-index: 1;
 }
 
+/* ── Section Cards — Cartouche Panels ────────────────────── */
 .dashboard-section {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    padding: clamp(1.25rem, 3vw, 2rem);
+    background:
+        radial-gradient(ellipse 75% 50% at 10% 10%, rgba(255, 252, 225, 0.65) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 55% at 90% 90%, rgba(196, 151, 58, 0.07) 0%, transparent 65%),
+        #FDFBF4;
+    border-radius: 8px;
+    border: 2px solid #C4973A;
+    box-shadow:
+        0 6px 32px rgba(44, 30, 5, 0.13),
+        0 2px 8px rgba(44, 30, 5, 0.07);
+    padding: clamp(2rem, 4vw, 2.75rem);
+    position: relative;
+    animation: cardRise 0.55s cubic-bezier(0.34, 1.3, 0.64, 1) both;
 }
 
+.dashboard-section:nth-child(1) { animation-delay: 0.08s; }
+.dashboard-section:nth-child(2) { animation-delay: 0.22s; }
+
+/* Inner decorative frame */
+.dashboard-section::before {
+    content: '';
+    position: absolute;
+    inset: 7px;
+    border: 1px solid rgba(196, 151, 58, 0.22);
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+/* Section heading */
 .dashboard-section h2 {
-    margin: 0 0 1rem;
-    color: #333;
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
-}
-
-.data-table th,
-.data-table td {
-    padding: 0.75rem 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-    font-size: clamp(0.85rem, 2vw, 0.95rem);
-}
-
-.data-table th {
-    color: #888;
-    font-size: 0.8rem;
-    font-weight: 600;
+    margin: 0 0 1.5rem;
+    color: #1e3a5f;
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    font-weight: 800;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
 }
 
+.dashboard-section h2::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #C4973A, transparent);
+    margin: 0.45rem 0 0;
+}
+
+/* ── Logbook Table ───────────────────────────────────────── */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+.data-table th {
+    color: #9E7A2A;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding: 0 1rem 0.75rem;
+    border-bottom: 1.5px solid rgba(196, 151, 58, 0.4);
+    text-align: left;
+}
+
+.data-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid rgba(196, 151, 58, 0.12);
+    font-size: clamp(1rem, 2vw, 1.1rem);
+    color: #3a2a10;
+    text-align: left;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover td {
+    background: rgba(196, 151, 58, 0.05);
+}
+
+/* ── Add Form — Logbook Entry Row ────────────────────────── */
 .add-form {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
     align-items: flex-end;
-    margin-top: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(196, 151, 58, 0.2);
 }
 
 .add-form .form-group {
@@ -108,66 +210,118 @@
 }
 
 .add-form label {
-    font-size: 0.85rem;
-    color: #888;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #9E7A2A;
+    font-weight: 700;
 }
 
 .add-form input,
 .add-form select {
-    padding: 0.65rem 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    outline: none;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid rgba(196, 151, 58, 0.45);
+    border-radius: 0;
+    padding: 0.6rem 0.1rem;
+    font-size: 1.1rem;
+    font-family: 'Nunito', sans-serif;
+    color: #1e3a5f;
     width: 100%;
     box-sizing: border-box;
+    outline: none;
+    transition: border-bottom-color 0.2s, background 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .add-form input:focus,
 .add-form select:focus {
-    border-color: #4A90D9;
+    border-bottom-color: #4A90D9;
+    background: rgba(74, 144, 217, 0.04);
 }
 
+/* ── Brass Add Button ────────────────────────────────────── */
 .add-button {
-    background: #4A90D9;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 0.65rem 1.25rem;
+    background: linear-gradient(180deg, #D8B25A 0%, #C4973A 48%, #A67E1E 100%);
+    color: #1e3a5f;
+    border: 1px solid #9E7A2A;
+    border-radius: 4px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     cursor: pointer;
-    font-size: 0.95rem;
-    transition: background 0.2s;
     white-space: nowrap;
+    align-self: flex-end;
+    box-shadow:
+        0 1px 0 rgba(255, 248, 200, 0.5) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.16) inset,
+        0 3px 10px rgba(100, 60, 0, 0.2);
+    transition: all 0.15s ease;
 }
 
 .add-button:hover {
-    background: #3a7bc8;
+    background: linear-gradient(180deg, #E0BC64 0%, #CCA040 48%, #B08826 100%);
+    box-shadow:
+        0 1px 0 rgba(255, 248, 200, 0.55) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.18) inset,
+        0 5px 16px rgba(100, 60, 0, 0.28);
+    transform: translateY(-1px);
 }
 
+.add-button:active {
+    background: linear-gradient(180deg, #A67E1E 0%, #C4973A 55%, #D8B25A 100%);
+    box-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.16) inset,
+        0 2px 6px rgba(100, 60, 0, 0.1);
+    transform: translateY(1px);
+}
+
+/* ── Delete Button — Red Wax Seal ────────────────────────── */
 .delete-button {
-    background: none;
-    border: 1px solid #D32F2F;
-    color: #D32F2F;
-    border-radius: 6px;
-    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border: 1px solid rgba(139, 26, 26, 0.45);
+    color: #8B1A1A;
+    border-radius: 4px;
+    padding: 0.45rem 0.9rem;
     cursor: pointer;
-    font-size: 0.85rem;
-    transition: background 0.2s;
+    font-size: 0.9rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: all 0.15s;
 }
 
 .delete-button:hover {
-    background: #D32F2F;
-    color: white;
+    background: #8B1A1A;
+    color: #FFF8F0;
+    border-color: #8B1A1A;
+    box-shadow: 0 2px 8px rgba(139, 26, 26, 0.25);
 }
 
+/* ── Empty & Error States ────────────────────────────────── */
 .empty-message {
-    color: #999;
+    color: #9E7A2A;
     font-style: italic;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
+    opacity: 0.7;
+    margin: 0.5rem 0 1.5rem;
 }
 
 .section-error {
-    color: #D32F2F;
-    font-size: 0.9rem;
-    margin: 0.5rem 0 0;
+    color: #8B1A1A;
+    font-size: 1rem;
+    margin: 0.75rem 0 0;
+    font-weight: 700;
+    font-style: italic;
+}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes cardRise {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }

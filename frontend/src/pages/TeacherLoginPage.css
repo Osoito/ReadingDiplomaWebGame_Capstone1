@@ -1,5 +1,7 @@
+/* ── Page Shell ──────────────────────────────────────────── */
 .teacher-login-page {
-    min-height: 100vh;
+    height: 100vh;
+    box-sizing: border-box;
     background-color: #EBF3FE;
     background-size: cover;
     background-position: center;
@@ -9,96 +11,155 @@
     justify-content: center;
     padding: 2rem 1.5rem;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
-/* Top wave decoration — blue */
+/* Top ocean waves */
 .teacher-login-page::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 160px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160'%3E%3Cpath fill='%234A90D9' fill-opacity='0.14' d='M0,48L60,64C120,80,240,112,360,112C480,112,600,80,720,64C840,48,960,48,1080,58C1200,69,1320,90,1380,101L1440,112L1440,0L0,0Z'/%3E%3C/svg%3E") no-repeat top center;
+    top: 0; left: 0; right: 0;
+    height: 220px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220'%3E%3Cpath fill='%234A90D9' fill-opacity='0.08' d='M0,110L80,98C160,86,320,62,480,74C640,86,800,130,960,142C1120,154,1280,128,1360,116L1440,104L1440,0L0,0Z'/%3E%3Cpath fill='%232c5f8a' fill-opacity='0.12' d='M0,66L80,82C160,98,320,130,480,124C640,118,800,82,960,68C1120,54,1280,72,1360,80L1440,88L1440,0L0,0Z'/%3E%3C/svg%3E") no-repeat top center;
     background-size: cover;
     pointer-events: none;
 }
 
-/* Bottom wave decoration — orange */
+/* Bottom earth waves */
 .teacher-login-page::after {
     content: '';
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 160px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160'%3E%3Cpath fill='%23C4973A' fill-opacity='0.10' d='M0,112L60,98C120,85,240,58,360,48C480,38,600,48,720,64C840,80,960,101,1080,101C1200,101,1320,80,1380,69L1440,58L1440,160L0,160Z'/%3E%3C/svg%3E") no-repeat bottom center;
+    bottom: 0; left: 0; right: 0;
+    height: 220px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220'%3E%3Cpath fill='%23C4973A' fill-opacity='0.07' d='M0,110L80,122C160,134,320,158,480,148C640,138,800,92,960,80C1120,68,1280,88,1360,98L1440,108L1440,220L0,220Z'/%3E%3Cpath fill='%239E7A2A' fill-opacity='0.09' d='M0,144L80,132C160,120,320,96,480,108C640,120,800,152,960,160C1120,168,1280,144,1360,132L1440,120L1440,220L0,220Z'/%3E%3C/svg%3E") no-repeat bottom center;
     background-size: cover;
     pointer-events: none;
 }
 
+/* ── Cartouche Card ──────────────────────────────────────── */
 .login-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.09);
+    background:
+        radial-gradient(ellipse 75% 50% at 12% 12%, rgba(255, 252, 225, 0.75) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 55% at 88% 88%, rgba(196, 151, 58, 0.09) 0%, transparent 65%),
+        #FDFBF4;
+    border-radius: 8px;
+    border: 2px solid #C4973A;
+    box-shadow:
+        0 6px 32px rgba(44, 30, 5, 0.18),
+        0 2px 8px rgba(44, 30, 5, 0.1);
     padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 5vw, 3rem);
     text-align: center;
     width: min(100%, 480px);
-    border-top: 4px solid #4A90D9;
     position: relative;
     z-index: 1;
+    animation: cardRise 0.6s 0.12s cubic-bezier(0.34, 1.3, 0.64, 1) both;
 }
 
-.back-button {
-    background: none;
-    border: none;
-    color: #4A90D9;
-    cursor: pointer;
-    font-size: 1rem;
-    font-family: inherit;
-    font-weight: 600;
-    padding: 0;
-    margin-bottom: 1.5rem;
-    display: inline-block;
+/* Inner decorative frame */
+.login-card::before {
+    content: '';
+    position: absolute;
+    inset: 7px;
+    border: 1px solid rgba(196, 151, 58, 0.3);
+    border-radius: 4px;
+    pointer-events: none;
 }
 
-.back-button:hover {
-    text-decoration: underline;
-}
-
+/* ── Card Headings ───────────────────────────────────────── */
 .login-card h2 {
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.35rem;
     color: #1e3a5f;
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    font-weight: 700;
+    font-size: clamp(1.3rem, 4vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.login-card h2::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #C4973A, transparent);
+    margin: 0.5rem auto 0;
 }
 
 .login-card p {
-    color: #777;
-    margin-bottom: 2rem;
-    font-size: clamp(1rem, 2vw, 1.15rem);
+    color: #7a5c35;
+    margin-top: 0.5rem;
+    margin-bottom: 2.25rem;
+    font-size: clamp(0.88rem, 2vw, 0.98rem);
+    font-style: italic;
 }
 
+/* ── Back Button ─────────────────────────────────────────── */
+.back-button {
+    background: none;
+    border: none;
+    color: #9E7A2A;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0;
+    margin-bottom: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color 0.2s;
+}
+
+.back-button:hover {
+    color: #C4973A;
+}
+
+/* ── Brass Google Button ─────────────────────────────────── */
 .google-button {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
-    background: #4A90D9;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 0.95rem 2rem;
-    font-size: clamp(1.05rem, 2.5vw, 1.15rem);
-    font-family: inherit;
-    font-weight: 700;
+    background: linear-gradient(180deg, #D8B25A 0%, #C4973A 48%, #A67E1E 100%);
+    color: #1e3a5f;
+    border: 1px solid #9E7A2A;
+    border-radius: 4px;
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.2s, transform 0.15s;
     width: 100%;
     justify-content: center;
+    box-shadow:
+        0 1px 0 rgba(255, 248, 200, 0.5) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.16) inset,
+        0 4px 14px rgba(100, 60, 0, 0.22);
+    transition: all 0.15s ease;
 }
 
 .google-button:hover {
-    background: #3a7bc8;
+    background: linear-gradient(180deg, #E0BC64 0%, #CCA040 48%, #B08826 100%);
+    box-shadow:
+        0 1px 0 rgba(255, 248, 200, 0.55) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.18) inset,
+        0 6px 20px rgba(100, 60, 0, 0.28);
     transform: translateY(-1px);
+}
+
+.google-button:active {
+    background: linear-gradient(180deg, #A67E1E 0%, #C4973A 55%, #D8B25A 100%);
+    box-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.16) inset,
+        0 2px 6px rgba(100, 60, 0, 0.12);
+    transform: translateY(1px);
+}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes cardRise {
+    from { opacity: 0; transform: translateY(14px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }

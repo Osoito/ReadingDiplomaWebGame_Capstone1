@@ -8,13 +8,22 @@ body {
 .site-logo {
   font-family: 'Cinzel Decorative', serif;
   font-size: clamp(2.2rem, 5vw, 3.8rem);
-  color: #2c5f8a;
+  color: #1e3a5f;
   margin: 0 0 1.5rem;
   text-align: center;
-  text-shadow: 1px 2px 6px rgba(0, 0, 0, 0.12);
-  letter-spacing: 0.02em;
+  text-shadow:
+    0 1px 0 rgba(196, 151, 58, 0.9),
+    0 2px 5px rgba(30, 20, 5, 0.22),
+    0 6px 18px rgba(30, 20, 5, 0.08);
+  letter-spacing: 0.03em;
   position: relative;
   z-index: 1;
+  animation: logoFade 0.7s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+}
+
+@keyframes logoFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 canvas {
