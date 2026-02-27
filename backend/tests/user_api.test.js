@@ -138,7 +138,7 @@ describe('User registration', () => {
         expect(userService.register).toHaveBeenCalledWith(input)
     })
 
-    test('creates 6 progress rows for the user', async () => {
+    test('creates 8 progress rows for the user', async () => {
         const input = {
             email: 'john@doe.com',
             name: 'John',
@@ -168,8 +168,8 @@ describe('User registration', () => {
             .expect(201)
             .expect('Content-Type', /application\/json/)
 
-        expect(progressService.addNewProgress).toHaveBeenCalledTimes(6)
-        for (let i = 1; i <= 6; i++) {
+        expect(progressService.addNewProgress).toHaveBeenCalledTimes(8)
+        for (let i = 1; i <= 8; i++) {
             expect(progressService.addNewProgress).toHaveBeenCalledWith({
                 level: i,
                 user: createdUser[0].id
