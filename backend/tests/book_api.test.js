@@ -5,7 +5,7 @@ import session from 'express-session'
 import passport from './testConfig/passport-mock.js'
 import middleware from '../utils/middleware.js'
 
-// Mock the addBook from the bookService
+// Mock the addBook, getAllBooks and findBookById from the bookService
 vi.doMock('../services/bookService.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
@@ -19,7 +19,7 @@ vi.doMock('../services/bookService.js', async (importOriginal) => {
 })
 
 const booksRouter = (await import('../controllers/books.js')).default
-const  bookService = (await import('../services/bookService.js')).default
+const bookService = (await import('../services/bookService.js')).default
 
 const app = express()
 app.use(express.json())
@@ -29,8 +29,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }))
-app.use((req, res, next) => {
-    req.user = { id: 123, role: 'teacher' }
+app.use((request, response, next) => {
+    request.user = { id: 123, role: 'teacher' }
     next()
 })
 // mocked passport middleware
@@ -44,7 +44,7 @@ const api = supertest(app)
 
 
 
-describe('Adding books', () => {
+describe('Book unit tests', () => {
     beforeEach(() => {
         vi.clearAllMocks()
     })
@@ -121,7 +121,7 @@ describe('Adding books', () => {
         bookService.findBookById.mockResolvedValue(mockBook)
 
         const response = await api
-            .get('/api/books/6')
+            .get('/api/books/3')
             .expect(200)
             .expect('Content-Type', /application\/json/)
 
