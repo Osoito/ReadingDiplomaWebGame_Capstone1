@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './StudentLoginPage.css'
+import homeBG from '../assets/HomeBG1.jpg'
 
 function StudentLoginPage() {
     const navigate = useNavigate()
@@ -44,7 +45,7 @@ function StudentLoginPage() {
     }
 
     return (
-        <div className="student-login-page">
+        <div className="student-login-page" style={{ backgroundImage: `linear-gradient(rgba(235,243,254,0.78), rgba(235,243,254,0.78)), url(${homeBG})` }}>
             <h1 className="site-logo">Lukudiplomi</h1>
             <div className="student-login-card">
                 <button className="back-button" onClick={() => navigate('/')}>

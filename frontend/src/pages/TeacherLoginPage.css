@@ -1,6 +1,8 @@
 .teacher-login-page {
     min-height: 100vh;
-    background: #EBF3FE;
+    background-color: #EBF3FE;
+    background-size: cover;
+    background-position: center;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -31,7 +33,7 @@
     left: 0;
     right: 0;
     height: 160px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160'%3E%3Cpath fill='%23F97316' fill-opacity='0.10' d='M0,112L60,98C120,85,240,58,360,48C480,38,600,48,720,64C840,80,960,101,1080,101C1200,101,1320,80,1380,69L1440,58L1440,160L0,160Z'/%3E%3C/svg%3E") no-repeat bottom center;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160'%3E%3Cpath fill='%23C4973A' fill-opacity='0.10' d='M0,112L60,98C120,85,240,58,360,48C480,38,600,48,720,64C840,80,960,101,1080,101C1200,101,1320,80,1380,69L1440,58L1440,160L0,160Z'/%3E%3C/svg%3E") no-repeat bottom center;
     background-size: cover;
     pointer-events: none;
 }
