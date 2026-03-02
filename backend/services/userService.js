@@ -8,170 +8,112 @@ const UserService = {
         const existingName = await User.findByName(name)
         if (existingName) {
             const err = new Error('Username already taken')
-            err.name = 'ValidationError'
             err.status = 400
             throw err
         }
         const existingEmail = await User.findByEmail(email)
         if (existingEmail) {
             const err = new Error('Email already taken')
-            err.name = 'ValidationError'
             err.status = 400
             throw err
         }
-        try {
-            const password_hash = await bcrypt.hash(password, saltRounds)
-            if (!grade) {
-                grade = 1
-            }
-            if (!role) {
-                role = 'student'
-            }
-            return User.create({
-                email,
-                name,
-                password_hash,
-                avatar,
-                currently_reading,
-                grade,
-                role
-            })
-        } catch (error) {
-            const err = new Error('User registration failed')
-            err.name = 'DatabaseError'
-            err.message = error.message
-            err.status = 500
-            throw err
+        const password_hash = await bcrypt.hash(password, saltRounds)
+        if (!grade) {
+            grade = 1
         }
+        if (!role) {
+            role = 'student'
+        }
+        return User.create({
+            email,
+            name,
+            password_hash,
+            avatar,
+            currently_reading,
+            grade,
+            role
+        })
     },
 
     async getAllUsers() {
-        try {
-            return await User.getAll()
-            // This could include role based filtering
-        } catch (error) {
-            const err = new Error('User fetching failed')
-            err.name = 'DatabaseError'
-            err.message = error.message
-            err.status = 500
+        const users = await User.getAll()
+        if (!users) {
+            const err = new Error('No users found')
+            err.status = 404
             throw err
         }
+        return users
+        // This could include role based filtering
     },
 
     async findByName(name) {
-        try {
-            return await User.findByName(name)
-        } catch (error) {
-            const err = new Error('User not found')
-            err.name = 'NotFound'
-            err.message = error.message
-            err.status = 404
+        const user = await User.findByName(name)
+        if (!user) {
+            const err = new Error('Could not find user by name')
+            err.name = 'userNotFound'
             throw err
         }
+        return user
     },
 
     async findByEmail(email) {
-        try {
-            return await User.findByEmail(email)
-        } catch (error) {
-            const err = new Error('User not found')
-            err.name = 'NotFound'
-            err.message = error.message
-            err.status = 404
+        const user = await User.findByEmail(email)
+        if (!user) {
+            const err = new Error('Could not find user by email')
+            err.name = 'userNotFound'
             throw err
         }
+        return user
     },
 
     async findById(id) {
-        try {
-            return await User.findUserById(id)
-        } catch (error) {
-            const err = new Error('User not found')
-            err.name = 'NotFound'
-            err.message = error.message
-            err.status = 404
+        const user = await User.findUserById(id)
+        if (!user) {
+            const err = new Error('Could not find user by id')
+            err.name = 'userNotFound'
             throw err
         }
+        return user
     },
     /*
     async findStudentsByTeacherID(teacherID){
-        try {
-            return await User.findByRole(role)
-        } catch(error){
-            const err = new Error('No Users Found')
-            err.name = 'NotFound'
-            err.message = error.message
-            err.status = 404
-            throw err
-        }
+        return await User.findByRole(role)
     },
     */
     async updateUserRole(id, role) {
-        try {
-            if (role === 'student') {
-                role = 'teacher'
-            } else if (role === 'teacher') {
-                role = 'student'
-            }
-            return await User.updateUserRole(id, role)
-        } catch (error) {
-            const err = new Error('Role change failed')
-            err.name = 'RoleChangeFail'
-            err.message = error.message
-            err.status = 500
-            throw err
+        if (role === 'student') {
+            role = 'teacher'
+        } else if (role === 'teacher') {
+            role = 'student'
         }
+        // This also returns password_hash to client!
+        return await User.updateUserRole(id, role)
     },
 
     async updateUserPassword(id, password) {
-        try {
-            const password_hash = await bcrypt.hash(password, saltRounds)
-            return await User.updateUserPassword(id, password_hash)
-        } catch (error) {
-            const err = new Error('Password change failed')
-            err.name = 'PasswordChangeFail'
-            err.message = error.message
-            err.status = 500
-            throw err
-        }
+        const password_hash = await bcrypt.hash(password, saltRounds)
+        return await User.updateUserPassword(id, password_hash)
     },
 
     async findOrCreateFederatedCredentials(profile) {
-        try {
-            return await User.findOrCreateUserFromGoogle(profile)
-        } catch (error) {
-            const err = new Error('User creation failed')
-            err.name = 'DatabaseError'
-            err.message = error.message
-            err.status = 500
-            throw err
-        }
+        return await User.findOrCreateUserFromGoogle(profile)
     },
 
     async createStudent({ name, password, teacherId }) {
         const existing = await User.findStudentByNameAndTeacher(name, teacherId)
         if (existing) {
             const err = new Error('Student name already taken for this teacher')
-            err.name = 'ValidationError'
             err.status = 400
             throw err
         }
-        try {
-            const password_hash = await bcrypt.hash(password, saltRounds)
-            return User.create({
-                name,
-                password_hash,
-                role: 'student',
-                grade: 1,
-                teacher_id: teacherId
-            })
-        } catch (error) {
-            const err = new Error('Student creation failed')
-            err.name = 'DatabaseError'
-            err.message = error.message
-            err.status = 500
-            throw err
-        }
+        const password_hash = await bcrypt.hash(password, saltRounds)
+        return User.create({
+            name,
+            password_hash,
+            role: 'student',
+            grade: 1,
+            teacher_id: teacherId
+        })
     },
 
     async getStudentsByTeacher(teacherId) {
@@ -186,24 +128,15 @@ const UserService = {
         const existingName = await User.findByName(name)
         if (existingName) {
             const err = new Error('Name already taken')
-            err.name = 'ValidationError'
             err.status = 400
             throw err
         }
-        try {
-            return await User.completeUserProfile(
-                id,
-                name,
-                avatar,
-                grade
-            )
-        } catch (error) {
-            const err = new Error('User registration failed')
-            err.name = 'DatabaseError'
-            err.message = error.message
-            err.status = 500
-            throw err
-        }
+        return await User.completeUserProfile(
+            id,
+            name,
+            avatar,
+            grade
+        )
     }
 }
 

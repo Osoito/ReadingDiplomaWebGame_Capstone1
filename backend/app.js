@@ -4,7 +4,6 @@ import middleware from './utils/middleware.js'
 import express from 'express'
 import 'express-async-errors'
 import cors from 'cors'
-// import db from './db/db.js'
 import usersRouter from './controllers/users.js'
 import booksRouter from './controllers/books.js'
 import authRouter from './controllers/auth.js'
@@ -17,10 +16,15 @@ const app = express()
 
 logger.info('Connecting')
 
-app.use(cors())
+// Allows JavaScript from only this specific origin to read responses
+const CORS_OPTIONS = {
+    origin: ['http://localhost:5173']
+}
+
+app.use(cors(CORS_OPTIONS))
 app.use(express.json())
 
-// Session middleware
+// Express session middleware
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -34,7 +38,6 @@ app.use(passport.session())
 // prints all requests in the console
 app.use(middleware.requestLogger)
 
-// define routes here
 app.use('/auth', authRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/books', booksRouter)

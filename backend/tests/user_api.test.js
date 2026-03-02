@@ -326,14 +326,14 @@ describe('Swapping user role', async () => {
             .expect(403)
             .expect('Content-Type', /application\/json/)
 
-        assert(studentResponse.body.error.includes('Unauthorized access'))
+        assert(studentResponse.body.error.includes('Forbidden'))
 
         const teacherResponse = await agent
             .patch(`/api/users/${users.teacher.id}/role`)
             .expect(403)
             .expect('Content-Type', /application\/json/)
 
-        assert(teacherResponse.body.error.includes('Unauthorized access'))
+        assert(teacherResponse.body.error.includes('Forbidden'))
 
         await agent
             .post('/auth/logout')

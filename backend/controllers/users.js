@@ -5,32 +5,18 @@ import { z } from 'zod'
 import middleware from '../utils/middleware.js'
 import bcrypt from 'bcrypt'
 import ProgressService from '../services/progressService.js'
-/*const roles = z.enum(['student', 'teacher', 'principal'])
-
-const userUpdateSchema = z.object({
-    email: z.email(),
-    name: z.string(),
-    // Makes sure the password includes at least 5 letters, 1 upper -and lowercase letter and a special character
-    password: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/),
-    currentPassword: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/),
-    avatar: z.string(),
-    currently_reading: z.number().int().positive(),
-    grade: z.number(),
-    role: z.string().transform(str => str.toLowerCase()).pipe(roles)
-}).strict()*/
-
 
 const userRegisterSchema = z.object({
     email: z.email(),
     name: z.string(),
-    password: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/),
+    password: z.string().min(8),
     avatar: z.string(),
     grade: z.number(),
 }).strict()
 
 const userUpdatePasswordSchema = z.object({
-    currentPassword: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/),
-    password: z.string().min(5).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/)
+    currentPassword: z.string().min(8),
+    password: z.string().min(8)
 }).strict()
 //.strict() means that anything not defined here causes an error.
 // The missing values should be filled by default values in the service.
@@ -122,16 +108,11 @@ usersRouter.post('/register', middleware.requireAuthentication(false), middlewar
     }
 })
 
-// Uncomment the middleware once the update request works, for input validation.
-// For updating user profile. Needs to check if the user has needsOnboarding
-// Should have a check for the role of the user doing the request to update role
-
-usersRouter.patch('/:id/role', middleware.requireTeacherRole, /*middleware.zValidate(userUpdateSchema),*/ async (request, response, next) => {
+usersRouter.patch('/:id/role', middleware.requireTeacherRole, async (request, response, next) => {
     try {
         const { id } = request.params
         const user = await UserService.findById(id)
         const updatedUser = await UserService.updateUserRole(id, user.role)
-        //const updatedUser = await UserService.findById(id)
         response.status(200).json(updatedUser)
     } catch (error) {
         next(error)
@@ -149,7 +130,6 @@ usersRouter.patch('/:id/change-password', middleware.requireAuthentication(true)
         const match = await bcrypt.compare(currentPassword, user.password_hash)
         if(!match){
             const err = new Error('Current password does not match')
-            err.name = 'ValidationError'
             err.status = 400
             throw err
         }
@@ -160,6 +140,7 @@ usersRouter.patch('/:id/change-password', middleware.requireAuthentication(true)
     }
 })
 
+/* Might need to remove/modify this route for security, since now anyone could use this route to get all the information of any user
 usersRouter.get('/:id', middleware.requireAuthentication(true), async (request, response, next) => {
     try {
         const user = await UserService.findById(request.params.id)
@@ -167,6 +148,6 @@ usersRouter.get('/:id', middleware.requireAuthentication(true), async (request, 
     } catch (error) {
         next(error)
     }
-})
+})*/
 
 export default usersRouter

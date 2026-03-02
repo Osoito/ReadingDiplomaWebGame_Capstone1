@@ -16,27 +16,32 @@ const requestLogger = (request, response, next) => {
 }
 
 function requireTeacherRole(request, response, next) {
-    if (request.isAuthenticated() && request.user.role === 'teacher') {
+    if (!request.isAuthenticated() || !request.user) {
+        const err = new Error('Unauthorized')
+        err.status = 401
+        throw err
+    } else if (request.user.role !== 'teacher') {
+        const err = new Error('Forbidden')
+        err.status = 403
+        throw err
+    } else {
         return next()
     }
-    //return response.status(403).json({ error: 'Forbidden' })
-    const err = new Error('Unauthorized access')
-    err.name = 'Forbidden'
-    err.status = 403
-    throw err
 }
 
 function requireAuthentication(required) {
-    return function (request, response, next) {
-        if (request.isAuthenticated() && required) {
-            return next()
-        } else if (!request.isAuthenticated() && !required) {
+    return (request, response, next) => {
+        if (!request.isAuthenticated() && required) {
+            const err = new Error('Unauthorized')
+            err.status = 401
+            throw err
+        } else if (request.isAuthenticated() && !required) {
+            const err = new Error('Unauthorized')
+            err.status = 401
+            throw err
+        } else {
             return next()
         }
-        const err = new Error('Access denied')
-        err.name = 'AuthError'
-        err.status = 401
-        throw err
     }
 }
 
@@ -45,42 +50,44 @@ const unknownEndpoint = (request, response) => {
 }
 
 // middleware for error handling
-// I think these should be used for general errors, more specific errors are handled at the end
 const errorHandler = (error, request, response, next) => {
+    /*
+    > In errors with name (that exist in the list below) < (Used for more common errors)
+    const err = new Error('Unauthorized access') <-- This message is printed to console for developers to see
+    err.name = 'Forbidden'                       <-- the error message and status the client receives is defined below
+    throw err
+
+    > In errors with status and no name < (Used for more specific errors)
+    const err = new Error('Username already taken') <-- This is shown to the user and printed in the console
+    err.status = 400                                <-- The status the client receives
+    throw err
+
+    > Unhandled errors <
+    return error status 500 and error message 'Internal server error' to client
+    and prints the actual error to backend console/terminal for developers to see
+    */
+
     logger.error(error.message)
-    if (error.name === 'CastError') {
-        return response.status(400).send({ error: 'malformatted id' })
-    } else if (error.name === 'ValidationError') {
+    if (error.name === 'ValidationError') {
+        // for errors thrown by the zValidate middleware
         return response.status(400).json({
             error: error.message,
             details: error.details // details using the zod library
         })
-    } else if (error.name === 'TokenError') {
-        // for token authentication, not sure if this is used anywhere
-        return response.status(401).send({ error: 'missing or invalid token' })
-    } else if (error.name === 'NotFound') {
-        return response.status(404).send({ error: 'Resource not found' })
-    } else if (error.name === 'AuthError') {
-        return response.status(401).send({ error: error.message })
-        /* -- Use this to get deny access to a path --
-            const err = new Error('Access denied')
-            err.name = 'AuthError'
-            err.status = 401
-            throw err
-        */
-    } else if (error.name === 'RoleChangeFail') {
-        return response.status(500).send({ error: 'Role change failed' })
-    } else if (error.name === 'PasswordChangeFail') {
-        return response.status(500).send({ error: 'Password change failed' })
-    } else if (error.name === 'LevelAlreadyComplete') {
-        return response.status(500).send({ error: 'Level is already completed' })
+    } else if (error.name === 'userNotFound') {
+        return response.status(404).send({ error: 'User not found' })
+    } else if (!error.status || error.status === 500) {
+        // For unhandled errors
+        // Doesn't reveal specific internal server errors to client (e.g. Cannot read properties of undefined (reading 'role'))
+        // The client gets 'Internal server error' and the actual error is printed to the backend console by logger.error
+        return response.status(500).json({ error: 'Internal server error' })
     } else {
-        // pass the error to the default Express error handler if it's not handled above
+        // non async errors are be handed to the default Express error handler
         next()
 
-        // for unhandled errors
-        return response.status(error.status || 500).json({
-            error: error.message || 'Internal server error'
+        // for more specific errors
+        return response.status(error.status).json({
+            error: error.message
         })
     }
 }
@@ -93,16 +100,6 @@ function zValidate(schema) {
         if (!result.success) {
             // Error formats: treeifyError(), prettifyError() (requires .split('\n')), flattenError()
             const flat = z.flattenError(result.error)
-
-            // Handle regex errors
-            for (const [field, messages] of Object.entries(flat.fieldErrors)) {
-                flat.fieldErrors[field] = messages.map(msg => {
-                    if (msg.includes('must match pattern')) {
-                        return 'Must contain at least one uppercase letter, one lowercase letter, and one special character'
-                    }
-                    return msg
-                })
-            }
 
             const err = new Error('Invalid request data. Unknown, missing or malformed fields. Please check your input.')
             err.name = 'ValidationError'

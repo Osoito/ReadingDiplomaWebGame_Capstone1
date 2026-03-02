@@ -4,35 +4,37 @@ const BookService = {
     async addBook({ title, author, coverimage, booktype }) {
         const existing = await Book.findByTitle(title)
         if (existing) {
-            const err = new Error('Book with this title already exists')
-            err.name = 'ValidationError'
+            const err = new Error(`A book with the title '${title}' already exists`)
             err.status = 400
             throw err
         }
 
-        try {
-            return Book.create({
-                title,
-                author,
-                coverimage,
-                booktype
-            })
-        } catch (error) {
-            // Should this be an Internal server error?
-            const err = new Error('Failed to add a book')
-            err.name = 'DatabaseError'
-            err.message = error.message
-            err.status = 500
-            throw err
-        }
+        return Book.create({
+            title,
+            author,
+            coverimage,
+            booktype
+        })
     },
 
     async getAllBooks() {
-        return Book.getAll()
+        const books = Book.getAll()
+        if (!books) {
+            const err = new Error(`No books were found`)
+            err.status = 404
+            throw err
+        }
+        return books
     },
 
-    async findBookById(id){
-        return Book.findBookById(id)
+    async findBookById(id) {
+        const book = Book.findBookById(id)
+        if (!book) {
+            const err = new Error(`Book not found`)
+            err.status = 404
+            throw err
+        }
+        return book
     }
 }
 
