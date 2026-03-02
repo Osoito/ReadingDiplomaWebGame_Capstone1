@@ -18,6 +18,15 @@ const LevelCompleteSchema = z.object({
     user: z.number()
 }).strict()
 
+progressRouter.get('/', middleware.requireAuthentication(true), async(request, response, next) => {
+    try {
+        const progress = await ProgressService.findByUser(request.user.id)
+        response.status(200).json(progress)
+    } catch(error) {
+        next(error)
+    }
+})
+
 progressRouter.post('/add-entry', middleware.requireAuthentication(true), middleware.zValidate(ProgressSchema), async(request, response, next) => {
     const { level, user, book } = request.validated
 

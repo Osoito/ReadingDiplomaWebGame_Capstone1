@@ -1,0 +1,354 @@
+/* ── Page Shell ─────────────────────────────────────────── */
+.student-dashboard {
+    min-height: 100vh;
+    background-color: #EBF3FE;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+/* Top ocean waves — fixed */
+.student-dashboard::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 200px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220'%3E%3Cpath fill='%234A90D9' fill-opacity='0.08' d='M0,110L80,98C160,86,320,62,480,74C640,86,800,130,960,142C1120,154,1280,128,1360,116L1440,104L1440,0L0,0Z'/%3E%3Cpath fill='%232c5f8a' fill-opacity='0.12' d='M0,66L80,82C160,98,320,130,480,124C640,118,800,82,960,68C1120,54,1280,72,1360,80L1440,88L1440,0L0,0Z'/%3E%3C/svg%3E") no-repeat top center;
+    background-size: cover;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Bottom earth waves — fixed */
+.student-dashboard::after {
+    content: '';
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 200px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220'%3E%3Cpath fill='%23C4973A' fill-opacity='0.07' d='M0,110L80,122C160,134,320,158,480,148C640,138,800,92,960,80C1120,68,1280,88,1360,98L1440,108L1440,220L0,220Z'/%3E%3Cpath fill='%239E7A2A' fill-opacity='0.09' d='M0,144L80,132C160,120,320,96,480,108C640,120,800,152,960,160C1120,168,1280,144,1360,132L1440,120L1440,220L0,220Z'/%3E%3C/svg%3E") no-repeat bottom center;
+    background-size: cover;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Sticky Header ───────────────────────────────────────── */
+.student-header {
+    background: linear-gradient(180deg, #162d4e 0%, #1e3a5f 55%, #2c5f8a 100%);
+    border-bottom: 2px solid #C4973A;
+    padding: 1.25rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow:
+        0 4px 24px rgba(22, 45, 78, 0.45),
+        0 1px 0 rgba(196, 151, 58, 0.25) inset;
+}
+
+.student-header h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: #D8B25A;
+    margin: 0;
+    letter-spacing: 0.05em;
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(196, 151, 58, 0.2);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.header-right span {
+    color: rgba(235, 243, 254, 0.68);
+    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-style: italic;
+    letter-spacing: 0.03em;
+}
+
+/* Play button — solid brass */
+.play-button {
+    background: linear-gradient(180deg, #D8B25A 0%, #C4973A 48%, #A67E1E 100%);
+    color: #1e3a5f;
+    border: 1px solid #9E7A2A;
+    border-radius: 4px;
+    padding: 0.5rem 1.3rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow:
+        0 1px 0 rgba(255, 248, 200, 0.5) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.16) inset,
+        0 3px 12px rgba(100, 60, 0, 0.25);
+    transition: all 0.15s ease;
+}
+
+.play-button:hover {
+    background: linear-gradient(180deg, #E0BC64 0%, #CCA040 48%, #B08826 100%);
+    transform: translateY(-1px);
+    box-shadow:
+        0 1px 0 rgba(255, 248, 200, 0.55) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.18) inset,
+        0 5px 18px rgba(100, 60, 0, 0.3);
+}
+
+.play-button:active {
+    transform: translateY(1px);
+    background: linear-gradient(180deg, #A67E1E 0%, #C4973A 55%, #D8B25A 100%);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16) inset;
+}
+
+/* Logout — ghost brass */
+.logout-button {
+    background: transparent;
+    border: 1.5px solid rgba(196, 151, 58, 0.6);
+    color: #C4973A;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.logout-button:hover {
+    background: rgba(196, 151, 58, 0.15);
+    border-color: #D8B25A;
+    color: #D8B25A;
+}
+
+/* ── Content Area ────────────────────────────────────────── */
+.student-content {
+    padding: clamp(2rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem);
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Section Cards — Cartouche Panels ────────────────────── */
+.dashboard-section {
+    background:
+        radial-gradient(ellipse 75% 50% at 10% 10%, rgba(255, 252, 225, 0.65) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 55% at 90% 90%, rgba(196, 151, 58, 0.07) 0%, transparent 65%),
+        #FDFBF4;
+    border-radius: 8px;
+    border: 2px solid #C4973A;
+    box-shadow:
+        0 6px 32px rgba(44, 30, 5, 0.13),
+        0 2px 8px rgba(44, 30, 5, 0.07);
+    padding: clamp(2rem, 4vw, 2.75rem);
+    position: relative;
+    animation: cardRise 0.55s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+.voyage-log { animation-delay: 0.08s; }
+.rewards-section { animation-delay: 0.22s; }
+
+/* Inner decorative frame */
+.dashboard-section::before {
+    content: '';
+    position: absolute;
+    inset: 7px;
+    border: 1px solid rgba(196, 151, 58, 0.22);
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.dashboard-section h2 {
+    margin: 0 0 0.6rem;
+    color: #1e3a5f;
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.dashboard-section h2::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #C4973A, transparent);
+    margin: 0.45rem 0 0;
+}
+
+/* ── Voyage Summary ──────────────────────────────────────── */
+.voyage-summary {
+    color: #7a5c35;
+    font-size: 1.1rem;
+    font-style: italic;
+    margin: 0.75rem 0 1.75rem;
+}
+
+.voyage-summary strong {
+    color: #1e3a5f;
+    font-style: normal;
+    font-size: 1.25rem;
+}
+
+/* ── Level Grid ──────────────────────────────────────────── */
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 820px) {
+    .level-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+    .level-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Level Card ──────────────────────────────────────────── */
+.level-card {
+    border-radius: 6px;
+    border: 1.5px solid;
+    padding: 1.1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.level-card:hover {
+    transform: translateY(-3px);
+}
+
+.level-done {
+    border-color: #C4973A;
+    background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(255, 248, 200, 0.6) 0%, transparent 65%),
+        #FDF6E3;
+    box-shadow: 0 4px 16px rgba(196, 151, 58, 0.2);
+}
+
+.level-pending {
+    border-color: rgba(196, 151, 58, 0.3);
+    background: rgba(253, 251, 244, 0.6);
+    box-shadow: 0 2px 8px rgba(44, 30, 5, 0.06);
+}
+
+.level-number {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.level-done .level-number { color: #C4973A; }
+.level-pending .level-number { color: rgba(158, 122, 42, 0.35); }
+
+.level-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.level-done .level-name { color: #1e3a5f; }
+.level-pending .level-name { color: rgba(30, 58, 95, 0.45); }
+
+/* Status badge */
+.level-badge {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    margin-top: 0.2rem;
+}
+
+.badge-done {
+    background: rgba(196, 151, 58, 0.15);
+    color: #9E7A2A;
+    border: 1px solid rgba(196, 151, 58, 0.4);
+}
+
+.badge-pending {
+    background: rgba(30, 58, 95, 0.06);
+    color: rgba(30, 58, 95, 0.35);
+    border: 1px solid rgba(30, 58, 95, 0.12);
+}
+
+/* ── Rewards Grid ────────────────────────────────────────── */
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.reward-card {
+    border: 1.5px solid #C4973A;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(255, 248, 200, 0.5) 0%, transparent 65%),
+        #FDF6E3;
+    box-shadow: 0 3px 12px rgba(196, 151, 58, 0.15);
+}
+
+.reward-type {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #9E7A2A;
+    font-weight: 700;
+}
+
+.reward-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e3a5f;
+}
+
+/* ── States ──────────────────────────────────────────────── */
+.empty-message {
+    color: #9E7A2A;
+    font-style: italic;
+    font-size: 1rem;
+    opacity: 0.75;
+    margin: 0.75rem 0 0;
+}
+
+.loading-text {
+    color: #9E7A2A;
+    font-style: italic;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-top: 4rem;
+}
+
+/* ── Animation ───────────────────────────────────────────── */
+@keyframes cardRise {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}

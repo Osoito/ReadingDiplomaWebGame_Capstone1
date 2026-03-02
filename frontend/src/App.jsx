@@ -6,6 +6,7 @@ import WelcomePage from './pages/WelcomePage'
 import TeacherLoginPage from './pages/TeacherLoginPage'
 import StudentLoginPage from './pages/StudentLoginPage'
 import TeacherDashboard from './pages/TeacherDashboard'
+import StudentDashboard from './pages/StudentDashboard'
 
 function ProtectedRoute({ children, role }) {
     const { user, loading } = useAuth()
@@ -20,7 +21,7 @@ function PublicRoute({ children }) {
     if (loading) return null
     if (user) {
         if (user.role === 'teacher') return <Navigate to="/teacher/dashboard" />
-        return <Navigate to="/game" />
+        return <Navigate to="/student/dashboard" />
     }
     return children
 }
@@ -41,6 +42,9 @@ function App() {
                     } />
                     <Route path="/teacher/dashboard" element={
                         <ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>
+                    } />
+                    <Route path="/student/dashboard" element={
+                        <ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>
                     } />
                     <Route path="/game" element={
                         <ProtectedRoute role="student"><PhaserGame /></ProtectedRoute>
