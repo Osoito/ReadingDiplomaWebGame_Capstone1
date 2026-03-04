@@ -14,11 +14,25 @@ const Progress = {
     async findByLevel(level, user){
         level = Number(level)
         user = Number(user)
-        //console.log('level id in model: ', level)
-        //console.log('user id in model: ', user)
         return db('progress')
             .select('level', 'user', 'book', 'current_page', 'level_status')
             .where({ level, user })
+            .first()
+    },
+    async findSpecificEntry(level, user){
+        level = Number(level)
+        user = Number(user)
+        return db('progress')
+            .select('level', 'user', 'book', 'current_page', 'level_status')
+            .where({ level, user })
+            .first()
+    },
+    async getCurrentLevel(user){
+        user = Number(user)
+        return db('progress')
+            .select('level', 'user', 'book', 'current_page', 'level_status')
+            .where({ user:user, level_status:'incomplete' })
+            .orderBy('level', 'asc')
             .first()
     },
     async completeLevel(level, user){

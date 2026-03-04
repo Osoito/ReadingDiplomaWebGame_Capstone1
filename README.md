@@ -157,6 +157,8 @@ frontend/
 | PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword,password     |
 | POST   | `/api/progress/add-entry`        | Add a progression new entry                                |
 | PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                   |
+| GET    | `/api/progress/get-entry/:level` | Gets specific level from current user                      |
+| GET    | `/api/progress/current-level`    | Gets user's most recent incomplete level                   |
 | POST   | `/auth/login`                    | Login using basic credentials (email/username, password)   |
 | POST   | `/auth/logout`                   | Logout                                                     |
 | GET    | `/auth/me`                       | Returns current session user                               |

@@ -2,10 +2,7 @@ import Progress from '../models/progress.js'
 
 const ProgressService = {
     async addNewProgress({ level, user, book }) {
-        //console.log('Level id: ', level)
-        //console.log('User id: ', user)
         const existing = await Progress.findByLevel(level, user)
-        //console.log(existing)
         if (existing) {
             const err = new Error(`This user already has a progress entry for level ${level}`)
             err.status = 400
@@ -22,8 +19,6 @@ const ProgressService = {
     },
 
     async completeLevel(level, { user }) {
-        //console.log('Level id: ', level)
-        //console.log('User id: ', user)
         const existing = await Progress.findByLevel(level, user)
         if (!existing) {
             const err = new Error(`Level ${level} was not found for this user`)
@@ -39,9 +34,29 @@ const ProgressService = {
     },
 
     async findByUser(user) {
-        const found = Progress.findByUser(user)
+        const found = await Progress.findByUser(user)
         if (!found) {
-            const err = new Error(`Progress entry was not found for this user`)
+            const err = new Error(`No progress entries found for this user`)
+            err.status = 404
+            throw err
+        }
+        return found
+    },
+
+    async findSpecificEntry(level, user){
+        const found = await Progress.findSpecificEntry(level, user)
+        if(!found){
+            const err = new Error(`Level:  ${level} has not entry for this user`)
+            err.status = 404
+            throw err
+        }
+        return found
+    },
+
+    async getCurrentLevel(user){
+        const found = await Progress.getCurrentLevel(user)
+        if(!found){
+            const err = new Error(`Was not able to fetch the current level for this user`)
             err.status = 404
             throw err
         }

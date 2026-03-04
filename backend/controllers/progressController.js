@@ -27,6 +27,26 @@ progressRouter.get('/', middleware.requireAuthentication(true), async(request, r
     }
 })
 
+progressRouter.get('/get-entry/:level', middleware.requireAuthentication(true), async(request, response, next) => {
+    const level = request.params.level
+    try{
+        const progress = await ProgressService.findSpecificEntry(level, request.user.id)
+        response.status(200).json(progress)
+    } catch(error){
+        next(error)
+    }
+})
+
+progressRouter.get('/current-level', middleware.requireAuthentication(true), async(request, response, next) => {
+    try{
+        console.log(request.user.id)
+        const progress = await ProgressService.getCurrentLevel(request.user.id)
+        response.status(200).json(progress)
+    } catch(error){
+        next(error)
+    }
+})
+
 progressRouter.post('/add-entry', middleware.requireAuthentication(true), middleware.zValidate(ProgressSchema), async(request, response, next) => {
     const { level, user, book } = request.validated
 
