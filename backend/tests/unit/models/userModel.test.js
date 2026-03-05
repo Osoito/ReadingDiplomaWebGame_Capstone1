@@ -1,6 +1,8 @@
 import { test, expect, assert } from 'vitest'
-import db from '../../db/db.js'
+import knex from 'knex'
+import config from '../../../knexfile.js'
 
+const db = knex(config.test_Unit)
 let trx
 
 // runs before every test

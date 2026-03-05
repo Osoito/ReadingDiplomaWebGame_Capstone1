@@ -2,11 +2,11 @@ import { vi, test, expect, describe, beforeEach } from 'vitest'
 import supertest from 'supertest'
 import express from 'express'
 import session from 'express-session'
-import passport from './testConfig/passport-mock.js'
-import middleware from '../utils/middleware.js'
+import passport from '../testConfig/passport-mock.js'
+import middleware from '../../utils/middleware.js'
 
 // Mock the addReward and getUserRewads from the rewardService
-vi.doMock('../services/rewardService.js', async (importOriginal) => {
+vi.doMock('../../services/rewardService.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
         default: {
@@ -17,8 +17,8 @@ vi.doMock('../services/rewardService.js', async (importOriginal) => {
     }
 })
 
-const rewardsRouter = (await import('../controllers/rewards.js')).default
-const rewardService = (await import('../services/rewardService.js')).default
+const rewardsRouter = (await import('../../controllers/rewards.js')).default
+const rewardService = (await import('../../services/rewardService.js')).default
 
 const app = express()
 app.use(express.json())

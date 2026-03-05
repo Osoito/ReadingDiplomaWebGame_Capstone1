@@ -16,28 +16,52 @@ async function dropDatabase() {
     await client.connect()
 
     if (process.env.NODE_ENV === 'test') {
-        const testDbName = process.env.TEST_DB_NAME || 'rdiplomatest'
+        const unitTestDbName = process.env.UNIT_TEST_DB_NAME || 'rdiplomatestunit'
 
-        const result = await client.query(
+        let result = await client.query(
             `SELECT 1 FROM pg_database WHERE datname = $1`,
-            [testDbName]
+            [unitTestDbName]
         )
 
         if (result.rowCount > 0) {
-            console.log(`Database "${testDbName}" exists. Dropping...`)
+            console.log(`Database "${unitTestDbName}" exists. Dropping...`)
 
             // Terminate active connections
             await client.query(`
                 SELECT pg_terminate_backend(pid)
                 FROM pg_stat_activity
                 WHERE datname = $1
-            `, [testDbName])
+            `, [unitTestDbName])
 
             // Drop the database
-            await client.query(`DROP DATABASE ${testDbName}`)
-            console.log(`Database "${testDbName}" dropped.`)
+            await client.query(`DROP DATABASE ${unitTestDbName}`)
+            console.log(`Database "${unitTestDbName}" dropped.`)
         } else {
-            console.log(`Database "${testDbName}" does not exist.`)
+            console.log(`Database "${unitTestDbName}" does not exist.`)
+        }
+
+        const integrationTestDbName = process.env.INTEGRATION_TEST_DB_NAME || 'rdiplomatestintegration'
+
+        result = await client.query(
+            `SELECT 1 FROM pg_database WHERE datname = $1`,
+            [integrationTestDbName]
+        )
+
+        if (result.rowCount > 0) {
+            console.log(`Database "${integrationTestDbName}" exists. Dropping...`)
+
+            // Terminate active connections
+            await client.query(`
+                SELECT pg_terminate_backend(pid)
+                FROM pg_stat_activity
+                WHERE datname = $1
+            `, [integrationTestDbName])
+
+            // Drop the database
+            await client.query(`DROP DATABASE ${integrationTestDbName}`)
+            console.log(`Database "${integrationTestDbName}" dropped.`)
+        } else {
+            console.log(`Database "${integrationTestDbName}" does not exist.`)
         }
     }
     await client.end()

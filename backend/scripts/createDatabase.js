@@ -24,19 +24,33 @@ async function createDatabase() {
     await client.connect()
 
     if (process.env.NODE_ENV === 'test') {
-        const testDbName = process.env.TEST_DB_NAME || 'rdiplomatest'
+        const unitTestDbName = process.env.UNIT_TEST_DB_NAME || 'rdiplomatestunit'
 
-        const testResult = await client.query(
+        let testResult = await client.query(
             `SELECT 1 FROM pg_database WHERE datname = $1`,
-            [testDbName]
+            [unitTestDbName]
         )
 
         if (testResult.rowCount === 0) {
-            console.log(`Database "${testDbName}" does not exist. Creating...`)
-            await client.query(`CREATE DATABASE ${testDbName}`)
-            console.log(`Database "${testDbName}" created.`)
+            console.log(`Database "${unitTestDbName}" does not exist. Creating...`)
+            await client.query(`CREATE DATABASE ${unitTestDbName}`)
+            console.log(`Database "${unitTestDbName}" created.`)
         } else {
-            console.log(`Database "${testDbName}" already exists.`)
+            console.log(`Database "${unitTestDbName}" already exists.`)
+        }
+
+        const integrationTestDbName = process.env.INTEGRATION_TEST_DB_NAME || 'rdiplomatestintegration'
+        testResult = await client.query(
+            `SELECT 1 FROM pg_database WHERE datname = $1`,
+            [integrationTestDbName]
+        )
+
+        if (testResult.rowCount === 0) {
+            console.log(`Database "${integrationTestDbName}" does not exist. Creating...`)
+            await client.query(`CREATE DATABASE ${integrationTestDbName}`)
+            console.log(`Database "${integrationTestDbName}" created.`)
+        } else {
+            console.log(`Database "${integrationTestDbName}" already exists.`)
         }
     } else {
         const dbName = process.env.DB_NAME || 'rdiploma'

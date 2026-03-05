@@ -48,11 +48,12 @@ const staging = {
   }
 }
 
+//database for integration tests
 const test = {
   client: 'pg',
   connection: {
     host: process.env.DB_HOST,
-    database: process.env.TEST_DB_NAME || 'rdiplomatest',
+    database: process.env.INTEGRATION_TEST_DB_NAME || 'rdiplomatestintegration',
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT
@@ -65,6 +66,23 @@ const test = {
   seeds: {
     directory: './db/seeds',
     tableName: 'knex_seeds'
+  }
+}
+
+//database for unit tests
+const test_Unit = {
+  client: 'pg',
+  connection: {
+    host: process.env.DB_HOST,
+    database: process.env.UNIT_TEST_DB_NAME || 'rdiplomatestunit',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT
+  },
+  migrations: {
+    directory: './db/migrations',
+    tableName: 'knex_migrations'
+    //extension: 'js'
   }
 }
 
@@ -86,5 +104,5 @@ const production = {
 }
 
 export default {
-  development, test, staging, production
+  development, test, test_Unit, staging, production
 };

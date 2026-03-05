@@ -1,10 +1,10 @@
 import { vi, test, expect } from 'vitest'
-import User from '../../models/user.js'
-import userService from '../../services/userService.js'
+import User from '../../../models/user.js'
+import userService from '../../../services/userService.js'
 import bcrypt from 'bcrypt'
 
 // Mock the required functions from user model
-vi.mock('../../models/user.js', async (importOriginal) => {
+vi.mock('../../../models/user.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
         default: {

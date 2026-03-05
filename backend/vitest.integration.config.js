@@ -6,8 +6,8 @@ export default defineConfig({
         globals: true,
         globalSetup: ['./tests/testConfig/globalSetup.js'],
         environment: 'node',
-        setupFiles: ['./tests/testConfig/vitest.setup.js'],
-        include: ['tests/**/*.test.js'],
+        //setupFiles: ['./tests/testConfig/vitest.setup.js'],
+        include: ['tests/integration/**/*.test.js'],
         passWithNoTests: true,
         coverage: {
             enabled: true,
