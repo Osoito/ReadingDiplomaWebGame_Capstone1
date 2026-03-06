@@ -292,6 +292,7 @@ fetch('/auth/login', {
     body: JSON.stringify({ identifier: '<student_name>', password: '<student_password>', teacher_name: 'TestTeacher' })
 }).then(r => r.json()).then(d => { console.log(d); window.location.href = '/game' })
 ```
+Or directly login through login page (After deleting session cookie about log in status), by typing in the student account credentials yo just created.
 
 ## Troubleshooting
 
