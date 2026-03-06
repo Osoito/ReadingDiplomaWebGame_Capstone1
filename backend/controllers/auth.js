@@ -1,18 +1,10 @@
 import express from 'express'
 import passport from 'passport'
 import logger from '../utils/logger.js'
-import UserService from '../services/userService.js'
-import { z } from 'zod'
 import { rateLimit } from 'express-rate-limit'
 import middleware from '../utils/middleware.js'
 
 const authRouter = express.Router()
-
-const userUpdateSchema = z.object({
-    name: z.string(),
-    avatar: z.string(),
-    grade: z.number(),
-}).strict()
 
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,  // 15 minutes
@@ -87,7 +79,7 @@ authRouter.get('/google/callback', middleware.requireAuthentication(false), pass
         // Maybe that could be converted to profile updating, if we need that
         if (request.user?.needsOnboarding) {
             logger.info('User needs onboarding. '/*Redirecting to onboarding page...'*/)
-            //return response.redirect(`/auth/update-profile/${request.user.id}`)
+            //return response.redirect(`/api/users/profile/${request.user.id}`)
         }
         // Not sure what would be a good way to redirect to frontend url from here.
         // I don't think it's good to have these redirects hardcoded, might be better to do this in the frontend vvv
@@ -97,38 +89,5 @@ authRouter.get('/google/callback', middleware.requireAuthentication(false), pass
         next(error)
     }
 })
-
-authRouter.get('/update-profile/:id', middleware.requireAuthentication(true), async (request, response, next) => {
-    try {
-        const user = await UserService.findById(request.params.id)
-        response.json(user)
-    } catch (error) {
-        next(error)
-    }
-})
-
-authRouter.patch('/update-profile/:id',
-    middleware.zValidate(userUpdateSchema),
-    middleware.requireAuthentication(true),
-    async (request, response, next) => {
-        const { name, avatar, grade } = request.validated
-        const id = request.params.id
-
-        try {
-            const updatedUser = {
-                id,
-                name,
-                avatar,
-                grade
-            }
-
-            await UserService.completeProfile(updatedUser)
-            // Redirect to teacher dashboard after updating profile information
-            return response.redirect(302, 'http://localhost:5173/teacher/dashboard')
-        } catch (error) {
-            next(error)
-        }
-    }
-)
 
 export default authRouter

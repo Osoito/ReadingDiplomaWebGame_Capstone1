@@ -27,6 +27,12 @@ const studentCreateSchema = z.object({
     password: z.string().min(3),
 }).strict()
 
+const profileUpdateSchema = z.object({
+    name: z.string().optional(),
+    avatar: z.string().optional(),
+    grade: z.string().optional()
+}).strict()
+
 // Must be defined BEFORE /:id route
 usersRouter.get('/my-students', middleware.requireTeacherRole, async (request, response, next) => {
     try {
@@ -47,7 +53,7 @@ usersRouter.post('/students', middleware.requireTeacherRole, middleware.zValidat
         })
 
         const levelAmount = 8
-        for(let i = 1; i <= levelAmount; i++){
+        for (let i = 1; i <= levelAmount; i++) {
             await ProgressService.addNewProgress({
                 level: i,
                 user: student[0].id
@@ -96,7 +102,7 @@ usersRouter.post('/register', middleware.requireAuthentication(false), middlewar
         }
         const createdUser = await UserService.register(newUser)
         const levelAmount = 8
-        for(let i = 1; i <= levelAmount; i++){
+        for (let i = 1; i <= levelAmount; i++) {
             await ProgressService.addNewProgress({
                 level: i,
                 user: createdUser[0].id
@@ -119,8 +125,8 @@ usersRouter.patch('/:id/role', middleware.requireTeacherRole, async (request, re
     }
 })
 
-usersRouter.patch('/:id/change-password', middleware.requireAuthentication(true), middleware.zValidate(userUpdatePasswordSchema), async(request, response, next) => {
-    try{
+usersRouter.patch('/:id/change-password', middleware.requireAuthentication(true), middleware.zValidate(userUpdatePasswordSchema), async (request, response, next) => {
+    try {
         const { id } = request.params
         if (request.user.id !== Number(id)) {
             return response.status(403).json({ error: 'Forbidden' })
@@ -128,26 +134,73 @@ usersRouter.patch('/:id/change-password', middleware.requireAuthentication(true)
         const { currentPassword, password } = request.validated
         const user = await UserService.findById(id)
         const match = await bcrypt.compare(currentPassword, user.password_hash)
-        if(!match){
+        if (!match) {
             const err = new Error('Current password does not match')
             err.status = 400
             throw err
         }
         await UserService.updateUserPassword(id, password)
         response.status(201).json('Password changed successfully')
-    } catch(error){
+    } catch (error) {
         next(error)
     }
 })
 
-/* Might need to remove/modify this route for security, since now anyone could use this route to get all the information of any user
-usersRouter.get('/:id', middleware.requireAuthentication(true), async (request, response, next) => {
-    try {
-        const user = await UserService.findById(request.params.id)
-        response.json(user)
-    } catch (error) {
-        next(error)
+usersRouter.get('/profile/:id',
+    middleware.requireAuthentication(true),
+    async (request, response, next) => {
+        if (request.user.role === 'teacher') {
+            try {
+                if (Number(request.params.id) === request.user.id) {
+                    // If teacher is editing own profile, they can edit the name and avatar
+                    return response.json({
+                        name: request.user.name,
+                        avatar: request.user.avatar
+                    })
+                } else {
+                    const user = await UserService.findById(request.params.id)
+                    // teacher can edit student name, avatar, grade
+                    return response.json({
+                        name: user.name,
+                        avatar: user.avatar,
+                        grade: user.grade
+                    })
+                }
+            } catch (error) {
+                next(error)
+            }
+        } else {
+            // students can edit their own avatar
+            return response.json({ avatar: request.user.avatar })
+        }
     }
-})*/
+)
+
+usersRouter.patch('/profile/:id',
+    middleware.zValidate(profileUpdateSchema),
+    middleware.requireAuthentication(true),
+    async (request, response, next) => {
+        const { name, avatar, grade } = request.validated
+
+        try {
+            const userToUpdate = {
+                reqId: request.user.id,
+                id: Number(request.params.id),
+                name,
+                avatar,
+                role: request.user.role,
+                grade
+            }
+
+            const updatedUser = await UserService.updateProfile(userToUpdate)
+
+            response.status(204).json(updatedUser)
+            // Redirect to teacher dashboard after updating profile information
+            //return response.redirect(302, 'http://localhost:5173/teacher/dashboard')
+        } catch (error) {
+            next(error)
+        }
+    }
+)
 
 export default usersRouter

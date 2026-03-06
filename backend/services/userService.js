@@ -124,13 +124,31 @@ const UserService = {
         return await User.deleteUser(id)
     },
 
-    async completeProfile({ id, name, avatar, grade }) {
+    async updateProfile({ reqId, id, name, avatar, role, grade }) {
+        if (role === 'student' && reqId !== id) {
+            const err = new Error('Request denied, student tried to update someone elses profile')
+            err.userDetails = 'Voit muokata vain omaa profiiliasi'
+            err.status = 403
+            throw err
+        }
+        const user = await User.findUserById(id)
+        // Only allow teachers to edit the profile of THEIR students
+        if (role === 'teacher' && reqId !== id && user?.teacher_id !== reqId) {
+            const err = new Error('Request denied, teachers can only update the profile of THEIR students')
+            err.userDetails = 'Voit muokata vain omaa tai omien oppilaitesi profiilia'
+            err.status = 403
+            throw err
+        }
         const existingName = await User.findByName(name)
         if (existingName) {
             const err = new Error('Name already taken')
+            err.userDetails = 'Nimi on varatattu, valitse toinen'
             err.status = 400
             throw err
         }
+        if (!grade) grade = user.grade
+
+        // if editing own profile or teacher editing
         return await User.completeUserProfile(
             id,
             name,

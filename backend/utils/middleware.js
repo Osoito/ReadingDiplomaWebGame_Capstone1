@@ -57,8 +57,14 @@ const errorHandler = (error, request, response, next) => {
     err.name = 'Forbidden'                       <-- the error message and status the client receives is defined below
     throw err
 
-    > In errors with status and no name < (Used for more specific errors)
-    const err = new Error('Username already taken') <-- This is shown to the user and printed in the console
+    > In errors with status and no name or details < (Used for more specific errors)
+    const err = new Error('Username already taken') <-- Shown to the user and printed in the console
+    err.status = 400                                <-- Status the client receives
+    throw err
+
+    > In errors with userDetails < (Used for custom errors)
+    const err = new Error('Caused by missing name') <-- Printed to console for developers to see
+    err.userDetails = 'Username already taken'      <-- Sent to the client/user
     err.status = 400                                <-- The status the client receives
     throw err
 
@@ -76,6 +82,11 @@ const errorHandler = (error, request, response, next) => {
         })
     } else if (error.name === 'userNotFound') {
         return response.status(404).send({ error: 'User not found' })
+    } else if (error.userDetails) {
+        // For custom errors with a specified message to both users and developers
+        return response.status(error.status).json({
+            error: error.userDetails
+        })
     } else if (!error.status || error.status === 500) {
         // For unhandled errors
         // Doesn't reveal specific internal server errors to client (e.g. Cannot read properties of undefined (reading 'role'))
