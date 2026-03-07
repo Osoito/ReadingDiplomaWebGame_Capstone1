@@ -102,7 +102,7 @@ The app uses React Router. Users land on a welcome page and choose a role:
 
 Auth state is managed by `AuthContext` (`src/contexts/AuthContext.jsx`) which checks the session via `GET /auth/me` on load.
 
-> **Note:** Google OAuth is not currently functional. Use the browser console snippets in the [Testing](#testing-without-google-auth) section to log in during development.
+> **Note:** Google OAuth requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `backend/.env` (ask a team member for the values). Once set, teacher login via Google works normally. If you don't have the credentials, use the browser console snippets in the [Testing](#testing-without-google-auth) section instead.
 
 ### How It Works
 The React app renders a `PhaserGame` component that creates and manages the Phaser game canvas. The game consists of:
@@ -273,7 +273,9 @@ curl -X POST http://localhost:3001/auth/login \
 
 ## Testing without Google auth
 
-Google OAuth is not functional in the current dev setup. To log in and test the frontend, run these snippets in the browser console at `http://localhost:5173`.
+If you don't have the Google OAuth credentials in your `.env`, you can log in via the browser console instead. Run these snippets at `http://localhost:5173`.
+
+> **Important:** If you get `Unexpected end of JSON input` when running a snippet, it means you already have an active session. Clear it first using **Option B** in the Troubleshooting section (DevTools → Application → Cookies → delete session cookie), then run the snippet again.
 
 **Teacher dashboard:**
 ```js
@@ -284,15 +286,15 @@ fetch('/auth/login', {
 }).then(r => r.json()).then(d => { console.log(d); window.location.href = '/teacher/dashboard' })
 ```
 
-**Map scene (student) — first create a student via the teacher dashboard, then:**
+**Student dashboard — first create a student via the teacher dashboard, then:**
 ```js
 fetch('/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ identifier: '<student_name>', password: '<student_password>', teacher_name: 'TestTeacher' })
-}).then(r => r.json()).then(d => { console.log(d); window.location.href = '/game' })
+}).then(r => r.json()).then(d => { console.log(d); window.location.href = '/student/dashboard' })
 ```
-Or directly login through login page (After deleting session cookie about log in status), by typing in the student account credentials yo just created.
+Or directly log in through the login page by typing in the student credentials you just created.
 
 ## Troubleshooting
 
