@@ -151,11 +151,12 @@ frontend/
 | GET    | `/api/books`                     | Get all books                                              |
 | POST   | `/api/books`                     | Add new book                                               |
 | GET    | `/api/users`                     | Get all users                                              |
-| GET    | `/api/users/:id`                 | Get a specific user                                        |
 | POST   | `/api/users/register`            | Create new user(also creates progress entries for new user)|
 | PATCH  | `/api/users/:id/role`            | Swaps the user role                                        |
-| PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword,password     |
-| POST   | `/api/progress/add-entry`        | Add a progression new entry                                |
+| PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword, password    |
+| GET    | `/api/users/profile/:id`         | Get user profile                                           |
+| PATCH  | `/api/users/profile/:id`         | Update profile info (name / avatar / grade)                |
+| POST   | `/api/progress/add-entry`        | Add a new progression entry                                |
 | PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                   |
 | GET    | `/api/progress/get-entry/:level` | Gets specific level from current user                      |
 | GET    | `/api/progress/current-level`    | Gets user's most recent incomplete level                   |
@@ -163,8 +164,6 @@ frontend/
 | POST   | `/auth/logout`                   | Logout                                                     |
 | GET    | `/auth/me`                       | Returns current session user                               |
 | GET    | `/auth/google`                   | Sign up or login using Google account                      |
-| GET    | `/auth/update-profile/:id`       | Redirect here after sign up with Gmail                     |
-| PATCH  | `/auth/update-profile/:id`       | Set name, avatar, grade after sign up with Gmail           |
 | GET    | `/api/users/my-students`         | Get all students belonging to the logged-in teacher        |
 | POST   | `/api/users/students`            | Create a student under the logged-in teacher               |
 | DELETE | `/api/users/students/:id`        | Delete a student (teacher must own the student)            |
