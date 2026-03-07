@@ -1,0 +1,255 @@
+/* ── Avatar Badge (circle) ────────────────────────────────── */
+.avatar-badge {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+/* ── Ornate Gold Ring (large avatar in view mode) ─────────── */
+.avatar-ring {
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(135deg, #D8B25A 0%, #9E7A2A 50%, #C4973A 100%);
+    box-shadow:
+        0 0 0 2px #FDFBF4,
+        0 0 0 5px rgba(196, 151, 58, 0.22),
+        0 6px 24px rgba(22, 45, 78, 0.18);
+    flex-shrink: 0;
+}
+
+/* ── Profile View (read mode) ─────────────────────────────── */
+.profile-view {
+    display: flex;
+    align-items: center;
+    gap: 2.25rem;
+    flex-wrap: wrap;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.profile-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e3a5f;
+    margin: 0;
+    letter-spacing: 0.03em;
+    line-height: 1.3;
+}
+
+.profile-email {
+    font-size: 0.97rem;
+    color: #9E7A2A;
+    font-style: italic;
+    margin: 0;
+    opacity: 0.85;
+}
+
+.edit-profile-button {
+    margin-top: 0.8rem;
+    align-self: flex-start;
+    background: transparent;
+    border: 1.5px solid rgba(196, 151, 58, 0.55);
+    color: #C4973A;
+    border-radius: 4px;
+    padding: 0.48rem 1.1rem;
+    font-size: 0.88rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.edit-profile-button:hover {
+    background: rgba(196, 151, 58, 0.1);
+    border-color: #D8B25A;
+    color: #D8B25A;
+}
+
+/* ── Profile Edit Form ────────────────────────────────────── */
+.profile-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.profile-field > label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: #9E7A2A;
+    font-weight: 700;
+}
+
+.profile-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid rgba(196, 151, 58, 0.45);
+    border-radius: 0;
+    padding: 0.55rem 0.1rem;
+    font-size: 1.1rem;
+    font-family: 'Nunito', sans-serif;
+    color: #1e3a5f;
+    max-width: 320px;
+    outline: none;
+    transition: border-bottom-color 0.2s, background 0.2s;
+}
+
+.profile-input:focus {
+    border-bottom-color: #4A90D9;
+    background: rgba(74, 144, 217, 0.035);
+}
+
+/* ── Avatar Picker Grid ───────────────────────────────────── */
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+    gap: 0.65rem;
+    margin-top: 0.2rem;
+}
+
+.avatar-option {
+    background: none;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 0.55rem 0.65rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.avatar-option:hover {
+    border-color: rgba(196, 151, 58, 0.35);
+    background: rgba(196, 151, 58, 0.05);
+}
+
+.avatar-option--selected {
+    border-color: #C4973A;
+    background: rgba(196, 151, 58, 0.08);
+    box-shadow: 0 0 0 1px rgba(196, 151, 58, 0.28);
+}
+
+.avatar-option-badge {
+    position: relative;
+    display: inline-flex;
+}
+
+.avatar-check {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    background: #C4973A;
+    color: #1e3a5f;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #FDFBF4;
+    line-height: 1;
+}
+
+.avatar-label {
+    font-size: 0.72rem;
+    color: #9E7A2A;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    font-family: 'Nunito', sans-serif;
+}
+
+/* ── Edit Action Buttons ──────────────────────────────────── */
+.profile-edit-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.cancel-button {
+    background: transparent;
+    border: 1.5px solid rgba(196, 151, 58, 0.55);
+    color: #C4973A;
+    border-radius: 4px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.cancel-button:hover {
+    background: rgba(196, 151, 58, 0.1);
+    border-color: #D8B25A;
+    color: #D8B25A;
+}
+
+.cancel-button:disabled,
+.add-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ── Toast Notification ───────────────────────────────────── */
+.profile-toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 2rem;
+    border-radius: 4px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    z-index: 500;
+    pointer-events: none;
+    white-space: nowrap;
+    animation: toastIn 0.3s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+.profile-toast--success {
+    background: #1e3a5f;
+    color: #D8B25A;
+    border: 1px solid rgba(196, 151, 58, 0.45);
+    box-shadow: 0 4px 20px rgba(22, 45, 78, 0.35);
+}
+
+.profile-toast--error {
+    background: #8B1A1A;
+    color: #FFF8F0;
+    border: 1px solid rgba(139, 26, 26, 0.5);
+    box-shadow: 0 4px 20px rgba(139, 26, 26, 0.3);
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.96); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0)      scale(1);   }
+}

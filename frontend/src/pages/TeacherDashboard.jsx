@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import StudentManager from '../components/StudentManager'
 import BookManager from '../components/BookManager'
+import TeacherProfileCard, { AvatarBadge } from '../components/TeacherProfileCard'
 import homeBG from '../assets/HomeBG1.jpg'
 import './TeacherDashboard.css'
 
@@ -19,6 +20,7 @@ function TeacherDashboard() {
             <header className="dashboard-header">
                 <h1>Opettajan hallintapaneeli</h1>
                 <div className="header-right">
+                    <AvatarBadge avatarId={user?.avatar} size={36} />
                     <span>Tervetuloa, {user?.name || user?.email}</span>
                     <button className="logout-button" onClick={handleLogout}>
                         Kirjaudu ulos
@@ -27,6 +29,7 @@ function TeacherDashboard() {
             </header>
 
             <div className="dashboard-content">
+                <TeacherProfileCard />
                 <StudentManager />
                 <BookManager />
             </div>

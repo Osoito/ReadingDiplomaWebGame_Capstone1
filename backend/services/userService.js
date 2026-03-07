@@ -139,20 +139,22 @@ const UserService = {
             err.status = 403
             throw err
         }
-        const existingName = await User.findByName(name)
-        if (existingName) {
-            const err = new Error('Name already taken')
-            err.userDetails = 'Nimi on varatattu, valitse toinen'
-            err.status = 400
-            throw err
+        if (name && name !== user.name) {
+            const existingName = await User.findByName(name)
+            if (existingName) {
+                const err = new Error('Name already taken')
+                err.userDetails = 'Nimi on varatattu, valitse toinen'
+                err.status = 400
+                throw err
+            }
         }
         if (!grade) grade = user.grade
 
         // if editing own profile or teacher editing
         return await User.completeUserProfile(
             id,
-            name,
-            avatar,
+            name ?? user.name,
+            avatar ?? user.avatar,
             grade
         )
     }
