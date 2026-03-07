@@ -5,6 +5,7 @@ godot/
 /android/
 CLAUDE.md
 .claude/
+bash.exe.stackdump
 
 # Node.js specific ignores
 # backend/pnpm-lock.yaml
