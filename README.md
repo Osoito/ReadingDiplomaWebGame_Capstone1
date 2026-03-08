@@ -14,16 +14,17 @@ Repo for the course Capstone Project 1. The project is a web-based reading diplo
 Create a .env file in the root of your backend which contains these parameters
 ```
 PORT=3001                           #<--- Port where the backend will run
-NODE_ENV=development                #<--- Environment mode (development/test/production)
+NODE_ENV=development                #<--- >Optional, Environment mode (development/test/production) set by npm scripts
 
-DB_HOST=localhost
-DB_PORT=5432                        #<--- Port where your PostgreSQL database is running (5432 by default)
-DB_USER=postgres                    #<--- PostgreSQL username (postgres by default)
+DB_HOST=localhost                   #<--- >Optional, but good to be aware, localhost if not defined
+DB_PORT=5432                        #<--- >Optional, Port where your PostgreSQL database is running (5432 by default, and if not defined)
+DB_USER=postgres                    #<--- >Optional, PostgreSQL username (postgres by default, and if not defined)
 DB_PASSWORD=yourPostgresPassword    #<--- Password set when installing PostgreSQL (password for DB_USER)
-DB_NAME=rdiploma                    #<--- Name of the database (Currently optional, 'rdiploma' if not defined)
+DB_NAME=rdiploma                    #<--- >Optional, Name of the database ('rdiploma' if not defined)
 
-GOOGLE_CLIENT_ID=123
+GOOGLE_CLIENT_ID=123                #<--- Required for Google auth, not reavealed publicly
 GOOGLE_CLIENT_SECRET=123
+FRONTEND_URL=http://localhost:5173/ #<-- >Optional, used by Google callback to redirect to frontend (might need to be changed in different environments)
 
 SESSION_SECRET=randomlyGeneratedStringOfCharacters
 ```

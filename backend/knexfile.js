@@ -15,11 +15,11 @@ import 'dotenv/config'
 const development = {
   client: 'pg',
   connection: {
-    host: process.env.DB_HOST,
+    host: process.env.DB_HOST || 'localhost',
     database: process.env.DB_NAME || 'rdiploma',
-    user: process.env.DB_USER,
+    user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
+    port: process.env.DB_PORT || 5432
   },
   migrations: {
     directory: './db/migrations',
@@ -52,11 +52,11 @@ const staging = {
 const test = {
   client: 'pg',
   connection: {
-    host: process.env.DB_HOST,
+    host: process.env.DB_HOST || 'localhost',
     database: process.env.INTEGRATION_TEST_DB_NAME || 'rdiplomatestintegration',
-    user: process.env.DB_USER,
+    user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
+    port: process.env.DB_PORT || 5432
   },
   migrations: {
     directory: './db/migrations',
@@ -73,11 +73,11 @@ const test = {
 const test_Unit = {
   client: 'pg',
   connection: {
-    host: process.env.DB_HOST,
+    host: process.env.DB_HOST || 'localhost',
     database: process.env.UNIT_TEST_DB_NAME || 'rdiplomatestunit',
-    user: process.env.DB_USER,
+    user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
+    port: process.env.DB_PORT || 5432
   },
   migrations: {
     directory: './db/migrations',

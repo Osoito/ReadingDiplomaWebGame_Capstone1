@@ -57,7 +57,7 @@ authRouter.post('/logout', middleware.requireAuthentication(true), (request, res
     request.logout((error) => {
         if (error) return next(error)
         request.session.destroy()
-        return response.redirect(302, '/')
+        return response.status(204).end()
     })
 })
 
@@ -75,16 +75,10 @@ authRouter.get('/google/callback', middleware.requireAuthentication(false), pass
     // Successful authentication
     //request.session.save(() => { // for modifying the session manually
     try {
-        // Commented this out, until '/update-profile/:id' has a frontend page, **if it needs to be implemented**.
-        // Maybe that could be converted to profile updating, if we need that
         if (request.user?.needsOnboarding) {
-            logger.info('User needs onboarding. '/*Redirecting to onboarding page...'*/)
-            //return response.redirect(`/api/users/profile/${request.user.id}`)
+            logger.info('User needs onboarding...')
         }
-        // Not sure what would be a good way to redirect to frontend url from here.
-        // I don't think it's good to have these redirects hardcoded, might be better to do this in the frontend vvv
-        return response.redirect(302, 'http://localhost:5173/teacher/dashboard') // Redirect to teacher dashboard
-        // With this '/teacher/dashboard' it would redirect to ...:3001/teacher/dashboard
+        return response.redirect(302, process.env.FRONTEND_URL || 'http://localhost:5173/') // Redirect to frontend dashboard
     } catch (error) {
         next(error)
     }
