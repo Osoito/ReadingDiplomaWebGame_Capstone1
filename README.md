@@ -13,18 +13,21 @@ Repo for the course Capstone Project 1. The project is a web-based reading diplo
 ### Backend
 Create a .env file in the root of your backend which contains these parameters
 ```
-PORT=3001                           #<--- Port where the backend will run
-NODE_ENV=development                #<--- >Optional, Environment mode (development/test/production) set by npm scripts
+PORT=3001                                           #<--- Port where the backend will run
+NODE_ENV=development                                #<--- >Optional, Environment mode (development/test/production) set by npm scripts
 
-DB_HOST=localhost                   #<--- >Optional, but good to be aware, localhost if not defined
-DB_PORT=5432                        #<--- >Optional, Port where your PostgreSQL database is running (5432 by default, and if not defined)
-DB_USER=postgres                    #<--- >Optional, PostgreSQL username (postgres by default, and if not defined)
-DB_PASSWORD=yourPostgresPassword    #<--- Password set when installing PostgreSQL (password for DB_USER)
-DB_NAME=rdiploma                    #<--- >Optional, Name of the database ('rdiploma' if not defined)
+DB_HOST=localhost                                   #<--- >Optional, but good to be aware, localhost if not defined
+DB_PORT=5432                                        #<--- >Optional, Port where your PostgreSQL database is running (5432 by default, and if not defined)
+DB_USER=postgres                                    #<--- >Optional, PostgreSQL username (postgres by default, and if not defined)
+DB_PASSWORD=yourPostgresPassword                    #<--- Password set when installing PostgreSQL (password for DB_USER)
+DB_NAME=rdiploma                                    #<--- >Optional, Name of the database ('rdiploma' if not defined)
 
-GOOGLE_CLIENT_ID=123                #<--- Required for Google auth, not reavealed publicly
+UNIT_TEST_DB_NAME=rdiplomatestunit                  #<--- >Optional, Name of the database used for unit tests ('rdiplomatestunit' if not defined)
+INTEGRATION_TEST_DB_NAME=rdiplomatestintegration    #<--- >Optional, Name of the database used for integration tests ('rdiplomatestintegration' if not defined)
+
+GOOGLE_CLIENT_ID=123                                #<--- Required for Google auth, not reavealed publicly
 GOOGLE_CLIENT_SECRET=123
-FRONTEND_URL=http://localhost:5173/ #<-- >Optional, used by Google callback to redirect to frontend (might need to be changed in different environments)
+FRONTEND_URL=http://localhost:5173/                 #<-- >Optional, used by Google callback to redirect to frontend (might need to be changed in different environments)
 
 SESSION_SECRET=randomlyGeneratedStringOfCharacters
 ```
@@ -181,7 +184,8 @@ backend/
 ├── knexfile.js                         # Configuration file for knex
 ├── package.json
 ├── pnpm-lock.yaml                      # Required by the 'Backend CI' GitHub action
-├── vitest.config.js                    # Configuration file for testing environment
+├── vitest.integration.config.js        # Configuration file for integration testing environment
+├── vitest.unit.config.js               # Configuration file for unit testing enviorement
 ├── .env                                # File with secret environmental variables (not found on github)
 ├── controllers/                        # controllers/ includes all the API routes (get, post etc.)
 │   ├── auth.js
@@ -212,17 +216,25 @@ backend/
 │   ├── userService.js                  
 │   └── README.md
 ├── tests/
-│   ├── models/                         # Tests for database interaction
-│   │   └── userModel.test.js           
-│   ├── services/                       # Unit tests for service functions
-│   │   └── userService.test.js         
+│   ├── integration/                    # Integration tests
+│   │   └── book_api_integration.test.js
+│   ├── unit/                           # Unit tests
+│   │   ├── models/                     # Tests for database interaction
+│   │   │   └── userModel.test.js
+│   │   ├── services/                   # Unit tests for service functions
+│   │   │   └── userService.test.js
+│   │   ├── bookControllerUnit.test.js
+│   │   ├── rewardControllerUnit.test.js
+│   │   └──        
 │   ├── testConfig/                     # Test configuration files
-│   │   ├── globalSetup.js              # Runs once when tests are started (Currently prepares testDB)
-│   │   ├── passport-mock.js            # Mocks local authentication
-│   │   ├── test-strategy.js            # Used by the passport-mock to simulate local login
-│   │   ├── testHelper.js               # Currently just mocks users in Database
-│   │   └── vitest.setup.js             # Runs before every test file
-│   └── user_api.test.js                # user related integration tests
+│   │    ├── cleanTestDB.js             # Currently in use script to clean the database between tests, may be deleted at some point
+│   │    ├── globalSetup.js             # Runs once when tests are started (Currently prepares testDB for integration tests)
+│   │    ├── globalSetUpUnit.js         # Runs once when tests are started (Currently prepares testDB for unit tests)
+│   │    ├── passport-mock.js           # Mocks local authentication
+│   │    ├── test-strategy.js           # Used by the passport-mock to simulate local login
+│   │    ├── testHelper.js              # Currently just mocks users in Database
+│   │    └── vitest.setup.js            # Runs before every test file
+│   └── user_api.test.js                # Currently not in use
 └── utils/
     ├── config.js                       # Loads .env environmental variables
     ├── logger.js                       # Logs events and errors into the console
