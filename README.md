@@ -225,16 +225,16 @@ backend/
 │   │   │   └── userService.test.js
 │   │   ├── bookControllerUnit.test.js
 │   │   ├── rewardControllerUnit.test.js
-│   │   └──        
-│   ├── testConfig/                     # Test configuration files
-│   │    ├── cleanTestDB.js             # Currently in use script to clean the database between tests, may be deleted at some point
-│   │    ├── globalSetup.js             # Runs once when tests are started (Currently prepares testDB for integration tests)
-│   │    ├── globalSetUpUnit.js         # Runs once when tests are started (Currently prepares testDB for unit tests)
-│   │    ├── passport-mock.js           # Mocks local authentication
-│   │    ├── test-strategy.js           # Used by the passport-mock to simulate local login
-│   │    ├── testHelper.js              # Currently just mocks users in Database
-│   │    └── vitest.setup.js            # Runs before every test file
-│   └── user_api.test.js                # Currently not in use
+│   │   └── user_api.test.js            # variety of tests for user functions
+│   └── testConfig/                     # Test configuration files
+│        ├── cleanTestDB.js             # Currently in use script to clean the database between tests, may be deleted at some point
+│        ├── globalSetup.js             # Runs once when tests are started (Currently prepares testDB for integration tests)
+│        ├── globalSetUpUnit.js         # Runs once when tests are started (Currently prepares testDB for unit tests)
+│        ├── passport-mock.js           # Mocks local authentication
+│        ├── test-strategy.js           # Used by the passport-mock to simulate local login
+│        └── testHelper.js              # Currently just mocks users in Database
+│        
+│                    
 └── utils/
     ├── config.js                       # Loads .env environmental variables
     ├── logger.js                       # Logs events and errors into the console

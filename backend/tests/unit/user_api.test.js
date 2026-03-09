@@ -2,12 +2,12 @@ import { vi, test, expect, describe, assert, beforeEach, afterEach, beforeAll, a
 import supertest from 'supertest'
 import express from 'express'
 import session from 'express-session'
-import passport, { useMockUser, /*useMockFailure, */clearMockPassport } from './testConfig/passport-mock.js'
-import middleware from '../utils/middleware.js'
-import helper from './testConfig/testHelper.js'
+import passport, { useMockUser, /*useMockFailure, */clearMockPassport } from '../testConfig/passport-mock.js'
+import middleware from '../../utils/middleware.js'
+import helper from '../testConfig/testHelper.js'
 
 // Mock only the required services
-vi.doMock('../services/userService.js', async (importOriginal) => {
+vi.doMock('../../services/userService.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
         default: {
@@ -19,7 +19,7 @@ vi.doMock('../services/userService.js', async (importOriginal) => {
 })
 
 // Mock the addNewProgress from the progressService
-vi.doMock('../services/progressService.js', async (importOriginal) => {
+vi.doMock('../../services/progressService.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
         default: {
@@ -40,12 +40,12 @@ let User
 let agent
 let api
 
-userService = (await import('../services/userService.js')).default
-progressService = (await import('../services/progressService.js')).default
+userService = (await import('../../services/userService.js')).default
+progressService = (await import('../../services/progressService.js')).default
 
 // Import controllers which also import the services
-usersRouter = (await import('../controllers/users.js')).default
-authRouter = (await import('../controllers/auth.js')).default
+usersRouter = (await import('../../controllers/users.js')).default
+authRouter = (await import('../../controllers/auth.js')).default
 
 // This function needs to be called after unmocking (doUnmock) anything
 // and it is important to re-import anything that was unmocked between unmocking and calling this
@@ -90,8 +90,8 @@ describe('User registration', () => {
 
     afterAll(() => {
         vi.resetModules()
-        vi.doUnmock('../services/userService.js')
-        vi.doUnmock('../services/progressService.js')
+        vi.doUnmock('../../services/userService.js')
+        vi.doUnmock('../../services/progressService.js')
     })
 
     afterEach(async () => {
@@ -217,7 +217,7 @@ describe('Swapping user role', async () => {
     beforeAll(async () => {
         // Mock the required functions from the user model
         // Important!!! Import/re-import the model after mocking
-        vi.doMock('../models/user.js', () => {
+        vi.doMock('../../models/user.js', () => {
             return {
                 default: {
                     findUserById: vi.fn(),
@@ -227,22 +227,22 @@ describe('Swapping user role', async () => {
         })
 
         // Importing user model after mocking
-        User = (await import('../models/user.js')).default
+        User = (await import('../../models/user.js')).default
 
         // Re-importing services for their doUnmocks to take effect
-        userService = (await import('../services/userService.js')).default
-        progressService = (await import('../services/progressService.js')).default
+        userService = (await import('../../services/userService.js')).default
+        progressService = (await import('../../services/progressService.js')).default
 
         // Re-importing controllers which import the services
-        usersRouter = (await import('../controllers/users.js')).default
-        authRouter = (await import('../controllers/auth.js')).default
+        usersRouter = (await import('../../controllers/users.js')).default
+        authRouter = (await import('../../controllers/auth.js')).default
 
         // Re-create app after re-importing
         createApp()
     })
 
     afterAll(() => {
-        vi.doUnmock('../models/user.js')
+        vi.doUnmock('../../models/user.js')
         vi.resetModules()
     })
 
@@ -306,7 +306,7 @@ describe('Swapping user role', async () => {
 
         await agent
             .post('/auth/logout')
-            .expect(302)
+            .expect(204)
     })
 
     test('cant be done by students', async () => {
@@ -337,6 +337,6 @@ describe('Swapping user role', async () => {
 
         await agent
             .post('/auth/logout')
-            .expect(302)
+            .expect(204)
     })
 })
