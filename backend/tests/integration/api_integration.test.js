@@ -9,7 +9,7 @@ import { resetDB } from '../testConfig/cleanTestDB.js'
 
 
 const booksRouter = (await import('../../controllers/books.js')).default
-//const rewardsRouter = (await import('../../controllers/rewards.js')).default
+const rewardsRouter = (await import('../../controllers/rewards.js')).default
 
 const app = express()
 app.use(express.json())
@@ -30,7 +30,7 @@ app.use(passport.session())
 app.use(middleware.errorHandler)
 
 app.use('/api/books', booksRouter)
-//app.use('/api/rewards', rewardsRouter)
+app.use('/api/rewards', rewardsRouter)
 
 const api = supertest(app)
 
@@ -132,7 +132,7 @@ describe('Book integration tests', () => {
         expect(response.body.coverimage).toBe(book2.coverimage)
         expect(response.body.booktype).toBe(book2.booktype)
     })
-    /*
+
     describe('Reward integration tests', () => {
         beforeEach(async() => {
             await resetDB()
@@ -156,5 +156,4 @@ describe('Book integration tests', () => {
             expect(response.body.reward).toBe(input.reward)
         })
     })
-    */
 })

@@ -1,26 +1,15 @@
-import knex from 'knex'
-import config from '../../knexfile.js'
 import 'dotenv/config'
-
+import db from '../../db/db.js'
 // Runs once when the test script or (npm vitest) is called
-let initialize = false
 export default async function globalSetup() {
-    console.log('>>> RUNNING INTEGRATION GLOBAL SETUP <<<')
-    console.log('Using DB:', config.test.connection.database)
     try {
         // Run migrations using a NEW knex instance
-
-        const testDb = knex(config.test)
-        if(!initialize){
-            await testDb.migrate.rollback()
-            await testDb.migrate.latest()
-            await testDb.seed.run()
-        }
+        await db.migrate.rollback()
+        await db.migrate.latest()
+        await db.seed.run({ specific: 'users_seed.js' })
         //await testDb('users').insert({ id:1, name: 'Test User', role: 'student', avatar: 'default.jpg' })
-        await testDb.destroy()
 
-    } catch (err) {
-        console.error(err)
-        process.exit(1)
+    } finally{
+        await db.destroy()
     }
 }
