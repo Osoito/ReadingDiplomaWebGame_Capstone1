@@ -1,7 +1,7 @@
 import Book from '../models/book.js'
 
 const BookService = {
-    async addBook({ title, author, coverimage, booktype }) {
+    async addBook({ title, author, coverimage, booktype, content }) {
         const existing = await Book.findByTitle(title)
         if (existing) {
             const err = new Error(`A book with the title '${title}' already exists`)
@@ -13,7 +13,8 @@ const BookService = {
             title,
             author,
             coverimage,
-            booktype
+            booktype,
+            content
         })
     },
 

@@ -5,7 +5,6 @@ import session from 'express-session'
 import passport from '../testConfig/passport-mock.js'
 import middleware from '../../utils/middleware.js'
 import { resetDB } from '../testConfig/cleanTestDB.js'
-//import db from '../../db/db.js'
 
 
 const booksRouter = (await import('../../controllers/books.js')).default
@@ -44,7 +43,8 @@ describe('Book integration tests', () => {
             title: 'Test Book',
             author: 'Test Author',
             coverimage: 'coverimage.jpg',
-            booktype: 'e-book'
+            booktype: 'e-book',
+            content: 'test/testPath'
         }
 
 
@@ -58,6 +58,7 @@ describe('Book integration tests', () => {
         expect(response.body.author).toBe(input.author)
         expect(response.body.coverimage).toBe(input.coverimage)
         expect(response.body.booktype).toBe(input.booktype)
+        expect(response.body.content).toBe(input.content)
     })
 
     test('Get all books from the database', async() => {
@@ -65,19 +66,22 @@ describe('Book integration tests', () => {
             title: 'Test Book1',
             author: 'Test Author1',
             coverimage: 'coverimage.jpg',
-            booktype: 'e-book'
+            booktype: 'e-book',
+            content: 'test/testPath'
         }
         const book2 = {
             title: 'Test Book2',
             author: 'Test Author2',
             coverimage: 'coverimage.jpg',
-            booktype: 'e-book'
+            booktype: 'e-book',
+            content: 'test/testPath2'
         }
         const book3 = {
             title: 'Test Book3',
             author: 'Test Author3',
             coverimage: 'coverimage.jpg',
-            booktype: 'e-book'
+            booktype: 'e-book',
+            content: 'test/testPath3'
         }
         await api.post('/api/books').send(book1)
         await api.post('/api/books').send(book2)
@@ -103,19 +107,22 @@ describe('Book integration tests', () => {
             title: 'Test Book1',
             author: 'Test Author1',
             coverimage: 'coverimage.jpg',
-            booktype: 'e-book'
+            booktype: 'e-book',
+            content: 'test/testPath'
         }
         const book2 = {
             title: 'Test Book2',
             author: 'Test Author2',
             coverimage: 'coverimage.jpg',
-            booktype: 'e-book'
+            booktype: 'e-book',
+            content: 'test/testPath2'
         }
         const book3 = {
             title: 'Test Book3',
             author: 'Test Author3',
             coverimage: 'coverimage.jpg',
-            booktype: 'e-book'
+            booktype: 'e-book',
+            content: 'test/testPath3'
         }
 
         await api.post('/api/books').send(book1)
@@ -131,6 +138,7 @@ describe('Book integration tests', () => {
         expect(response.body.author).toBe(book2.author)
         expect(response.body.coverimage).toBe(book2.coverimage)
         expect(response.body.booktype).toBe(book2.booktype)
+        expect(response.body.content).toBe(book2.content)
     })
 
     describe('Reward integration tests', () => {

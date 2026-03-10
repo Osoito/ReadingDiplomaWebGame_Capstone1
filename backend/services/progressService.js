@@ -13,7 +13,7 @@ const ProgressService = {
             level,
             user,
             book,
-            current_page: 0,
+            current_progress: 0,
             level_status: 'incomplete'
         })
     },
@@ -46,7 +46,7 @@ const ProgressService = {
     async findSpecificEntry(level, user){
         const found = await Progress.findSpecificEntry(level, user)
         if(!found){
-            const err = new Error(`Level:  ${level} has not entry for this user`)
+            const err = new Error(`Level:  ${level} has no entry for this user`)
             err.status = 404
             throw err
         }
@@ -61,6 +61,16 @@ const ProgressService = {
             throw err
         }
         return found
+    },
+
+    async changeBookinEntry(level, user, { book }){
+        const found = await Progress.findSpecificEntry(level, user)
+        if(!found){
+            const err = new Error(`Level:  ${level} has no entry for this user`)
+            err.status = 404
+            throw err
+        }
+        return Progress.changeBookinEntry(level, user, book)
     },
 
     async getAllProgress() {

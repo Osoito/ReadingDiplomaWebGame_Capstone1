@@ -164,6 +164,7 @@ frontend/
 | PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                   |
 | GET    | `/api/progress/get-entry/:level` | Gets specific level from current user                      |
 | GET    | `/api/progress/current-level`    | Gets user's most recent incomplete level                   |
+| PUT    | `/api/progress/:level/add-book`  | Changes the book attatched to a progress entry             |
 | POST   | `/auth/login`                    | Login using basic credentials (email/username, password)   |
 | POST   | `/auth/logout`                   | Logout                                                     |
 | GET    | `/auth/me`                       | Returns current session user                               |
