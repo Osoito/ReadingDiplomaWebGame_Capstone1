@@ -12,7 +12,7 @@ const bookSchema = z.object({
     author: z.string(),
     coverimage: z.string(),
     booktype: z.string().transform(str => str.toLowerCase()).pipe(booktypes),
-    content: z.string()
+    content: z.string().optional()
 }).strict()
 
 booksRouter.get('/', middleware.requireAuthentication(true), async (request, response, next) => {
