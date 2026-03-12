@@ -29,7 +29,7 @@ export default function PhaserGame() {
     // 注入返回逻辑
     game.handleBackNavigation = () => {
       if (user?.role === 'teacher') navigate('/teacher/dashboard');
-      else                                navigate('/');
+      else                                navigate('/student/dashboard');
     };
 
     gameRef.current = game;
