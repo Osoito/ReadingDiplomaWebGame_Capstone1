@@ -8,30 +8,34 @@ Repo for the course Capstone Project 1. The project is a web-based reading diplo
 
 - Node.js 18 or newer and npm
 - PostgreSQL (https://www.postgresql.org/download/) installed and running
-
+---
 ### Installation
 ### Backend
 Create a .env file in the root of your backend which contains these parameters
 ```
+# ∨∨∨ REQUIRED ∨∨∨
 PORT=3001                                           #<--- Port where the backend will run
-NODE_ENV=development                                #<--- >Optional, Environment mode (development/test/production) set by npm scripts
-
-DB_HOST=localhost                                   #<--- >Optional, but good to be aware, localhost if not defined
-DB_PORT=5432                                        #<--- >Optional, Port where your PostgreSQL database is running (5432 by default, and if not defined)
-DB_USER=postgres                                    #<--- >Optional, PostgreSQL username (postgres by default, and if not defined)
 DB_PASSWORD=yourPostgresPassword                    #<--- Password set when installing PostgreSQL (password for DB_USER)
-DB_NAME=rdiploma                                    #<--- >Optional, Name of the database ('rdiploma' if not defined)
+GOOGLE_CLIENT_ID=123                                #<--- Required for Google auth, not reavealed publicly!!!
+GOOGLE_CLIENT_SECRET=123                            #<--- Required for Google auth, not reavealed publicly!!!
+SESSION_SECRET=randomlyGeneratedStringOfCharacters  #<--- Generate this yourself (tools below)
+# ∧∧∧ REQUIRED ∧∧∧
 
-UNIT_TEST_DB_NAME=rdiplomatestunit                  #<--- >Optional, Name of the database used for unit tests ('rdiplomatestunit' if not defined)
-INTEGRATION_TEST_DB_NAME=rdiplomatestintegration    #<--- >Optional, Name of the database used for integration tests ('rdiplomatestintegration' if not defined)
+# ∨∨∨ Required in production environments, to set the Access-Control-Allow-Origin to service domain (locally it's http://localhost:3001/)
+PUBLIC_URL=http://localhost:3001/
 
-GOOGLE_CLIENT_ID=123                                #<--- Required for Google auth, not reavealed publicly
-GOOGLE_CLIENT_SECRET=123
-FRONTEND_URL=http://localhost:5173/                 #<-- >Optional, used by Google callback to redirect to frontend (might need to be changed in different environments)
-
-SESSION_SECRET=randomlyGeneratedStringOfCharacters
+# ∨∨∨ optional ∨∨∨ These values will be set to these defaults if not defined here
+NODE_ENV=development                                #<--- Environment mode (development/test/production), set by npm scripts
+DB_HOST=localhost                                   #<--- Where the database is hosted, localhost if not defined
+DB_PORT=5432                                        #<--- Port where your PostgreSQL database is running (5432 by default)
+DB_USER=postgres                                    #<--- PostgreSQL username (postgres by default)
+DB_NAME=rdiploma                                    #<--- Name of the database, 'rdiploma' if not defined
+UNIT_TEST_DB_NAME=rdiplomatestunit                  #<--- Name of the database used for unit tests, 'rdiplomatestunit' if not defined
+INTEGRATION_TEST_DB_NAME=rdiplomatestintegration    #<--- Name of the database used for integration tests, 'rdiplomatestintegration' if not defined
+# ∧∧∧ optional ∧∧∧
 ```
-GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are used for google authentication and i can't upload them to GitHub, but they will be provided to team members.
+
+>**IMPORTANT** GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are used for google authentication can't be uploaded to GitHub, but they will be provided to team members.
 
 You can use the command below to generate the SESSION SECRET for the .env. Generators can be found online as well (e.g. [it-tools.tech/token-generator](https://it-tools.tech/token-generator))
 >node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
@@ -39,7 +43,6 @@ You can use the command below to generate the SESSION SECRET for the .env. Gener
 # Backend installation
 cd backend
 npm install
-npm knex migrate:latest
 ```
 
 ### Frontend
@@ -50,41 +53,38 @@ npm install
 
 ## Running the Application
 
-### Development Mode
-
-**Terminal 1 - Backend:**
-```bash
-cd backend
-npm run dev
-# Backend runs on http://localhost:3001
-```
+### Development mode
 
 **Terminal 2 - Frontend:**
 ```bash
 cd frontend
 npm run dev
 # Frontend runs on http://localhost:5173
-# API calls to /api are proxied to the backend automatically
+# API calls to /api are proxied to the backend (http://localhost:3001) automatically, via vite.config.js
+```
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+npm run dev
+# Backend runs on http://localhost:3001, by default
 ```
 ---
-### psql from VSCode terminal (**optional**)
-(**Optional**) To use psql for database functions (CRUD and data viewing) in the VSCode terminal, add your PostgreSQL installation (e.g. C:\Program Files\PostgreSQL\18\bin) to system environment Path variables.
 
-Instructions for Windows: [https://commandprompt.com/education/how-to-set-windows-path-for-postgres-tools](https://www.commandprompt.com/education/how-to-set-windows-path-for-postgres-tools/)
+### Production mode
 
-**useful psql commands**
-- **psql -U postgres** <-- to open psql terminal interface (with the postgres user)
-- **psql -U postgres rdiploma** <-- to open the rdiploma database in psql and make requests to it. (e.g. SELECT * FROM books;)
-- **\l** <-- to view all databases
-- **\dt** <-- to view all tables
-- **\q** <-- to close psql
----
-
-### Production Build (Frontend)
+**Terminal 2 - Frontend: (Production Build)**
 ```bash
 cd frontend
 npm run build    # Output in dist/
 npm run preview  # Preview the production build locally
+```
+
+**Terminal 1 - Backend:**
+```bash
+cd backend
+npm run start
+# Application uses built frontend/dist/
 ```
 
 ## Frontend
@@ -117,7 +117,7 @@ The React app renders a `PhaserGame` component that creates and manages the Phas
 
 Game state (reading progress per continent, books read) is managed by a shared singleton in `src/game/state.js`.
 
-### Project Structure
+### Frontend Project Structure
 ```
 frontend/
 ├── index.html                    # Vite entry point
@@ -148,35 +148,74 @@ frontend/
 
 ## Backend
 
+### Tech Stack
+### Runtime and Web framework
+
+- **Node.js (ES module)** — Runtime environment
+- **Express.js** — Web application framework
+    - **express-rate-limit** rate limiting (login throttling)
+    - **express-session** — session management
+    - **memorystore** — session store to avoid memory leaks while using express-session
+
+### Authentication
+- **Passport.js** — Authentication middleware
+    - **passport-local** — username/password login
+    - **passport-google-oauth20** — Google OAuth 2.0 login
+    - **passport-strategy** — Custom strategy used in test env
+
+### Database & ORM / Query Builder
+- **PostgreSQL** — Database
+- **pg** — PostgreSQL driver
+- **Knex.js** — SQL query builder + migrations + seeds
+    - Automated DB creation for dev/test environments
+    - Automatic migrations on npm install
+
+### Testing
+- **Vitests** — Unit & integration testing
+- **supertest** — HTTP endpoint testing
+- **@vitest/coverage-istanbul** — coverage reporting
+
+### Utilities & tooling
+- **dotenv** — Environment variable management
+- **bcrypt** — Password hashing
+- **zod** — Input validation
+- **cross-env** — Environment variable compatibility across operating systems
+- **nodemon** — Auto restart server when changes detected, in development env
+- **eslint** + stylistic plugins — Linting and consistent code style
+---
+
 ### Endpoints
 
-| Method | Endpoint                         | Description                                                |
-|--------|----------------------------------|------------------------------------------------------------|
-| GET    | `/api/books`                     | Get all books                                              |
-| POST   | `/api/books`                     | Add new book                                               |
-| GET    | `/api/users`                     | Get all users                                              |
-| POST   | `/api/users/register`            | Create new user(also creates progress entries for new user)|
-| PATCH  | `/api/users/:id/role`            | Swaps the user role                                        |
-| PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword, password    |
-| GET    | `/api/users/profile/:id`         | Get user profile                                           |
-| PATCH  | `/api/users/profile/:id`         | Update profile info (name / avatar / grade)                |
-| POST   | `/api/progress/add-entry`        | Add a new progression entry                                |
-| PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                   |
-| GET    | `/api/progress/get-entry/:level` | Gets specific level from current user                      |
-| GET    | `/api/progress/current-level`    | Gets user's most recent incomplete level                   |
-| PUT    | `/api/progress/:level/add-book`  | Changes the book attatched to a progress entry             |
-| POST   | `/auth/login`                    | Login using basic credentials (email/username, password)   |
-| POST   | `/auth/logout`                   | Logout                                                     |
-| GET    | `/auth/me`                       | Returns current session user                               |
-| GET    | `/auth/google`                   | Sign up or login using Google account                      |
-| GET    | `/api/users/my-students`         | Get all students belonging to the logged-in teacher        |
-| POST   | `/api/users/students`            | Create a student under the logged-in teacher               |
-| DELETE | `/api/users/students/:id`        | Delete a student (teacher must own the student)            |
-| POST   | `/api/rewards/add-reward`        | Add a reward (avatar?) for user                            |
-| GET    | `/api/rewards/:id`               | Fetches all of user's rewards (requires teacher role)      |
-| GET    | `/api/rewards/`                  | Fetches all of current user's rewards                      |
+| Method | Endpoint                         | Description                                                   |
+|--------|----------------------------------|---------------------------------------------------------------|
+| GET    | `/api/books`                     | Get all books                                                 |
+| POST   | `/api/books`                     | Add new book                                                  |
+| GET    | `/api/users`                     | Get all users                                                 |
+| POST   | `/api/users/register`            | Create new user(also creates progress entries for new user)   |
+| PATCH  | `/api/users/:id/role`            | Swaps the user role                                           |
+| PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword, password       |
+| GET    | `/api/users/profile/:id`         | Get user profile                                              |
+| PATCH  | `/api/users/profile/:id`         | Update profile info (name / avatar / grade)                   |
+| POST   | `/api/progress/add-entry`        | Add a new progression entry                                   |
+| PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                      |
+| GET    | `/api/progress/get-entry/:level` | Gets specific level from current user                         |
+| GET    | `/api/progress/current-level`    | Gets user's most recent incomplete level                      |
+| PUT    | `/api/progress/:level/add-book`  | Changes the book attatched to a progress entry                |
+| POST   | `/api/submissions/add-submission`| adds a submission entry for the current user in current level |
+| GET    | `/api/submissions/:id`           | Gets specific submission entry(needs teacher role)            |
+| DELETE | `/api/submissions/:id`           | Deletes specific submission entry(needs teacher role)         |
+| POST   | `/auth/login`                    | Login using basic credentials (email/username, password)      |
+| POST   | `/auth/logout`                   | Logout                                                        |
+| GET    | `/auth/me`                       | Returns current session user                                  |
+| GET    | `/auth/google`                   | Sign up or login using Google account                         |
+| GET    | `/api/users/my-students`         | Get all students belonging to the logged-in teacher           |
+| POST   | `/api/users/students`            | Create a student under the logged-in teacher                  |
+| DELETE | `/api/users/students/:id`        | Delete a student (teacher must own the student)               |
+| POST   | `/api/rewards/add-reward`        | Add a reward (avatar?) for user                               |
+| GET    | `/api/rewards/:id`               | Fetches all of user's rewards (requires teacher role)         |
+| GET    | `/api/rewards/`                  | Fetches all of current user's rewards                         |
 
-### Backend file structure
+### Backend Project Structure
 ```
 backend/
 ├── app.js                              # Backend main entry point
@@ -243,6 +282,20 @@ backend/
     └── passport.js                     # Passport for local- and google authentication
 ```
 
+---
+### psql from VSCode terminal (**optional**)
+To use psql for database functions (CRUD and data viewing) in the VSCode terminal, add your PostgreSQL installation (e.g. C:\Program Files\PostgreSQL\18\bin) to system environment Path variables.
+
+Instructions for Windows: [https://commandprompt.com/education/how-to-set-windows-path-for-postgres-tools](https://www.commandprompt.com/education/how-to-set-windows-path-for-postgres-tools/)
+
+**useful psql commands**
+- **psql -U postgres** <-- to open psql terminal interface (with the postgres user)
+- **psql -U postgres rdiploma** <-- to open the rdiploma database in psql and make requests to it. (e.g. SELECT * FROM books;)
+- **\l** <-- to view all databases
+- **\dt** <-- to view all tables
+- **\q** <-- to close psql
+---
+
 ### User model
 
 ```json
@@ -257,31 +310,6 @@ backend/
   "role": "student",
   "teacher_id": 2
 }
-```
-
-### Example requests
-
-**Create new user**
-
-```bash
-curl -X POST http://localhost:3001/api/users \
-  -d '{
-    "email": "john@doe.com",
-    "name": "John",
-    "password": "Password-1",
-    "avatar": "path/avatar1.jpg",
-    "grade": 1
-    }'
-```
-
-**login using basic credentials**
-
-```bash
-curl -X POST http://localhost:3001/auth/login \
-  -d '{
-    "identifier": "John",
-    "password": "Password-1"
-    }'
 ```
 
 ## Testing without Google auth
@@ -326,24 +354,18 @@ Or directly log in through the login page by typing in the student credentials y
 - Alternatively, in PowerShell: `Get-NetTCPConnection -LocalPort 5174,5175,5176 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`
 
 **'Command failed with exit code 1.' when running `npm install` or `npm run db:create` in backend/**
-- Create a .env file in `backend/` and add the required fields to it mentioned in the [Installation](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#installation) part. After that, run `npm install` in `backend/` to create the required database..
-
-**26.2.2026 New migration added: `avatar` column on users table changed to nullable**
-- Run `npx knex migrate:latest` in `backend/` to apply it
-
-**New migration added: `teacher_id` column on users table**
-- Run `npx knex migrate:latest` in `backend/` to apply it
+- Create a .env file in **backend/** and add the required fields to it mentioned in the [Installation](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#installation) part. After that, run `npm install` in **backend/** to install the package and create the required database.
 
 **If migrations (in backend) have been edited**
-- run 'npx knex migrate:rollback --all' --> to rollback all migrations, then run 'npx knex migrate:latest' to rerun all new migrations
+- run `npx knex migrate:rollback --all` to rollback all migrations, then run `npx knex migrate:latest` to rerun all new migrations
 
 **If new migrations have been added (in backend)**
-- run 'npx knex migrate:latest' to run all new migrations
+- run `npx knex migrate:latest` to run all new migrations
 
 **Can't connect to database (Constant internal server errors on requests)**
 - On Windows: open services, find postgresql, ensure it says running.
 - Ensure you have a .env file in the backend root, which contains the values mentioned above ([Installation](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#installation)).
-- PostgreSQL might not always be running on port:5432 (e.g. if it's already in use). Check which port PostgreSQL is running on. With psql run:  **psql -h localhost -U postgres**, then run: **SHOW port;** Then update the port number to your .env file DB_PORT. [psql from VSCode terminal](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#psql-from-VSCode-terminal-optional)
+- PostgreSQL might not always be running on port:5432 (e.g. if it's already in use). Check which port PostgreSQL is running on. With psql ([psql from VSCode terminal](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#psql-from-VSCode-terminal-optional)) run:  `psql -h localhost -U postgres`, then run: `SHOW port;` Then update the shown port number to your .env file DB_PORT.
 
 [ Not sure if this is needed anymore
 fetch('/auth/update-profile/9', {

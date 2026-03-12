@@ -30,7 +30,7 @@ const Progress = {
     async getCurrentLevel(user){
         user = Number(user)
         return db('progress')
-            .select('level', 'user', 'book', 'current_progress', 'level_status')
+            .select('id', 'level', 'user', 'book', 'current_progress', 'level_status')
             .where({ user:user, level_status:'incomplete' })
             .orderBy('level', 'asc')
             .first()

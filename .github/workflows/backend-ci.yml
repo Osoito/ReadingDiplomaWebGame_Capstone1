@@ -43,15 +43,13 @@ jobs:
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: rdiplomatest
-      TEST_DB_NAME: rdiplomatest
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/testdb #<-- I think this part is only used by knex in a "staging" environment.
-      NODE_ENV: test
+      #NODE_ENV: test
       GOOGLE_CLIENT_ID: 123
       GOOGLE_CLIENT_SECRET: 123
       SESSION_SECRET: 0b00318059557b51a32b71a4b926c6faeaea37aaf748d3eb8ea00a25d9d45d7938d163180bcbd93d786474bf4a750ac2ef874e563b72a79e1af6710207f01de9
       # ^^ DO NOT USE THIS SECRET IN YOUR .env, only in use for this CI pipeline
 
-      # These steps will run on each GitHub push
+    # These steps will run on each GitHub push
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -93,14 +91,6 @@ jobs:
             echo "Waiting for Postgres..."
             sleep 2
           done
-
-      - name: Check that database for model tests exists
-        working-directory: backend
-        run: node scripts/createDatabase.js
-
-      - name: Run migrations
-        working-directory: backend
-        run: pnpm exec knex migrate:latest
 
       - name: Run tests
         working-directory: backend

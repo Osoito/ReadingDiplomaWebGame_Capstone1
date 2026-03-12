@@ -20,6 +20,10 @@ try {
         SESSION_SECRET: SESSION_SECRET
     }
 
+    if (process.env.NODE_ENV === 'production') {
+        envVariables.PUBLIC_URL = process.env.PUBLIC_URL
+    }
+
     const entries = Object.entries(envVariables)
 
     if (Object.values(envVariables).includes(undefined)) {

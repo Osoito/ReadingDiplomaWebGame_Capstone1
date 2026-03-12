@@ -20,7 +20,6 @@ const User = {
             .first()
     },
     async findUserById(id) {
-        // Removed the password_hash from here
         return db('users')
             .select('id', 'email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role', 'teacher_id')
             .where({ id })
@@ -35,7 +34,7 @@ const User = {
     */
     async getAll() {
         return db('users')
-            .select('id', 'email', 'name', 'avatar', 'currently_reading', 'grade', 'role')
+            .select('id', 'email', 'name', 'avatar', 'currently_reading', 'grade', 'role', 'teacher_id')
     },
 
     async updateUserRole(id, role) {
@@ -45,56 +44,29 @@ const User = {
             .returning('*')
     },
 
-    async updateUserPassword(id, password_hash){
+    async updateUserPassword(id, password_hash) {
         return db('users')
             .where({ id })
             .update({ password_hash: password_hash })
             .returning('*')
     },
 
-    async findOrCreateUserFromGoogle(profile) {
-        return db.transaction(async trx => {
-            const provider = 'google'
-            const providerUserId = profile.id
+    async findFederatedCredentials(provider, provider_user_id) {
+        return db('federated_credentials')
+            .where({ provider, provider_user_id })
+            .first()
+    },
 
-            // Check if federated account already exists
-            const existing = await trx('federated_credentials')
-                .where({ provider, provider_user_id: providerUserId })
-                .first()
+    async createFederatedCredentials(user_id, provider, provider_user_id) {
+        return db('federated_credentials')
+            .insert({ user_id, provider, provider_user_id })
+            .returning('*')
+    },
 
-            // If federated account exists, return the associated user
-            if (existing) {
-                return trx('users')
-                    .where({ id: existing.user_id })
-                    .first()
-            }
-
-            // Searches for the profile picture used in the google account, which will be set as default avatar if found
-            const avatar = profile.photos?.[0]?.value
-                ? `${profile.photos[0].value}?sz=200`
-                : ''
-            // If federated account doesn't exist, create new user (teacher) with details from Gmail
-            const [user] = await trx('users')
-                .insert({
-                    email: profile.emails?.[0].value ?? null,
-                    name: profile.name?.givenName || (profile?.displayName ? profile.displayName.split(' ')[0] : '') || '',
-                    avatar: avatar,
-                    role: 'teacher',
-                    grade: 1,
-                    currently_reading: null
-                })
-                .returning('*')
-
-            if (!user) throw new Error('User creation failed')
-
-            // Create federated credentials and associate the created user to it
-            await trx('federated_credentials').insert({
-                user_id: user.id,
-                provider,
-                provider_user_id: providerUserId
-            })
-            return { ...user, needsOnboarding: true }
-        })
+    async deleteFederatedCredentials(id) {
+        return db('federated_credentials')
+            .where({ id })
+            .del()
     },
 
     async findTeacherByName(name) {
