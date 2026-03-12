@@ -321,6 +321,31 @@
     font-style: italic;
 }
 
+/* ── Inline Table Edit Controls ─────────────────────────── */
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 0.3rem;
+    font-size: 1rem;
+    opacity: 0.55;
+    transition: opacity 0.15s;
+}
+
+.icon-btn:hover { opacity: 1; }
+
+.inline-edit-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid #C4973A;
+    color: #3a2a10;
+    font-family: 'Nunito', sans-serif;
+    font-size: inherit;
+    padding: 0.15rem 0.25rem;
+    width: 100%;
+    outline: none;
+}
+
 /* ── Animations ──────────────────────────────────────────── */
 @keyframes cardRise {
     from { opacity: 0; transform: translateY(14px) scale(0.98); }

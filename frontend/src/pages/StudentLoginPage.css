@@ -215,6 +215,69 @@
     color: #C4973A;
 }
 
+/* ── Divider ─────────────────────────────────────────────── */
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.5rem 0 1rem;
+    color: #9E7A2A;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(196, 151, 58, 0.35);
+}
+
+/* ── Brass Google Button ─────────────────────────────────── */
+.google-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(180deg, #D8B25A 0%, #C4973A 48%, #A67E1E 100%);
+    color: #1e3a5f;
+    border: 1px solid #9E7A2A;
+    border-radius: 4px;
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    box-shadow:
+        0 1px 0 rgba(255, 248, 200, 0.5) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.16) inset,
+        0 4px 14px rgba(100, 60, 0, 0.22);
+    transition: all 0.15s ease;
+}
+
+.google-button:hover {
+    background: linear-gradient(180deg, #E0BC64 0%, #CCA040 48%, #B08826 100%);
+    box-shadow:
+        0 1px 0 rgba(255, 248, 200, 0.55) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.18) inset,
+        0 6px 20px rgba(100, 60, 0, 0.28);
+    transform: translateY(-1px);
+}
+
+.google-button:active {
+    background: linear-gradient(180deg, #A67E1E 0%, #C4973A 55%, #D8B25A 100%);
+    box-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.16) inset,
+        0 2px 6px rgba(100, 60, 0, 0.12);
+    transform: translateY(1px);
+}
+
 /* ── Animations ──────────────────────────────────────────── */
 @keyframes cardRise {
     from { opacity: 0; transform: translateY(14px) scale(0.97); }

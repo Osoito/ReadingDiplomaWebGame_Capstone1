@@ -87,6 +87,10 @@ function StudentLoginPage() {
                         {submitting ? 'Kirjaudutaan...' : 'Kirjaudu'}
                     </button>
                 </form>
+                <div className="login-divider"><span>tai</span></div>
+                <button type="button" className="google-button" onClick={() => window.location.href = '/auth/google'}>
+                    Kirjaudu Google-tilillä
+                </button>
             </div>
         </div>
     )

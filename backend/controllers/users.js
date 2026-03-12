@@ -80,6 +80,23 @@ usersRouter.delete('/students/:id', middleware.requireTeacherRole, async (reques
     }
 })
 
+const studentPasswordResetSchema = z.object({
+    password: z.string().min(3),
+}).strict()
+
+usersRouter.patch('/students/:id/password', middleware.requireTeacherRole, middleware.zValidate(studentPasswordResetSchema), async (request, response, next) => {
+    try {
+        const student = await UserService.findById(request.params.id)
+        if (!student || student.teacher_id !== request.user.id) {
+            return response.status(403).json({ error: 'Forbidden' })
+        }
+        await UserService.updateUserPassword(request.params.id, request.validated.password)
+        response.status(204).end()
+    } catch (error) {
+        next(error)
+    }
+})
+
 // ∨∨∨ NEEDS to be removed from final version (allows anyone logged in to get all the users info)
 usersRouter.get('/', middleware.requireAuthentication(true), async (request, response, next) => {
     try {

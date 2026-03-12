@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react'
+import { StudentAvatarBadge } from './StudentAvatar'
 
 function StudentManager() {
     const [students, setStudents] = useState([])
     const [name, setName] = useState('')
     const [password, setPassword] = useState('')
+    const [email, setEmail] = useState('')
     const [error, setError] = useState('')
+    const [editingId, setEditingId] = useState(null)
+    const [editName, setEditName] = useState('')
+    const [resetPwdId, setResetPwdId] = useState(null)
+    const [resetPwd, setResetPwd] = useState('')
+    const [resetPwdError, setResetPwdError] = useState('')
 
     const fetchStudents = async () => {
         try {
@@ -25,10 +32,12 @@ function StudentManager() {
         e.preventDefault()
         setError('')
         try {
+            const body = { name, password }
+            if (email.trim()) body.email = email.trim()
             const res = await fetch('/api/users/students', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, password })
+                body: JSON.stringify(body)
             })
             if (!res.ok) {
                 const data = await res.json()
@@ -37,9 +46,53 @@ function StudentManager() {
             }
             setName('')
             setPassword('')
+            setEmail('')
             fetchStudents()
         } catch {
             setError('Yhteysvirhe')
+        }
+    }
+
+    const handleEditSave = async (id) => {
+        if (!editName.trim()) return
+        try {
+            const res = await fetch(`/api/users/profile/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: editName.trim() }),
+            })
+            if (res.ok) {
+                setEditingId(null)
+                fetchStudents()
+            } else {
+                setError('Nimen muokkaus epäonnistui')
+            }
+        } catch {
+            setError('Yhteysvirhe')
+        }
+    }
+
+    const handlePasswordReset = async (id) => {
+        if (resetPwd.length < 3) {
+            setResetPwdError('Salasanan on oltava vähintään 3 merkkiä')
+            return
+        }
+        setResetPwdError('')
+        try {
+            const res = await fetch(`/api/users/students/${id}/password`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: resetPwd }),
+            })
+            if (res.ok) {
+                setResetPwdId(null)
+                setResetPwd('')
+            } else {
+                const data = await res.json()
+                setResetPwdError(data.error || 'Salasanan vaihto epäonnistui')
+            }
+        } catch {
+            setResetPwdError('Yhteysvirhe')
         }
     }
 
@@ -64,23 +117,75 @@ function StudentManager() {
                 <table className="data-table">
                     <thead>
                         <tr>
+                            <th>Hahmo</th>
                             <th>Nimi</th>
-                            <th>Luokka-aste</th>
                             <th>Toiminnot</th>
                         </tr>
                     </thead>
                     <tbody>
                         {students.map((s) => (
                             <tr key={s.id}>
-                                <td>{s.name}</td>
-                                <td>{s.grade}</td>
+                                <td><StudentAvatarBadge avatarId={s.avatar} size={32} /></td>
                                 <td>
-                                    <button
-                                        className="delete-button"
-                                        onClick={() => handleDelete(s.id, s.name)}
-                                    >
-                                        Poista
-                                    </button>
+                                    {editingId === s.id ? (
+                                        <input
+                                            className="inline-edit-input"
+                                            value={editName}
+                                            onChange={(e) => setEditName(e.target.value)}
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <>
+                                            {s.name}
+                                            <button
+                                                className="icon-btn"
+                                                onClick={() => { setEditingId(s.id); setEditName(s.name); setResetPwdId(null) }}
+                                                title="Muokkaa nimeä"
+                                            >
+                                                ✏
+                                            </button>
+                                        </>
+                                    )}
+                                </td>
+                                <td>
+                                    {editingId === s.id ? (
+                                        <>
+                                            <button className="add-button" style={{ padding: '0.35rem 0.75rem', alignSelf: 'unset', fontSize: '0.85rem' }} onClick={() => handleEditSave(s.id)}>Tallenna</button>
+                                            <button className="cancel-button" style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem', marginLeft: '0.5rem' }} onClick={() => setEditingId(null)}>Peruuta</button>
+                                        </>
+                                    ) : resetPwdId === s.id ? (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                                            <input
+                                                className="inline-edit-input"
+                                                type="password"
+                                                placeholder="Uusi salasana"
+                                                value={resetPwd}
+                                                onChange={(e) => { setResetPwd(e.target.value); setResetPwdError('') }}
+                                                autoFocus
+                                            />
+                                            {resetPwdError && <span className="section-error" style={{ fontSize: '0.8rem' }}>{resetPwdError}</span>}
+                                            <div>
+                                                <button className="add-button" style={{ padding: '0.35rem 0.75rem', alignSelf: 'unset', fontSize: '0.85rem' }} onClick={() => handlePasswordReset(s.id)}>Tallenna</button>
+                                                <button className="cancel-button" style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem', marginLeft: '0.5rem' }} onClick={() => { setResetPwdId(null); setResetPwd(''); setResetPwdError('') }}>Peruuta</button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <button
+                                                className="icon-btn"
+                                                onClick={() => { setResetPwdId(s.id); setResetPwd(''); setResetPwdError(''); setEditingId(null) }}
+                                                title="Vaihda salasana"
+                                            >
+                                                🔒
+                                            </button>
+                                            <button
+                                                className="delete-button"
+                                                onClick={() => handleDelete(s.id, s.name)}
+                                            >
+                                                Poista
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))}
@@ -109,6 +214,14 @@ function StudentManager() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         minLength={3}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Sähköposti (valinnainen, Google-kirjautumista varten)</label>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                     />
                 </div>
                 <button type="submit" className="add-button">Lisää oppilas</button>
