@@ -77,8 +77,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'  # expects to find a pnpm-lock.yaml file
-          cache-dependency-path: backend/pnpm-lock.yaml
+          # cache: 'pnpm'  # expects to find a pnpm-lock.yaml file
+          # cache-dependency-path: backend/pnpm-lock.yaml
           # Without this the CI pipeline will run slower (fresh npm install everytime)
           # and dependecies may change unexpectedly over time
 

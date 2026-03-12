@@ -8,12 +8,14 @@ const UserService = {
         const existingName = await User.findByName(name)
         if (existingName) {
             const err = new Error('Username already taken')
+            err.userDetails = 'Nimi varattu, valitse toinen'
             err.status = 400
             throw err
         }
         const existingEmail = await User.findByEmail(email)
         if (existingEmail) {
             const err = new Error('Email already taken')
+            err.userDetails = 'Sähköposti varattu, valitse toinen'
             err.status = 400
             throw err
         }
@@ -49,7 +51,7 @@ const UserService = {
     async findByName(name) {
         const user = await User.findByName(name)
         if (!user) {
-            const err = new Error('Could not find user by name')
+            const err = new Error(`Could not find user by the name: ${name}`)
             err.name = 'userNotFound'
             throw err
         }
@@ -59,7 +61,7 @@ const UserService = {
     async findByEmail(email) {
         const user = await User.findByEmail(email)
         if (!user) {
-            const err = new Error('Could not find user by email')
+            const err = new Error(`Could not find user by the email: ${email}`)
             err.name = 'userNotFound'
             throw err
         }
@@ -69,7 +71,7 @@ const UserService = {
     async findById(id) {
         const user = await User.findUserById(id)
         if (!user) {
-            const err = new Error('Could not find user by id')
+            const err = new Error(`Could not find user by the id: ${id}`)
             err.name = 'userNotFound'
             throw err
         }
@@ -96,18 +98,93 @@ const UserService = {
     },
 
     async findOrCreateFederatedCredentials(profile) {
-        return await User.findOrCreateUserFromGoogle(profile)
+        /**
+         * In the add student form, the email field needs to be left out of the request body entirely
+         * if you don't want to add an email to that user, since the email field is optional, but doesn't
+         * allow empty values like ''.
+
+         * After adding a student with an email, that student can login with Google using that email
+         */
+        const provider = 'google'
+        const providerUserId = profile.id
+
+        const existingFedCred = await User.findFederatedCredentials(provider, providerUserId)
+
+        // If Google account is found, return the user associated with it
+        if (existingFedCred) {
+            return await User.findUserById(existingFedCred.user_id)
+        }
+
+        // Check if student user has been created for this Gmail
+        const student = await User.findByEmail(profile.emails?.[0].value)
+
+        if (student) {
+            const [createdUser] = await User.createFederatedCredentials(student.id, provider, providerUserId)
+            if (!createdUser.user_id) {
+                // federated credentials user needs to be removed,
+                // since there is currently no way to associate a user to it after it has been created
+                await User.deleteFederatedCredentials(createdUser.id)
+                const err = new Error(`User_id wasn't properly set to federated credentials, Google account is not associated to any user and will therefore not work. Federated credentials removed...`)
+                err.userDetails = 'Käyttäjän lisäys epäonnistui'
+                err.status = 500
+                throw err
+            }
+            return { ...student, needsOnboarding: true }
+        } else {
+            // If no user account exists for this Gmail, create a new teacher account.
+            const email = profile.emails?.[0].value ?? null
+            const name = profile.name?.givenName || (profile?.displayName ? profile.displayName.split(' ')[0] : '') || ''
+            // Searches for the profile picture used in the google account, which will be set as default avatar if found
+            const avatar = profile.photos?.[0]?.value
+                ? `${profile.photos[0].value}?sz=200`
+                : ''
+
+            const [user] = await User.create({
+                email,
+                name,
+                password_hash: null,
+                avatar,
+                currently_reading: null,
+                grade: 1,
+                role: 'teacher'
+            })
+
+            const [createdUser] = await User.createFederatedCredentials(user.id, provider, providerUserId)
+            if (!createdUser.user_id) {
+                // federated credentials user needs to be removed,
+                // since there is currently no way to associate a user to it after it has been created
+                await User.deleteFederatedCredentials(createdUser.id)
+                const err = new Error(`User_id wasn't properly set to federated credentials, Google account is not associated to any user and will therefore not work. Federated credentials removed...`)
+                err.userDetails = 'Käyttäjän lisäys epäonnistui'
+                err.status = 500
+                throw err
+            }
+            return { ...user, needsOnboarding: true }
+        }
     },
 
-    async createStudent({ name, password, teacherId }) {
+    async createStudent({ email, name, password, teacherId }) {
         const existing = await User.findStudentByNameAndTeacher(name, teacherId)
         if (existing) {
             const err = new Error('Student name already taken for this teacher')
+            err.userDetails = 'Tällä opettajalla on jo tämän niminen oppilas'
             err.status = 400
             throw err
         }
+
+        if (email) {
+            const existingEmail = await User.findByEmail(email)
+            if (existingEmail) {
+                const err = new Error('Email already taken')
+                err.userDetails = 'Tämä sähköposti on jo jollain käytössä'
+                err.status = 400
+                throw err
+            }
+        }
+
         const password_hash = await bcrypt.hash(password, saltRounds)
         return User.create({
+            email,
             name,
             password_hash,
             role: 'student',
@@ -149,6 +226,12 @@ const UserService = {
             }
         }
         if (!grade) grade = user.grade
+        if (!name) {
+            const err = new Error('Name cannot be an empty string')
+            err.userDetails = 'Nimi ei voi olla tyhjä'
+            err.status = 400
+            throw err
+        }
 
         // if editing own profile or teacher editing
         return await User.completeUserProfile(

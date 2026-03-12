@@ -50,11 +50,12 @@ const unknownEndpoint = (request, response) => {
 }
 
 // middleware for error handling
-const errorHandler = (error, request, response, next) => {
+// eslint-disable-next-line no-unused-vars
+const errorHandler = (error, request, response, _next) => {
     /*
     > In errors with name (that exist in the list below) < (Used for more common errors)
     const err = new Error('Unauthorized access') <-- This message is printed to console for developers to see
-    err.name = 'Forbidden'                       <-- the error message and status the client receives is defined below
+    err.name = 'Forbidden'                       <-- the error message and status the client receives can be defined below
     throw err
 
     > In errors with status and no name or details < (Used for more specific errors)
@@ -62,7 +63,7 @@ const errorHandler = (error, request, response, next) => {
     err.status = 400                                <-- Status the client receives
     throw err
 
-    > In errors with userDetails < (Used for custom errors)
+    > In errors with userDetails < (Used for custom errors, most useful IMO)
     const err = new Error('Caused by missing name') <-- Printed to console for developers to see
     err.userDetails = 'Username already taken'      <-- Sent to the client/user
     err.status = 400                                <-- The status the client receives
@@ -74,16 +75,10 @@ const errorHandler = (error, request, response, next) => {
     */
 
     logger.error(error.message)
-    if (error.name === 'ValidationError') {
-        // for errors thrown by the zValidate middleware
-        return response.status(400).json({
-            error: error.message,
-            details: error.details // details using the zod library
-        })
-    } else if (error.name === 'userNotFound') {
-        return response.status(404).send({ error: 'User not found' })
+    if (error.name === 'userNotFound') {
+        return response.status(404).send({ error: 'Käyttäjää ei löytynyt' })
     } else if (error.userDetails) {
-        // For custom errors with a specified message to both users and developers
+        // For custom errors with a seperate message for users and developers
         return response.status(error.status).json({
             error: error.userDetails
         })
@@ -93,10 +88,7 @@ const errorHandler = (error, request, response, next) => {
         // The client gets 'Internal server error' and the actual error is printed to the backend console by logger.error
         return response.status(500).json({ error: 'Internal server error' })
     } else {
-        // non async errors are be handed to the default Express error handler
-        next()
-
-        // for more specific errors
+        // for more specific errors (error with status and no name or details)
         return response.status(error.status).json({
             error: error.message
         })
@@ -112,11 +104,14 @@ function zValidate(schema) {
             // Error formats: treeifyError(), prettifyError() (requires .split('\n')), flattenError()
             const flat = z.flattenError(result.error)
 
-            const err = new Error('Invalid request data. Unknown, missing or malformed fields. Please check your input.')
-            err.name = 'ValidationError'
+            const fields = Object.entries(flat.fieldErrors)
+                .map(([field, messages]) => `${field}: ${messages?.[0] ?? ''}, `)
+                .join('\n')
+
+            const err = new Error(JSON.stringify(flat))
             err.status = 400
-            err.details = flat
-            throw err
+            err.userDetails = flat.formErrors.length !== 0 ? flat.formErrors[0] : fields
+            next(err)
         }
 
         request.validated = result.data

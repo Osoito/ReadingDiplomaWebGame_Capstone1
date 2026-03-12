@@ -3,5 +3,9 @@ import logger from './utils/logger.js'
 import config from './utils/config.js'
 
 app.listen(config.PORT, () => {
-    logger.info(`Server running on port ${config.PORT}`)
+    if (process.env.NODE_ENV === 'production') {
+        logger.info(`Web service can be accessed at ${process.env.PUBLIC_URL}`)
+    } else {
+        logger.info(`Server running on port ${config.PORT}`)
+    }
 })

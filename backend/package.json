@@ -2,18 +2,11 @@
   "name": "lukudiplomi-backend",
   "private": true,
   "version": "0.1.0",
-  "homepage": "https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1#readme",
-  "bugs": {
-    "url": "https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1.git"
-  },
   "type": "module",
   "main": "index.js",
   "scripts": {
     "preinstall": "cross-env NODE_ENV=development node scripts/createDatabase.js",
+    "postinstall": "npx knex migrate:latest",
     "start": "cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
     "test": "npm run test:unit && npm run test:integration",
@@ -31,11 +24,10 @@
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^4.16.2",
-    "express-async-errors": "^3.1.1",
     "express-rate-limit": "^8.2.1",
     "express-session": "^1.19.0",
-    "jsonwebtoken": "^9.0.3",
     "knex": "^3.1.0",
+    "memorystore": "^1.6.7",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
@@ -74,7 +66,8 @@
       "express-rate-limit": "Used to limit log-in attempts from IP addresses",
       "cross-env": "Required for NODE_ENV to work on Windows",
       "supertest": "Module for testing HTTP, to allow using lower-level API provided by superagent",
-      "vitest": "Module for unit -and integration testing"
+      "vitest": "Module for unit -and integration testing",
+      "memorystore": "Used to prevent memory leaks caused by express-session (https://www.npmjs.com/package/memorystore)"
     }
   }
 }

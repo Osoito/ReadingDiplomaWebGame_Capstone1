@@ -23,6 +23,7 @@ const userUpdatePasswordSchema = z.object({
 // We still need to figure out how the password should be when a user signs up with a Google
 
 const studentCreateSchema = z.object({
+    email: z.email().optional(),
     name: z.string().min(3),
     password: z.string().min(3),
 }).strict()
@@ -45,8 +46,9 @@ usersRouter.get('/my-students', middleware.requireTeacherRole, async (request, r
 
 usersRouter.post('/students', middleware.requireTeacherRole, middleware.zValidate(studentCreateSchema), async (request, response, next) => {
     try {
-        const { name, password } = request.validated
+        const { email, name, password } = request.validated
         const student = await UserService.createStudent({
+            email,
             name,
             password,
             teacherId: request.user.id
@@ -78,6 +80,7 @@ usersRouter.delete('/students/:id', middleware.requireTeacherRole, async (reques
     }
 })
 
+// ∨∨∨ NEEDS to be removed from final version (allows anyone logged in to get all the users info)
 usersRouter.get('/', middleware.requireAuthentication(true), async (request, response, next) => {
     try {
         const users = await UserService.getAllUsers()
@@ -87,6 +90,7 @@ usersRouter.get('/', middleware.requireAuthentication(true), async (request, res
     }
 })
 
+// ∨∨∨ Currently not in use
 usersRouter.post('/register', middleware.requireAuthentication(false), middleware.zValidate(userRegisterSchema), async (request, response, next) => {
     const { email, name, password, avatar, currently_reading, grade, role } = request.validated
 
