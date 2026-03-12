@@ -6,7 +6,6 @@ godot/
 CLAUDE.md
 .claude/
 bash.exe.stackdump
-pnpm-lock.yaml
 
 # Node.js specific ignores
 # backend/pnpm-lock.yaml
