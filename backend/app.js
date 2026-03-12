@@ -8,6 +8,7 @@ import booksRouter from './controllers/books.js'
 import authRouter from './controllers/auth.js'
 import progressRouter from './controllers/progressController.js'
 import rewardsRouter from './controllers/rewards.js'
+import submissionsRouter from './controllers/submissions.js'
 import session from 'express-session'
 import memorystore from 'memorystore'
 import passport from './utils/passport.js'
@@ -53,6 +54,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/books', booksRouter)
 app.use('/api/progress', progressRouter)
 app.use('/api/rewards', rewardsRouter)
+app.use('/api/submissions', submissionsRouter)
 
 if (process.env.NODE_ENV === 'production') {
     // derive __filename and __dirname in ESM
