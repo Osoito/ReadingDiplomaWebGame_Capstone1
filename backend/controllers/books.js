@@ -11,7 +11,8 @@ const bookSchema = z.object({
     title: z.string(),
     author: z.string(),
     coverimage: z.string(),
-    booktype: z.string().transform(str => str.toLowerCase()).pipe(booktypes)
+    booktype: z.string().transform(str => str.toLowerCase()).pipe(booktypes),
+    content: z.string().optional()
 }).strict()
 
 booksRouter.get('/', middleware.requireAuthentication(true), async (request, response, next) => {
@@ -36,14 +37,15 @@ booksRouter.get('/:id', middleware.requireAuthentication(true), async (request, 
 booksRouter.post('/', middleware.requireAuthentication(true), middleware.zValidate(bookSchema), async (request, response, next) => {
     // request.validated imported from zValidate disallows unknown fields and incorrect data types
     // and returns the validated request body
-    const { title, author, coverimage, booktype } = request.validated
+    const { title, author, coverimage, booktype, content } = request.validated
 
     try {
         const newBook = {
             title,
             author,
             coverimage,
-            booktype
+            booktype,
+            content
         }
 
         await BookService.addBook(newBook)

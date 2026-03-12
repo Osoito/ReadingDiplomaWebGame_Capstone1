@@ -54,7 +54,8 @@ describe('Book unit tests', () => {
             title: 'Test Book',
             author: 'Test Author',
             coverimage: 'coverimage.jpg',
-            booktype: 'e-book'
+            booktype: 'e-book',
+            content: 'test/testPath'
         }
 
         bookService.addBook.mockResolvedValue(input)
@@ -78,21 +79,24 @@ describe('Book unit tests', () => {
                 title: 'Test Book',
                 author: 'Test Author',
                 coverimage: 'default.jpg',
-                booktype: 'e-book'
+                booktype: 'e-book',
+                content: 'test/testPath'
             },
             {
                 id: 2,
                 title: 'Test Book2',
                 author: 'Test Author2',
                 coverimage: 'default.jpg',
-                booktype: 'e-book'
+                booktype: 'e-book',
+                content: 'test/testPath2'
             },
             {
                 id: 3,
                 title: 'Test Book3',
                 author: 'Test Author3',
                 coverimage: 'default.jpg',
-                booktype: 'e-book'
+                booktype: 'e-book',
+                content: 'test/testPath3'
             }
         ]
 
@@ -114,7 +118,8 @@ describe('Book unit tests', () => {
                 title: 'Test Book3',
                 author: 'Test Author3',
                 coverimage: 'default.jpg',
-                booktype: 'e-book'
+                booktype: 'e-book',
+                content: 'test/testPath3'
             }
         ]
 

@@ -3,7 +3,6 @@
  * @returns { Promise<void> }
  */
 import bcrypt from 'bcrypt'
-// CURRENTLY not in use!
 export async function seed(knex) {
     // Deletes ALL existing entries
     return await knex('users').del()
