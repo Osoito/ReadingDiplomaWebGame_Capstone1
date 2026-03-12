@@ -44,7 +44,7 @@ const api = supertest(app)
 
 describe('reward related unit tests', () => {
     beforeEach(() => {
-        vi.clearAllMocks()
+        vi.resetAllMocks()
     })
 
     test('Add a reward', async() => {
@@ -72,13 +72,11 @@ describe('reward related unit tests', () => {
     test('Get specific user rewards', async() => {
         const expectedOutcome = [
             {
-                id: 1,
                 owner: 1,
                 reward_type: 'avatar',
                 reward: 'avatar.jpg'
             },
             {
-                id: 2,
                 owner: 1,
                 reward_type: 'badge',
                 reward: 'badge1'
@@ -99,13 +97,11 @@ describe('reward related unit tests', () => {
     test('Get current user rewards', async() => {
         const expectedOutcome = [
             {
-                id: 1,
                 owner: 1,
                 reward_type: 'avatar',
                 reward: 'avatar.jpg'
             },
             {
-                id: 2,
                 owner: 1,
                 reward_type: 'badge',
                 reward: 'badge1'

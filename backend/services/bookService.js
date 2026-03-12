@@ -19,7 +19,7 @@ const BookService = {
     },
 
     async getAllBooks() {
-        const books = Book.getAll()
+        const books = await Book.getAll()
         if (!books) {
             const err = new Error(`No books were found`)
             err.status = 404
@@ -29,7 +29,7 @@ const BookService = {
     },
 
     async findBookById(id) {
-        const book = Book.findBookById(id)
+        const book = await Book.findBookById(id)
         if (!book) {
             const err = new Error(`Book not found`)
             err.status = 404

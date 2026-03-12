@@ -46,7 +46,7 @@ const api = supertest(app)
 
 describe('Book unit tests', () => {
     beforeEach(() => {
-        vi.clearAllMocks()
+        vi.resetAllMocks()
     })
 
     test('Add a book', async() => {
@@ -75,7 +75,6 @@ describe('Book unit tests', () => {
     test('Get all books', async() => {
         const mockBooks = [
             {
-                id: 1,
                 title: 'Test Book',
                 author: 'Test Author',
                 coverimage: 'default.jpg',
@@ -83,7 +82,6 @@ describe('Book unit tests', () => {
                 content: 'test/testPath'
             },
             {
-                id: 2,
                 title: 'Test Book2',
                 author: 'Test Author2',
                 coverimage: 'default.jpg',
@@ -91,7 +89,6 @@ describe('Book unit tests', () => {
                 content: 'test/testPath2'
             },
             {
-                id: 3,
                 title: 'Test Book3',
                 author: 'Test Author3',
                 coverimage: 'default.jpg',
@@ -114,7 +111,6 @@ describe('Book unit tests', () => {
     test('Get a specific book', async() => {
         const mockBook = [
             {
-                id: 3,
                 title: 'Test Book3',
                 author: 'Test Author3',
                 coverimage: 'default.jpg',
