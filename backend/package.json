@@ -7,6 +7,7 @@
   "scripts": {
     "preinstall": "cross-env NODE_ENV=development node scripts/createDatabase.js",
     "postinstall": "npx knex migrate:latest",
+    "prestart": "test -f ../frontend/dist/index.html || npm --prefix ../frontend run build",
     "start": "cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development nodemon index.js",
     "test": "npm run test:unit && npm run test:integration",
@@ -22,6 +23,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
     "express": "^4.16.2",
     "express-rate-limit": "^8.2.1",
@@ -38,7 +40,6 @@
     "@eslint/js": "^9.39.2",
     "@stylistic/eslint-plugin": "^4.4.1",
     "@vitest/coverage-istanbul": "4.0.18",
-    "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
     "eslint-plugin": "^1.0.1",
     "globals": "^17.3.0",
@@ -49,25 +50,48 @@
   },
   "comments": {
     "type": "module/commonjs",
-    "devDependencies": {
-      "devDependencies": "packages used only in testing and development",
-      "eslint": "ESLint is used to maintain code quality and consistency (automatic testing of code style)",
-      "nodemon": "Nodemon is used for hot reloading the running server when new changes are saved",
-      "globals": "Globals is used to define global variables for ESLint",
+    "scripts": {
+      "pre...": "When running ..., Runs before ... script",
+      "post...": "When running ..., Runs after ... script",
+      "preinstall": "creates production/development database",
+      "postinstall": "Runs migrations for production/development database",
+      "prestart": "Checks if frontend build is found, and if not, builds the frontend into frontend/dist/ (doesn't work in Windows command prompt or powershell, use git bash, if you don't have git bash, build frontend manually)",
+      "start": "starts server in production environment",
+      "dev": "starts server in development environment",
+      "test": "runs both unit- and integration tests",
+      "test:unit": "runs unit tests",
+      "test:integration": "runs integration tests",
+      "pretest": "Creates required test databases",
+      "posttest": "Removes test databases",
+      "lint": "runs linter",
+      "db:create": "creates production/development database",
+      "db:make": "creates a knex migration template with name specified by user",
+      "db:seed": "creates a knex seed template with name specified by user"
+    },
+    "dependencies": {
+      "bcrypt": "Used for hashing passwords, based on the blowfish cipher",
       "cors": "CORS is used to enable cross-origin resource sharing, allowing the backend to handle requests from different origins",
+      "cross-env": "Required for NODE_ENV to work on Windows",
+      "dotenv": "Environment variable management",
       "express": "Web application framework for Node.js",
-      "express-async-errors": "Async/await error handling support for express.js",
+      "express-rate-limit": "Used to limit log-in attempts from IP addresses",
       "express-session": "For storing session data server-side (https://expressjs.com/en/resources/middleware/session.html)",
       "knex": "SQL query builder for Node.js",
-      "pg": "PostgreSQL client for Node.js",
-      "zod": "Used in error handling (input validation). More documentation (https://zod.dev/)",
+      "memorystore": "Used to prevent memory leaks caused by express-session (https://www.npmjs.com/package/memorystore)",
       "passport": "Used for authentication (https://www.npmjs.com/package/passport)",
+      "passport-google-oauth20": "Passport plugin for Google OAuth 2.0",
       "passport-local": "Plugins that the passport uses as strategies (https://github.com/jaredhanson/passport-local)",
-      "express-rate-limit": "Used to limit log-in attempts from IP addresses",
-      "cross-env": "Required for NODE_ENV to work on Windows",
+      "pg": "PostgreSQL client for Node.js",
+      "zod": "Used in error handling (input validation). More documentation (https://zod.dev/)"      
+    },
+    "devDependencies": {
+      "devDependencies": "packages used only during testing and development",
+      "eslint": "ESLint is used to maintain code quality and consistency (automatic testing of code style)",
+      "globals": "Globals is used to define global variables for ESLint",
+      "nodemon": "Nodemon is used for hot reloading the running server when new changes are saved",
+      "passport-strategy": "Can be used to create custom passport strategies. Used in tests to simulate local login",
       "supertest": "Module for testing HTTP, to allow using lower-level API provided by superagent",
-      "vitest": "Module for unit -and integration testing",
-      "memorystore": "Used to prevent memory leaks caused by express-session (https://www.npmjs.com/package/memorystore)"
+      "vitest": "Module for unit -and integration testing"
     }
   }
 }

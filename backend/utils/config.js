@@ -29,6 +29,7 @@ try {
     if (Object.values(envVariables).includes(undefined)) {
         //logger.info(`Env variables expected: ${Object.keys(envVariables)}\n`)
         //logger.info(`Env variables found: ${entries.map(e => !e[1] ? '-undefined-' : e[0])}\n`)
+        logger.error(`Missing env variables required in ${process.env.NODE_ENV} environment`)
         throw new Error(`>>> Missing env variables:${entries.reduce((res, e) => {
             if(!e[1]) {
                 res.push(` ${e[0]}`)
@@ -38,7 +39,7 @@ try {
         }\n`)
     }
 } catch (err) {
-    logger.error(err)
+    logger.info(err)
     logger.info(`To solve this, create a file with the name .env to backend/ and add the required variables to it, variables can be found in GitHub at https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#backend`)
     process.exit(1)
 }
