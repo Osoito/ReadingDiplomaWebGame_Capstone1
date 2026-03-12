@@ -87,7 +87,7 @@ const User = {
 
     async findStudentsByTeacher(teacherId) {
         return db('users')
-            .select('id', 'name', 'avatar', 'grade', 'role')
+            .select('id', 'name', 'email', 'avatar', 'grade', 'role')
             .where({ teacher_id: teacherId, role: 'student' })
     },
 
@@ -97,14 +97,12 @@ const User = {
             .del()
     },
 
-    async completeUserProfile(id, name, avatar, grade) {
+    async completeUserProfile(id, name, avatar, grade, email) {
+        const updates = { name, avatar, grade }
+        if (email !== undefined) updates.email = email
         return db('users')
             .where({ id })
-            .update({
-                name: name,
-                avatar: avatar,
-                grade: grade
-            })
+            .update(updates)
             .returning('*')
     }
 }

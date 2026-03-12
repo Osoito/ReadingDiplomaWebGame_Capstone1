@@ -202,7 +202,7 @@ const UserService = {
         return await User.deleteUser(id)
     },
 
-    async updateProfile({ reqId, id, name, avatar, role, grade }) {
+    async updateProfile({ reqId, id, name, avatar, role, grade, email }) {
         if (role === 'student' && reqId !== id) {
             const err = new Error('Request denied, student tried to update someone elses profile')
             err.userDetails = 'Voit muokata vain omaa profiiliasi'
@@ -234,12 +234,24 @@ const UserService = {
             throw err
         }
 
+        if (email !== undefined && email !== '') {
+            const existingEmail = await User.findByEmail(email)
+            if (existingEmail && existingEmail.id !== id) {
+                const err = new Error('Email already taken')
+                err.userDetails = 'Tämä sähköposti on jo jollain käytössä'
+                err.status = 400
+                throw err
+            }
+        }
+        const emailUpdate = email === undefined ? undefined : (email === '' ? null : email)
+
         // if editing own profile or teacher editing
         return await User.completeUserProfile(
             id,
             name ?? user.name,
             avatar ?? user.avatar,
-            grade
+            grade,
+            emailUpdate
         )
     }
 }

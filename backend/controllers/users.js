@@ -31,7 +31,8 @@ const studentCreateSchema = z.object({
 const profileUpdateSchema = z.object({
     name: z.string().optional(),
     avatar: z.string().optional(),
-    grade: z.string().optional()
+    grade: z.string().optional(),
+    email: z.union([z.email(), z.literal('')]).optional(),
 }).strict()
 
 // Must be defined BEFORE /:id route
@@ -201,7 +202,7 @@ usersRouter.patch('/profile/:id',
     middleware.zValidate(profileUpdateSchema),
     middleware.requireAuthentication(true),
     async (request, response, next) => {
-        const { name, avatar, grade } = request.validated
+        const { name, avatar, grade, email } = request.validated
 
         try {
             const userToUpdate = {
@@ -210,7 +211,8 @@ usersRouter.patch('/profile/:id',
                 name,
                 avatar,
                 role: request.user.role,
-                grade
+                grade,
+                email,
             }
 
             const updatedUser = await UserService.updateProfile(userToUpdate)

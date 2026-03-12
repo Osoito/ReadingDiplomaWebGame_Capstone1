@@ -12,6 +12,9 @@ function StudentManager() {
     const [resetPwdId, setResetPwdId] = useState(null)
     const [resetPwd, setResetPwd] = useState('')
     const [resetPwdError, setResetPwdError] = useState('')
+    const [editEmailId, setEditEmailId] = useState(null)
+    const [editEmail, setEditEmail] = useState('')
+    const [editEmailError, setEditEmailError] = useState('')
 
     const fetchStudents = async () => {
         try {
@@ -96,6 +99,26 @@ function StudentManager() {
         }
     }
 
+    const handleEmailSave = async (id) => {
+        setEditEmailError('')
+        try {
+            const res = await fetch(`/api/users/profile/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: editEmail.trim() }),
+            })
+            if (res.ok) {
+                setEditEmailId(null)
+                fetchStudents()
+            } else {
+                const data = await res.json()
+                setEditEmailError(data.error || 'Sähköpostin muokkaus epäonnistui')
+            }
+        } catch {
+            setEditEmailError('Yhteysvirhe')
+        }
+    }
+
     const handleDelete = async (id, studentName) => {
         if (!window.confirm(`Haluatko varmasti poistaa oppilaan "${studentName}"?`)) return
         try {
@@ -112,19 +135,20 @@ function StudentManager() {
 
     return (
         <div className="dashboard-section">
-            <h2>Oppilaat</h2>
+            <h2>Oppilaat {students.length > 0 && <span className="student-count">{students.length}</span>}</h2>
             {students.length > 0 ? (
                 <table className="data-table">
                     <thead>
                         <tr>
                             <th>Hahmo</th>
                             <th>Nimi</th>
+                            <th>Gmail</th>
                             <th>Toiminnot</th>
                         </tr>
                     </thead>
                     <tbody>
                         {students.map((s) => (
-                            <tr key={s.id}>
+                            <tr key={s.id} className={editingId === s.id || editEmailId === s.id || resetPwdId === s.id ? 'editing-row' : ''}>
                                 <td><StudentAvatarBadge avatarId={s.avatar} size={32} /></td>
                                 <td>
                                     {editingId === s.id ? (
@@ -139,8 +163,35 @@ function StudentManager() {
                                             {s.name}
                                             <button
                                                 className="icon-btn"
-                                                onClick={() => { setEditingId(s.id); setEditName(s.name); setResetPwdId(null) }}
+                                                onClick={() => { setEditingId(s.id); setEditName(s.name); setResetPwdId(null); setEditEmailId(null) }}
                                                 title="Muokkaa nimeä"
+                                            >
+                                                ✏
+                                            </button>
+                                        </>
+                                    )}
+                                </td>
+                                <td>
+                                    {editEmailId === s.id ? (
+                                        <>
+                                            <input
+                                                className="inline-edit-input"
+                                                type="email"
+                                                value={editEmail}
+                                                onChange={(e) => { setEditEmail(e.target.value); setEditEmailError('') }}
+                                                autoFocus
+                                            />
+                                            {editEmailError && <span className="section-error" style={{ fontSize: '0.8rem' }}>{editEmailError}</span>}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {s.email
+                                                ? <><span className="gmail-g">G</span>{s.email}</>
+                                                : <span className="gmail-empty">—</span>}
+                                            <button
+                                                className="icon-btn"
+                                                onClick={() => { setEditEmailId(s.id); setEditEmail(s.email || ''); setEditingId(null); setResetPwdId(null) }}
+                                                title="Muokkaa sähköpostia"
                                             >
                                                 ✏
                                             </button>
@@ -152,6 +203,11 @@ function StudentManager() {
                                         <>
                                             <button className="add-button" style={{ padding: '0.35rem 0.75rem', alignSelf: 'unset', fontSize: '0.85rem' }} onClick={() => handleEditSave(s.id)}>Tallenna</button>
                                             <button className="cancel-button" style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem', marginLeft: '0.5rem' }} onClick={() => setEditingId(null)}>Peruuta</button>
+                                        </>
+                                    ) : editEmailId === s.id ? (
+                                        <>
+                                            <button className="add-button" style={{ padding: '0.35rem 0.75rem', alignSelf: 'unset', fontSize: '0.85rem' }} onClick={() => handleEmailSave(s.id)}>Tallenna</button>
+                                            <button className="cancel-button" style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem', marginLeft: '0.5rem' }} onClick={() => { setEditEmailId(null); setEditEmailError('') }}>Peruuta</button>
                                         </>
                                     ) : resetPwdId === s.id ? (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
@@ -173,7 +229,7 @@ function StudentManager() {
                                         <>
                                             <button
                                                 className="icon-btn"
-                                                onClick={() => { setResetPwdId(s.id); setResetPwd(''); setResetPwdError(''); setEditingId(null) }}
+                                                onClick={() => { setResetPwdId(s.id); setResetPwd(''); setResetPwdError(''); setEditingId(null); setEditEmailId(null) }}
                                                 title="Vaihda salasana"
                                             >
                                                 🔒
@@ -217,7 +273,7 @@ function StudentManager() {
                     />
                 </div>
                 <div className="form-group">
-                    <label>Sähköposti (valinnainen, Google-kirjautumista varten)</label>
+                    <label>Gmail-osoite (valinnainen)</label>
                     <input
                         type="email"
                         value={email}
