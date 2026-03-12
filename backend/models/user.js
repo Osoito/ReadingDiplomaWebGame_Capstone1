@@ -72,14 +72,16 @@ const User = {
     async findTeacherByName(name) {
         return db('users')
             .select('id', 'email', 'name', 'role')
-            .where({ name, role: 'teacher' })
+            .whereRaw('LOWER(name) = LOWER(?)', [name])
+            .where({ role: 'teacher' })
             .first()
     },
 
     async findStudentByNameAndTeacher(name, teacherId) {
         return db('users')
             .select('id', 'email', 'name', 'password_hash', 'avatar', 'currently_reading', 'grade', 'role', 'teacher_id')
-            .where({ name, teacher_id: teacherId })
+            .whereRaw('LOWER(name) = LOWER(?)', [name])
+            .where({ teacher_id: teacherId })
             .first()
     },
 
