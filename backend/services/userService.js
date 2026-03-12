@@ -189,7 +189,8 @@ const UserService = {
             password_hash,
             role: 'student',
             grade: 1,
-            teacher_id: teacherId
+            teacher_id: teacherId,
+            avatar: ''
         })
     },
 
@@ -226,7 +227,7 @@ const UserService = {
             }
         }
         if (!grade) grade = user.grade
-        if (!name) {
+        if (name !== undefined && !name.trim()) {
             const err = new Error('Name cannot be an empty string')
             err.userDetails = 'Nimi ei voi olla tyhjä'
             err.status = 400
