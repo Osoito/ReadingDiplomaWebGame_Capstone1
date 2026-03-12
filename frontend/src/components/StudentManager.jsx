@@ -148,7 +148,7 @@ function StudentManager() {
                     </thead>
                     <tbody>
                         {students.map((s) => (
-                            <tr key={s.id} className={editingId === s.id || editEmailId === s.id || resetPwdId === s.id ? 'editing-row' : ''}>
+                            <tr key={s.id} className={resetPwdId === s.id ? 'editing-row lock-row' : (editingId === s.id || editEmailId === s.id ? 'editing-row' : '')}>
                                 <td><StudentAvatarBadge avatarId={s.avatar} size={32} /></td>
                                 <td>
                                     {editingId === s.id ? (
@@ -162,11 +162,14 @@ function StudentManager() {
                                         <>
                                             {s.name}
                                             <button
-                                                className="icon-btn"
+                                                className="icon-btn--edit"
                                                 onClick={() => { setEditingId(s.id); setEditName(s.name); setResetPwdId(null); setEditEmailId(null) }}
                                                 title="Muokkaa nimeä"
                                             >
-                                                ✏
+                                                <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
+                                                    <path d="M9.5 1.5L12.5 4.5L4.5 12.5H1.5V9.5L9.5 1.5Z"/>
+                                                    <path d="M7.5 3.5L10.5 6.5"/>
+                                                </svg>
                                             </button>
                                         </>
                                     )}
@@ -189,11 +192,14 @@ function StudentManager() {
                                                 ? <><span className="gmail-g">G</span>{s.email}</>
                                                 : <span className="gmail-empty">—</span>}
                                             <button
-                                                className="icon-btn"
+                                                className="icon-btn--edit"
                                                 onClick={() => { setEditEmailId(s.id); setEditEmail(s.email || ''); setEditingId(null); setResetPwdId(null) }}
                                                 title="Muokkaa sähköpostia"
                                             >
-                                                ✏
+                                                <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
+                                                    <path d="M9.5 1.5L12.5 4.5L4.5 12.5H1.5V9.5L9.5 1.5Z"/>
+                                                    <path d="M7.5 3.5L10.5 6.5"/>
+                                                </svg>
                                             </button>
                                         </>
                                     )}
@@ -210,29 +216,34 @@ function StudentManager() {
                                             <button className="cancel-button" style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem', marginLeft: '0.5rem' }} onClick={() => { setEditEmailId(null); setEditEmailError('') }}>Peruuta</button>
                                         </>
                                     ) : resetPwdId === s.id ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                                        <div className="pwd-reset-widget">
                                             <input
-                                                className="inline-edit-input"
+                                                className="pwd-reset-input"
                                                 type="password"
                                                 placeholder="Uusi salasana"
                                                 value={resetPwd}
                                                 onChange={(e) => { setResetPwd(e.target.value); setResetPwdError('') }}
                                                 autoFocus
                                             />
-                                            {resetPwdError && <span className="section-error" style={{ fontSize: '0.8rem' }}>{resetPwdError}</span>}
-                                            <div>
-                                                <button className="add-button" style={{ padding: '0.35rem 0.75rem', alignSelf: 'unset', fontSize: '0.85rem' }} onClick={() => handlePasswordReset(s.id)}>Tallenna</button>
-                                                <button className="cancel-button" style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem', marginLeft: '0.5rem' }} onClick={() => { setResetPwdId(null); setResetPwd(''); setResetPwdError('') }}>Peruuta</button>
+                                            {resetPwdError && <span className="pwd-reset-error">{resetPwdError}</span>}
+                                            <div className="pwd-reset-actions">
+                                                <button className="pwd-save-btn" onClick={() => handlePasswordReset(s.id)}>Tallenna</button>
+                                                <button className="cancel-button" onClick={() => { setResetPwdId(null); setResetPwd(''); setResetPwdError('') }}>Peruuta</button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <>
+                                        <div className="row-actions">
                                             <button
-                                                className="icon-btn"
+                                                className="icon-btn icon-btn--lock"
                                                 onClick={() => { setResetPwdId(s.id); setResetPwd(''); setResetPwdError(''); setEditingId(null); setEditEmailId(null) }}
                                                 title="Vaihda salasana"
                                             >
-                                                🔒
+                                                <svg viewBox="0 0 18 22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" width="15" height="18">
+                                                    <rect x="1" y="9" width="16" height="12" rx="1.5" />
+                                                    <path d="M4.5 9V7A4.5 4 0 0 1 13.5 7V9" />
+                                                    <circle cx="9" cy="15" r="1.8" fill="currentColor" stroke="none" />
+                                                    <path d="M8.1 16.5 L8.1 18.5 L9.9 18.5 L9.9 16.5" fill="currentColor" stroke="none" />
+                                                </svg>
                                             </button>
                                             <button
                                                 className="delete-button"
@@ -240,7 +251,7 @@ function StudentManager() {
                                             >
                                                 Poista
                                             </button>
-                                        </>
+                                        </div>
                                     )}
                                 </td>
                             </tr>
