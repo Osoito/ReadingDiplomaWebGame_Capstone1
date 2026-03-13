@@ -39,7 +39,7 @@ function StudentLoginPage() {
             await checkAuth()
             navigate('/game')
         } catch {
-            setError('Yhteysvirhe. Yritä uudelleen.')
+            //setError('Yhteysvirhe. Yritä uudelleen.')
             setSubmitting(false)
         }
     }

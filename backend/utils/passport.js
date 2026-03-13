@@ -21,7 +21,7 @@ import bcrypt from 'bcrypt'
 passport.use(new LocalStrategy(
     // What the frontend needs to send in order for this to work
     /*
-        <input name="identifier" placeholder="Email or username">
+        <input name="identifier" placeholder="username">
         <input name="password" type="password">
         Optional: <input name="teacher_name"> for student login under a teacher
     */
@@ -36,24 +36,17 @@ passport.use(new LocalStrategy(
                 const User = (await import('../models/user.js')).default
                 const teacher = await User.findTeacherByName(teacherName)
                 if (!teacher) {
-                    return done(null, false, { message: 'Invalid credentials' })
+                    return done(null, false, { message: 'Väärä nimi tai salasana' })
                 }
                 user = await User.findStudentByNameAndTeacher(identifier, teacher.id)
             } else {
-                //Check if identifier looks like an email
-                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)
-
-                if (isEmail) {
-                    user = await UserService.findByEmail(identifier)
-                } else {
-                    user = await UserService.findByName(identifier)
-                }
+                user = await UserService.findByName(identifier)
             }
 
-            if (!user) return done(null, false, { message: 'Invalid credentials' })
+            if (!user) return done(null, false, { message: 'Väärä nimi tai salasana' })
 
             const valid = await bcrypt.compare(password, user.password_hash)
-            if (!valid) return done(null, false, { message: 'Invalid credentials' })
+            if (!valid) return done(null, false, { message: 'Väärä nimi tai salasana' })
 
             return done(null, user) // user still contains password_hash here
         } catch (error) {
