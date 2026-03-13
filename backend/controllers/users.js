@@ -98,6 +98,7 @@ usersRouter.patch('/students/:id/password', middleware.requireTeacherRole, middl
     }
 })
 
+/*
 // ∨∨∨ NEEDS to be removed from final version (allows anyone logged in to get all the users info)
 usersRouter.get('/', middleware.requireAuthentication(true), async (request, response, next) => {
     try {
@@ -107,7 +108,7 @@ usersRouter.get('/', middleware.requireAuthentication(true), async (request, res
         next(error)
     }
 })
-
+*/
 // ∨∨∨ Currently not in use
 usersRouter.post('/register', middleware.requireAuthentication(false), middleware.zValidate(userRegisterSchema), async (request, response, next) => {
     const { email, name, password, avatar, currently_reading, grade, role } = request.validated

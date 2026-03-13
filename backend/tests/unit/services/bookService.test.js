@@ -121,7 +121,7 @@ describe('Bookservice unit tests', () => {
         expect(result).toEqual(mockBooks)
     })
 
-    test('Get book with no books', async () => {
+    test('Get books with no books in table', async () => {
         const mockEmptyBooks = [
             {
             }
