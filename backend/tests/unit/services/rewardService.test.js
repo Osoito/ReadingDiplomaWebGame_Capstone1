@@ -49,6 +49,25 @@ describe('RewardService unit tests', () => {
 
     })
 
+    test('Add a duplicate reward', async() => {
+        const input = {
+            owner: 1,
+            reward_type: 'badge',
+            reward: 'testbadge.jpg'
+        }
+
+        Reward.getByRewardAndUser.mockResolvedValue(input)
+
+        await expect(RewardService.addReward(input))
+            .rejects
+            .toThrow('User already has this reward')
+
+        expect(Reward.getByRewardAndUser).toBeCalledTimes(1)
+        expect(Reward.getByRewardAndUser).toHaveBeenCalledWith(input.owner, input.reward)
+        expect(Reward.add).not.toHaveBeenCalled()
+
+    })
+
     test('Get all rewards for a specific user', async() => {
         const mockRewards = [
             {
@@ -69,6 +88,17 @@ describe('RewardService unit tests', () => {
 
         expect(Reward.getUserRewards).toBeCalledTimes(1)
         expect(result).toEqual(mockRewards)
+    })
+
+    test('Try to get all rewards for user when there are no rewards', async() => {
+
+        Reward.getUserRewards.mockResolvedValue(null)
+
+        await expect(RewardService.getUserRewards(1))
+            .rejects
+            .toThrow('No rewards found for this user')
+
+        expect(Reward.getUserRewards).toBeCalledTimes(1)
     })
 
 

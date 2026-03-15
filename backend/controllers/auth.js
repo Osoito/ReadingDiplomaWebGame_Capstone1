@@ -6,10 +6,21 @@ import middleware from '../utils/middleware.js'
 
 const authRouter = express.Router()
 
+const loginTimeout = 2 * 60 * 1000 // 2 minutes
 const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,  // 15 minutes
+    windowMs: loginTimeout,
     max: 5,                    // limit each IP
-    message: 'Too many login attempts, please try again later.'
+    handler: (req, res) => {
+        // Gives the remaining time for retrying login in response.error
+        const resetTime = req.rateLimit && req.rateLimit.resetTime
+        let secondsLeft = 0
+        if (resetTime) {
+            secondsLeft = Math.ceil((resetTime.getTime() - Date.now()) / 1000)
+            if (secondsLeft <= 0) secondsLeft = 0
+        }
+
+        return res.status(429).json({ error: `Liian monta kirjautumisyritystä. Yritä uudelleen ${Math.ceil(secondsLeft / 60)} minuutin kuluttua.` })
+    }
 })
 
 
@@ -34,7 +45,7 @@ authRouter.post('/login', loginLimiter, middleware.requireAuthentication(false),
         if (error) return next(error)
 
         if (!user) {
-            return response.status(401).json({ error: info?.message || 'Invalid credentials' })
+            return response.status(401).json({ error: info?.message || 'Väärä nimi tai salasana' })
         }
 
         // Creates the session
