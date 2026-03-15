@@ -596,3 +596,68 @@
     from { opacity: 0; transform: scaleY(0.65); transform-origin: top; }
     to   { opacity: 1; transform: scaleY(1); }
 }
+
+/* ── Mobile: Compact Nav Bar ───────────────────────────── */
+@media (max-width: 600px) {
+    .dashboard-header {
+        padding: 0.75rem 1rem;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+    }
+    .dashboard-header h1 {
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+    .header-right {
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+    .header-right span {
+        display: none;
+    }
+    .logout-button {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* ── Mobile: Table → Card Layout ───────────────────────── */
+@media (max-width: 600px) {
+    .dashboard-section {
+        padding: 1rem;
+    }
+    .data-table thead { display: none; }
+    .data-table, .data-table tbody, .data-table tr, .data-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .data-table tr {
+        border: 1.5px solid rgba(196,151,58,0.3);
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background: rgba(253,251,244,0.5);
+    }
+    .data-table td {
+        padding: 0.35rem 0;
+        border-bottom: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .data-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #9E7A2A;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        min-width: 5rem;
+    }
+    .data-table td:first-child::before { content: ''; min-width: 0; }
+}

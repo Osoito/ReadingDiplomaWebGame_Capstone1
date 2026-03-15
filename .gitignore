@@ -5,6 +5,7 @@ godot/
 /android/
 CLAUDE.md
 .claude/
+learn.md
 bash.exe.stackdump
 
 # Node.js specific ignores

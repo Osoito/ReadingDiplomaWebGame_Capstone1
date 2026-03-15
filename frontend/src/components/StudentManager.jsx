@@ -154,8 +154,8 @@ function StudentManager() {
                     <tbody>
                         {students.map((s) => (
                             <tr key={s.id} className={resetPwdId === s.id ? 'editing-row lock-row' : (editingId === s.id || editEmailId === s.id ? 'editing-row' : '')}>
-                                <td><StudentAvatarBadge avatarId={s.avatar} size={32} /></td>
-                                <td>
+                                <td data-label=""><StudentAvatarBadge avatarId={s.avatar} size={32} /></td>
+                                <td data-label="Nimi">
                                     {editingId === s.id ? (
                                         <input
                                             className="inline-edit-input"
@@ -179,7 +179,7 @@ function StudentManager() {
                                         </>
                                     )}
                                 </td>
-                                <td>
+                                <td data-label="Gmail">
                                     {editEmailId === s.id ? (
                                         <>
                                             <input
@@ -209,7 +209,7 @@ function StudentManager() {
                                         </>
                                     )}
                                 </td>
-                                <td>
+                                <td data-label="Toiminnot">
                                     {editingId === s.id ? (
                                         <>
                                             <button className="add-button" style={{ padding: '0.35rem 0.75rem', alignSelf: 'unset', fontSize: '0.85rem' }} onClick={() => handleEditSave(s.id)}>Tallenna</button>

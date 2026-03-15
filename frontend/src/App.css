@@ -1,6 +1,14 @@
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
-  padding: 0;
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
   font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 17px;
 }

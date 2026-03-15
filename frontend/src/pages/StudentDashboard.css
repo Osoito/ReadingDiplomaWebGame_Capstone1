@@ -496,6 +496,34 @@
 }
 
 /* ── Animation ───────────────────────────────────────────── */
+/* ── Mobile: Compact Nav Bar ───────────────────────────── */
+@media (max-width: 600px) {
+    .student-header {
+        padding: 0.75rem 1rem;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+    }
+    .student-header h1 {
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+    .header-right {
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+    .header-right span {
+        display: none;
+    }
+    .logout-button {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.8rem;
+    }
+}
+
 @keyframes cardRise {
     from { opacity: 0; transform: translateY(14px) scale(0.98); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
