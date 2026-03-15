@@ -21,9 +21,12 @@ function StudentManager() {
             const res = await fetch('/api/users/my-students')
             if (res.ok) {
                 setStudents(await res.json())
+            } else {
+                const data = await res.json()
+                setError(data.error || 'Oppilaiden haku epäonnistui')
             }
         } catch {
-            setError('Oppilaiden haku epäonnistui')
+            setError('Yhteysvirhe')
         }
     }
 
@@ -68,7 +71,8 @@ function StudentManager() {
                 setEditingId(null)
                 fetchStudents()
             } else {
-                setError('Nimen muokkaus epäonnistui')
+                const data = await res.json()
+                setError(data.error || 'Nimen muokkaus epäonnistui')
             }
         } catch {
             setError('Yhteysvirhe')
@@ -126,7 +130,8 @@ function StudentManager() {
             if (res.ok) {
                 fetchStudents()
             } else {
-                setError('Poisto epäonnistui')
+                const data = await res.json()
+                setError(data.error || 'Poisto epäonnistui')
             }
         } catch {
             setError('Yhteysvirhe')
