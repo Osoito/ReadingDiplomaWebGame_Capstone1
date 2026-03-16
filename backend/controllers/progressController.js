@@ -51,6 +51,7 @@ progressRouter.get('/current-level', middleware.requireAuthentication(true), asy
     }
 })
 
+//Might not be necessary anymore in the final version, since all entries are automatically created when an account is created.
 progressRouter.post('/add-entry', middleware.requireAuthentication(true), middleware.zValidate(ProgressSchema), async(request, response, next) => {
     const { level, user, book } = request.validated
 
@@ -73,7 +74,7 @@ progressRouter.put('/:level/completed', middleware.requireAuthentication(true), 
 
     try{
         await ProgressService.completeLevel(level, { user })
-        response.status(201).json('Level marked as completed successfully')
+        response.status(200).json('Level marked as completed successfully!')
     } catch(error){
         next(error)
     }
@@ -85,7 +86,7 @@ progressRouter.put('/:level/add-book', middleware.requireAuthentication(true), m
 
     try{
         await ProgressService.changeBookinEntry(level, request.user.id, { book })
-        response.status(201).json('Book added to entry successfully')
+        response.status(200).json('Book added to entry successfully!')
     } catch(error){
         next(error)
     }

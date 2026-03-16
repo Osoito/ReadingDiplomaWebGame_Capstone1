@@ -186,34 +186,36 @@ frontend/
 
 ### Endpoints
 
-| Method | Endpoint                         | Description                                                   |
-|--------|----------------------------------|---------------------------------------------------------------|
-| GET    | `/api/books`                     | Get all books                                                 |
-| POST   | `/api/books`                     | Add new book                                                  |
-| GET    | `/api/users`                     | Get all users                                                 |
-| POST   | `/api/users/register`            | Create new user(also creates progress entries for new user)   |
-| PATCH  | `/api/users/:id/role`            | Swaps the user role                                           |
-| PATCH  | `/api/users/:id/change-password` | Change user's password, needs currentPassword, password       |
-| GET    | `/api/users/profile/:id`         | Get user profile                                              |
-| PATCH  | `/api/users/profile/:id`         | Update profile info (name / avatar / grade)                   |
-| POST   | `/api/progress/add-entry`        | Add a new progression entry                                   |
-| PUT    | `/api/progress/:level/completed` | Updates level entry for user as complete                      |
-| GET    | `/api/progress/get-entry/:level` | Gets specific level from current user                         |
-| GET    | `/api/progress/current-level`    | Gets user's most recent incomplete level                      |
-| PUT    | `/api/progress/:level/add-book`  | Changes the book attatched to a progress entry                |
-| POST   | `/api/submissions/add-submission`| adds a submission entry for the current user in current level |
-| GET    | `/api/submissions/:id`           | Gets specific submission entry(needs teacher role)            |
-| DELETE | `/api/submissions/:id`           | Deletes specific submission entry(needs teacher role)         |
-| POST   | `/auth/login`                    | Login using basic credentials (email/username, password)      |
-| POST   | `/auth/logout`                   | Logout                                                        |
-| GET    | `/auth/me`                       | Returns current session user                                  |
-| GET    | `/auth/google`                   | Sign up or login using Google account                         |
-| GET    | `/api/users/my-students`         | Get all students belonging to the logged-in teacher           |
-| POST   | `/api/users/students`            | Create a student under the logged-in teacher                  |
-| DELETE | `/api/users/students/:id`        | Delete a student (teacher must own the student)               |
-| POST   | `/api/rewards/add-reward`        | Add a reward (avatar?) for user                               |
-| GET    | `/api/rewards/:id`               | Fetches all of user's rewards (requires teacher role)         |
-| GET    | `/api/rewards/`                  | Fetches all of current user's rewards                         |
+| Method | Endpoint                             | Description                                                   |
+|--------|--------------------------------------|---------------------------------------------------------------|
+| GET    | `/api/books`                         | Get all books                                                 |
+| POST   | `/api/books`                         | Add new book                                                  |
+| DELETE | `/api/books/delete-book/:id`         | Deletes book(requires teacher role)                           |
+| GET    | `/api/users`                         | Get all users                                                 |
+| POST   | `/api/users/register`                | Create new user(also creates progress entries for new user)   |
+| PATCH  | `/api/users/:id/role`                | Swaps the user role                                           |
+| PATCH  | `/api/users/:id/change-password`     | Change user's password, needs currentPassword, password       |
+| GET    | `/api/users/profile/:id`             | Get user profile                                              |
+| PATCH  | `/api/users/profile/:id`             | Update profile info (name / avatar / grade)                   |
+| POST   | `/api/progress/add-entry`            | Add a new progression entry                                   |
+| PUT    | `/api/progress/:level/completed`     | Updates level entry for user as complete                      |
+| GET    | `/api/progress/get-entry/:level`     | Gets specific level from current user                         |
+| GET    | `/api/progress/current-level`        | Gets user's most recent incomplete level                      |
+| PUT    | `/api/progress/:level/add-book`      | Changes the book attatched to a progress entry                |
+| POST   | `/api/submissions/add-submission`    | adds a submission entry for the current user in current level |
+| GET    | `/api/submissions/my-students/:id`   | Gets specific submission entry(needs teacher role)            |
+| GET    | `/api/submissions/my-students`       | Gets current user's student submissions(requires teacher role)|
+| DELETE | `/api/submissions/:id`               | Deletes specific submission entry(needs teacher role)         |
+| POST   | `/auth/login`                        | Login using basic credentials (email/username, password)      |
+| POST   | `/auth/logout`                       | Logout                                                        |
+| GET    | `/auth/me`                           | Returns current session user                                  |
+| GET    | `/auth/google`                       | Sign up or login using Google account                         |
+| GET    | `/api/users/my-students`             | Get all students belonging to the logged-in teacher           |
+| POST   | `/api/users/students`                | Create a student under the logged-in teacher                  |
+| DELETE | `/api/users/students/:id`            | Delete a student (teacher must own the student)               |
+| POST   | `/api/rewards/add-reward`            | Add a reward (avatar?) for user                               |
+| GET    | `/api/rewards/:id`                   | Fetches all of user's rewards (requires teacher role)         |
+| GET    | `/api/rewards/`                      | Fetches all of current user's rewards                         |
 
 ### Backend Project Structure
 ```
@@ -240,7 +242,7 @@ backend/
 │   │   ├── migration.stub              # Template for the migration files
 │   │   └── README.md
 │   └── seeds/
-│       ├── users_seed.js               # Populates database with users for testing (currently not in use)
+│       ├── users_seed.js               # Populates (integration)database with users for testing
 │       └── seed.stub                   # Template for seed files
 ├── models/                             # Models are used to make SQL requests to the database (called by services)
 │   ├── book.js                         
@@ -257,12 +259,16 @@ backend/
 │   └── README.md
 ├── tests/
 │   ├── integration/                    # Integration tests
-│   │   └── book_api_integration.test.js
+│   │   └── api_integration.test.js     # All integration tests, currently in one file so that they even work, could try to separate them later on if there is time.
 │   ├── unit/                           # Unit tests
 │   │   ├── models/                     # Tests for database interaction
-│   │   │   └── userModel.test.js
+│   │   │   ├── userModel.test.js
+│   │   │   ├── bookModel.test.js
+│   │   │   └── rewardModel.test.js
 │   │   ├── services/                   # Unit tests for service functions
-│   │   │   └── userService.test.js
+│   │   │   ├── userService.test.js
+│   │   │   ├── bookService.test.js
+│   │   │   └── rewardService.test.js
 │   │   ├── bookControllerUnit.test.js
 │   │   ├── rewardControllerUnit.test.js
 │   │   └── user_api.test.js            # variety of tests for user functions

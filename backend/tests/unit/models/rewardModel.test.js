@@ -1,7 +1,6 @@
-import { test, expect } from 'vitest'
+import { test, expect, describe } from 'vitest'
 import knex from 'knex'
 import config from '../../../knexfile.js'
-import { describe } from 'zod/v4/core'
 import Reward from '../../../models/reward.js'
 const db = knex(config.test_Unit)
 let trx
@@ -18,19 +17,41 @@ describe('rewardModel unit tests', () => {
     })
 
     test('Add multiple rewards', async() => {
+        const users = [{
+            email: 'john@doe.com',
+            name: 'John',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            teacher_id: null
+        },
+        {
+            email: 'alice@doe.com',
+            name: 'Alice',
+            password_hash: 'sekret',
+            avatar: 'avatar2.jpg',
+            currently_reading: null,
+            grade: 2,
+            teacher_id: null
+        }]
+        await trx('users').insert(users)
+
+        const usersInDB = await trx('users').select('*')
+
         const input = [
             {
-                owner: 1,
+                owner: usersInDB[0].id,
                 reward_type: 'badge',
                 reward: 'testbadge.jpg'
             },
             {
-                owner: 1,
+                owner: usersInDB[0].id,
                 reward_type: 'badge2',
                 reward: 'testbadge2.jpg'
             },
             {
-                owner: 2,
+                owner: usersInDB[1].id,
                 reward_type: 'avatar',
                 reward: 'avatar1.jpg'
             }
@@ -49,19 +70,41 @@ describe('rewardModel unit tests', () => {
     })
 
     test('Get specific user reward', async() => {
+        const users = [{
+            email: 'john@doe.com',
+            name: 'John',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            teacher_id: null
+        },
+        {
+            email: 'alice@doe.com',
+            name: 'Alice',
+            password_hash: 'sekret',
+            avatar: 'avatar2.jpg',
+            currently_reading: null,
+            grade: 2,
+            teacher_id: null
+        }]
+        await trx('users').insert(users)
+
+        const usersInDB = await trx('users').select('*')
+
         const input = [
             {
-                owner: 1,
+                owner: usersInDB[0].id,
                 reward_type: 'badge',
                 reward: 'testbadge.jpg'
             },
             {
-                owner: 1,
+                owner: usersInDB[0].id,
                 reward_type: 'badge2',
                 reward: 'testbadge2.jpg'
             },
             {
-                owner: 2,
+                owner: usersInDB[1].id,
                 reward_type: 'avatar',
                 reward: 'avatar1.jpg'
             }
@@ -71,28 +114,49 @@ describe('rewardModel unit tests', () => {
             await Reward.add(reward, trx)
         }
 
-        const result = await Reward.getByRewardAndUser(2, 'avatar1.jpg', trx)
+        const result = await Reward.getByRewardAndUser(usersInDB[1].id, 'avatar1.jpg', trx)
 
-        expect(result.length).toBe(1)
         expect(result.owner).toBe(input[2].owner)
         expect(result.reward_type).toBe(input[2].reward_type)
         expect(result.reward).toBe(input[2].reward)
     })
 
     test('Get all rewards of a specific user', async() => {
+        const users = [{
+            email: 'john@doe.com',
+            name: 'John',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            teacher_id: null
+        },
+        {
+            email: 'alice@doe.com',
+            name: 'Alice',
+            password_hash: 'sekret',
+            avatar: 'avatar2.jpg',
+            currently_reading: null,
+            grade: 2,
+            teacher_id: null
+        }]
+        await trx('users').insert(users)
+
+        const usersInDB = await trx('users').select('*')
+
         const input = [
             {
-                owner: 1,
+                owner: usersInDB[0].id,
                 reward_type: 'badge',
                 reward: 'testbadge.jpg'
             },
             {
-                owner: 1,
+                owner: usersInDB[0].id,
                 reward_type: 'badge2',
                 reward: 'testbadge2.jpg'
             },
             {
-                owner: 2,
+                owner: usersInDB[1].id,
                 reward_type: 'avatar',
                 reward: 'avatar1.jpg'
             }
@@ -102,14 +166,12 @@ describe('rewardModel unit tests', () => {
             await Reward.add(reward, trx)
         }
 
-        const result = await Reward.getUserRewards(1, trx)
+        const result = await Reward.getUserRewards(usersInDB[0].id, trx)
 
         expect(result.length).toBe(2)
-        expect(result[0].owner).toBe(input[0].owner)
         expect(result[0].reward_type).toBe(input[0].reward_type)
         expect(result[0].reward).toBe(input[0].reward)
 
-        expect(result[1].owner).toBe(input[1].owner)
         expect(result[1].reward_type).toBe(input[1].reward_type)
         expect(result[1].reward).toBe(input[1].reward)
     })

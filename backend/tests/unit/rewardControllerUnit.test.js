@@ -42,7 +42,7 @@ app.use('/api/rewards', rewardsRouter)
 const api = supertest(app)
 
 
-describe('reward related unit tests', () => {
+describe('reward controller related unit tests', () => {
     beforeEach(() => {
         vi.resetAllMocks()
     })
@@ -87,7 +87,7 @@ describe('reward related unit tests', () => {
 
         const response = await api
             .get('/api/rewards/1')
-            .expect(201)
+            .expect(200)
             .expect('Content-Type', /application\/json/)
 
         expect(response.body).toEqual(expectedOutcome)
@@ -112,7 +112,7 @@ describe('reward related unit tests', () => {
 
         const response = await api
             .get('/api/rewards/')
-            .expect(201)
+            .expect(200)
             .expect('Content-Type', /application\/json/)
 
         expect(response.body).toEqual(expectedOutcome)

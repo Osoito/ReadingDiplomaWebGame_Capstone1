@@ -36,6 +36,16 @@ const BookService = {
             throw err
         }
         return book
+    },
+
+    async deleteBook(id){
+        const book = await Book.findBookById(id)
+        if (!book) {
+            const err = new Error(`Book not found`)
+            err.status = 404
+            throw err
+        }
+        await Book.deleteBook(id)
     }
 }
 

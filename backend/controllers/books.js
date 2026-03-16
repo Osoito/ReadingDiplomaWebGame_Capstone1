@@ -56,5 +56,15 @@ booksRouter.post('/', middleware.requireAuthentication(true), middleware.zValida
     }
 })
 
+booksRouter.delete('/delete-book/:id', middleware.requireTeacherRole, async(request, response, next) => {
+    const id = request.params.id
+
+    try {
+        await BookService.deleteBook(id)
+        response.status(200).json('Book deleted successfully!')
+    } catch (error) {
+        next(error)
+    }
+})
 
 export default booksRouter

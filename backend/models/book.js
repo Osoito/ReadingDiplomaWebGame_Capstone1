@@ -24,6 +24,12 @@ const Book = {
             .select('title', 'author', 'coverimage', 'booktype', 'content')
             .where({ id })
             .first()
+    },
+
+    async deleteBook(id, dbConn = db){
+        return dbConn('books')
+            .where({ id })
+            .del()
     }
 }
 

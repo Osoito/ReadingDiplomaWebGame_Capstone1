@@ -1,8 +1,8 @@
 import Submission from '../models/submission.js'
 
 const SubmissionService = {
-    async createSubmission({ user, question, answer, completedLevel }){
-        const exists = await Submission.getSpecific(user, question, completedLevel)
+    async createSubmission({ user, question1, answer1, completedLevel, question2, answer2, question3, answer3 }){
+        const exists = await Submission.getSpecific(user, completedLevel)
         if(exists){
             const err = new Error('User has already submitted this question on this level')
             err.status = 400
@@ -10,9 +10,13 @@ const SubmissionService = {
         }
         return Submission.create({
             user,
-            question,
-            answer,
-            completedLevel
+            question1,
+            answer1,
+            completedLevel,
+            question2,
+            answer2,
+            question3,
+            answer3
         })
     },
 
@@ -44,6 +48,16 @@ const SubmissionService = {
             throw err
         }
         await Submission.remove(id)
+    },
+
+    async getSubmissionsForTeacher(id){
+        const submissions = await Submission.getSubmissionsForTeacher(id)
+        if(!submissions){
+            const err = new Error('No submissions for this teacher')
+            err.status = 404
+            throw err
+        }
+        return submissions
     }
 }
 
