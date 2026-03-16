@@ -13,7 +13,8 @@ vi.doMock('../../services/bookService.js', async (importOriginal) => {
             ...actual.default,
             addBook: vi.fn(),
             getAllBooks: vi.fn(),
-            findBookById: vi.fn()
+            findBookById: vi.fn(),
+            deleteBook: vi.fn()
         }
     }
 })
@@ -128,6 +129,17 @@ describe('Book unit tests', () => {
 
         expect(response.body).toEqual(mockBook)
         expect(bookService.findBookById).toHaveBeenCalledTimes(1)
+    })
+
+    test('Remove a book', async() => {
+        bookService.deleteBook.mockResolvedValue(undefined)
+
+        const response = await api
+            .delete('/api/books/delete-book/1')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toEqual('Book deleted successfully!')
     })
 
 })

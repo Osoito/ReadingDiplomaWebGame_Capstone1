@@ -12,7 +12,8 @@ vi.mock('../../../models/book.js', async (importOriginal) => {
             create: vi.fn(),
             findByTitle: vi.fn(),
             getAll: vi.fn(),
-            findBookById: vi.fn()
+            findBookById: vi.fn(),
+            deleteBook: vi.fn()
         }
     }
 })
@@ -163,5 +164,36 @@ describe('Bookservice unit tests', () => {
             .toThrow('Book not found')
 
         expect(Book.findBookById).toBeCalledTimes(1)
+    })
+
+    test('Remove a book', async () => {
+        const mockBook = [
+            {
+                title: 'Test Book',
+                author: 'Test Author',
+                coverimage: 'default.jpg',
+                booktype: 'e-book',
+                content: 'test/testPath'
+            }
+        ]
+        Book.findBookById.mockResolvedValue(mockBook)
+
+        await bookService.deleteBook(1)
+
+        expect(Book.findBookById).toBeCalledTimes(1)
+        expect(Book.findBookById).toBeCalledWith(1)
+        expect(Book.deleteBook).toBeCalledTimes(1)
+    })
+
+    test('Fail to remove a book', async () => {
+        Book.findBookById.mockResolvedValue(null)
+
+        await expect(bookService.deleteBook(1))
+            .rejects
+            .toThrow('Book not found')
+
+        expect(Book.findBookById).toBeCalledTimes(1)
+        expect(Book.findBookById).toBeCalledWith(1)
+        expect(Book.deleteBook).not.toHaveBeenCalled()
     })
 })

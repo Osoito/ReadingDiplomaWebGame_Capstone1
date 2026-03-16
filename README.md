@@ -190,6 +190,7 @@ frontend/
 |--------|----------------------------------|---------------------------------------------------------------|
 | GET    | `/api/books`                     | Get all books                                                 |
 | POST   | `/api/books`                     | Add new book                                                  |
+| DELETE | `/api/books/delete-book/:id`     | Deletes book(requires teacher role)                           |
 | GET    | `/api/users`                     | Get all users                                                 |
 | POST   | `/api/users/register`            | Create new user(also creates progress entries for new user)   |
 | PATCH  | `/api/users/:id/role`            | Swaps the user role                                           |
@@ -257,7 +258,7 @@ backend/
 │   └── README.md
 ├── tests/
 │   ├── integration/                    # Integration tests
-│   │   └── api_integration.test.js     # All integration tests, currently in one file so that they even work, could try to seperate them later on if there is time.
+│   │   └── api_integration.test.js     # All integration tests, currently in one file so that they even work, could try to separate them later on if there is time.
 │   ├── unit/                           # Unit tests
 │   │   ├── models/                     # Tests for database interaction
 │   │   │   ├── userModel.test.js
