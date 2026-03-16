@@ -1,0 +1,32 @@
+/* ── Buddy Icon (nav bar) ────────────────────────────────── */
+.buddy-icon {
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: rgba(216, 178, 90, 0.12);
+    border: 2px solid rgba(196, 151, 58, 0.5);
+    box-shadow: 0 2px 8px rgba(22, 45, 78, 0.2);
+}
+
+.buddy-icon--sprite {
+    background-repeat: no-repeat;
+    object-fit: none;
+}
+
+/* ── Buddy Sprite (full body) ────────────────────────────── */
+.buddy-sprite {
+    background-repeat: no-repeat;
+    flex-shrink: 0;
+}
+
+.buddy-sprite--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed rgba(196, 151, 58, 0.5);
+    border-radius: 8px;
+    color: #C4973A;
+    font-size: 2rem;
+    font-weight: 700;
+    background: rgba(196, 151, 58, 0.06);
+}

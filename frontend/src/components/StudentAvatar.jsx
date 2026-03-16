@@ -1,6 +1,8 @@
+/* ── OLD AVATAR SYSTEM — commented out, replaced by BuddyAvatar ── */
+
+/*
 import './StudentAvatar.css'
 
-/* ── Placeholder character icons (designers swap these without key changes) ── */
 const FlameIcon = () => (
     <svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%">
         <path d="M12 2C10 5.5 7.5 8 9 11.5c-1.5-.5-2.5-2-2.5-2C5 13 5.5 16.5 8 18.5c-2-.8-3-3-3-3C3.5 19 6.5 22 12 22s8.5-3.5 8.5-7.5c0-3.5-2.5-5-3.5-5 .5 2-1 3.5-2 4.5C16 12 14 8 12 2z"/>
@@ -25,7 +27,6 @@ const StarIcon = () => (
     </svg>
 )
 
-/* ── Avatar definitions — keys char_1–char_4 are stable; labels/colors are designer-editable ── */
 export const STUDENT_AVATARS = [
     { id: 'char_1', label: 'Hahmo 1', Icon: FlameIcon,  bg: '#e8734a', fg: '#fff8f0' },
     { id: 'char_2', label: 'Hahmo 2', Icon: LeafIcon,   bg: '#4aab7a', fg: '#f0fff4' },
@@ -33,7 +34,6 @@ export const STUDENT_AVATARS = [
     { id: 'char_4', label: 'Hahmo 4', Icon: StarIcon,   bg: '#c46abf', fg: '#fff0fe' },
 ]
 
-/* ── Badge component — used in dashboard header, avatar section, and teacher table ── */
 export function StudentAvatarBadge({ avatarId, size = 48 }) {
     const avatar = STUDENT_AVATARS.find(a => a.id === avatarId)
     const pad = Math.round(size * 0.2)
@@ -55,3 +55,4 @@ export function StudentAvatarBadge({ avatarId, size = 48 }) {
         </div>
     )
 }
+*/

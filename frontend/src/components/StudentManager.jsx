@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react'
-import { StudentAvatarBadge } from './StudentAvatar'
-
 function StudentManager() {
     const [students, setStudents] = useState([])
     const [name, setName] = useState('')
@@ -145,7 +143,6 @@ function StudentManager() {
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th>Hahmo</th>
                             <th>Nimi</th>
                             <th>Gmail</th>
                             <th>Toiminnot</th>
@@ -154,7 +151,6 @@ function StudentManager() {
                     <tbody>
                         {students.map((s) => (
                             <tr key={s.id} className={resetPwdId === s.id ? 'editing-row lock-row' : (editingId === s.id || editEmailId === s.id ? 'editing-row' : '')}>
-                                <td data-label=""><StudentAvatarBadge avatarId={s.avatar} size={32} /></td>
                                 <td data-label="Nimi">
                                     {editingId === s.id ? (
                                         <input

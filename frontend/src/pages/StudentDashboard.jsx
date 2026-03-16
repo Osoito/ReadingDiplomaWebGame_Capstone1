@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { STUDENT_AVATARS, StudentAvatarBadge } from '../components/StudentAvatar'
+import { BUDDIES, BuddySprite, BuddyIcon } from '../components/BuddyAvatar'
 import homeBG from '../assets/HomeBG1.jpg'
 import './StudentDashboard.css'
 
@@ -22,10 +22,10 @@ function StudentDashboard() {
     const [progress, setProgress] = useState([])
     const [rewards, setRewards] = useState([])
     const [loading, setLoading] = useState(true)
-    const [avatarSelecting, setAvatarSelecting] = useState(false)
-    const [selectedChar, setSelectedChar] = useState('')
-    const [avatarSaving, setAvatarSaving] = useState(false)
-    const [avatarError, setAvatarError] = useState('')
+    const [buddySelecting, setBuddySelecting] = useState(false)
+    const [selectedBuddy, setSelectedBuddy] = useState('')
+    const [buddySaving, setBuddySaving] = useState(false)
+    const [buddyError, setBuddyError] = useState('')
 
     useEffect(() => {
         Promise.all([
@@ -44,31 +44,30 @@ function StudentDashboard() {
     }
 
     const handlePlay = () => {
-        sessionStorage.setItem('lukudiplomi_avatar', user.avatar)
         navigate('/game')
     }
 
-    const handleAvatarSave = async () => {
-        if (!selectedChar) return
-        setAvatarSaving(true)
-        setAvatarError('')
+    const handleBuddySave = async () => {
+        if (!selectedBuddy) return
+        setBuddySaving(true)
+        setBuddyError('')
         try {
             const res = await fetch(`/api/users/profile/${user.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ avatar: selectedChar }),
+                body: JSON.stringify({ avatar: selectedBuddy }),
             })
             if (!res.ok) {
                 const data = await res.json()
-                setAvatarError(data.error || 'Tallennus epäonnistui')
+                setBuddyError(data.error || 'Tallennus epäonnistui')
             } else {
                 await checkAuth()
-                setAvatarSelecting(false)
+                setBuddySelecting(false)
             }
         } catch {
-            setAvatarError('Yhteysvirhe')
+            setBuddyError('Yhteysvirhe')
         } finally {
-            setAvatarSaving(false)
+            setBuddySaving(false)
         }
     }
 
@@ -78,8 +77,8 @@ function StudentDashboard() {
     }
 
     const completedCount = progress.filter(p => p.level_status === 'complete').length
-    const hasAvatar = !!user?.avatar
-    const showPicker = !hasAvatar || avatarSelecting
+    const hasBuddy = !!user?.avatar
+    const showPicker = !hasBuddy || buddySelecting
 
     return (
         <div
@@ -89,13 +88,16 @@ function StudentDashboard() {
             <header className="student-header">
                 <h1>Matkupäiväkirja</h1>
                 <div className="header-right">
-                    <StudentAvatarBadge avatarId={user?.avatar} size={36} />
-                    <span>Tervetuloa, {user?.name}</span>
+                    {hasBuddy && <BuddyIcon buddyId={user.avatar} size={38} />}
+                    <span>{hasBuddy
+                        ? <>matkustaa <strong>{user?.name}</strong> kanssa!</>
+                        : <>Tervetuloa, {user?.name}</>
+                    }</span>
                     <button
                         className="play-button"
-                        onClick={hasAvatar ? handlePlay : undefined}
-                        disabled={!hasAvatar}
-                        title={!hasAvatar ? 'Valitse ensin hahmosi' : undefined}
+                        onClick={hasBuddy ? handlePlay : undefined}
+                        disabled={!hasBuddy}
+                        title={!hasBuddy ? 'Valitse ensin seikkailukaveri' : undefined}
                     >
                         ▶ Pelaa
                     </button>
@@ -110,60 +112,56 @@ function StudentDashboard() {
                     <p className="loading-text">Ladataan...</p>
                 ) : (
                     <>
-                        <section className={`dashboard-section avatar-selection-section${!hasAvatar ? ' avatar-selection-section--prominent' : ''}`}>
-                            <h2>Valitse hahmosi</h2>
+                        <section className={`dashboard-section buddy-selection-section${!hasBuddy ? ' buddy-selection-section--prominent' : ''}`}>
+                            <h2>Seikkailukaveri</h2>
                             {!showPicker ? (
-                                <div className="avatar-current">
-                                    <StudentAvatarBadge avatarId={user.avatar} size={64} />
-                                    <div className="avatar-current-info">
-                                        <p className="avatar-current-name">
-                                            {STUDENT_AVATARS.find(a => a.id === user.avatar)?.label ?? user.avatar}
-                                        </p>
-                                        <button
-                                            className="change-avatar-button"
-                                            onClick={() => {
-                                                setSelectedChar(user.avatar)
-                                                setAvatarSelecting(true)
-                                            }}
-                                        >
-                                            Vaihda hahmoa
-                                        </button>
+                                <div className="buddy-current">
+                                    <div className="buddy-current-showcase">
+                                        <div className="buddy-current-glow" />
+                                        <BuddySprite buddyId={user.avatar} size={150} />
                                     </div>
+                                    <p className="buddy-current-name">
+                                        {BUDDIES.find(b => b.id === user.avatar)?.name ?? user.avatar}
+                                    </p>
+                                    <button
+                                        className="change-avatar-button"
+                                        onClick={() => {
+                                            setSelectedBuddy(user.avatar)
+                                            setBuddySelecting(true)
+                                        }}
+                                    >
+                                        Vaihda kaveria
+                                    </button>
                                 </div>
                             ) : (
-                                <div className="avatar-picker">
+                                <div className="buddy-picker">
                                     <div className="char-grid">
-                                        {STUDENT_AVATARS.map(({ id, label, Icon, bg, fg }) => (
+                                        {BUDDIES.map(({ id, name }) => (
                                             <button
                                                 key={id}
                                                 type="button"
-                                                className={`char-option${selectedChar === id ? ' char-option--selected' : ''}`}
-                                                onClick={() => setSelectedChar(id)}
+                                                className={`char-option${selectedBuddy === id ? ' char-option--selected' : ''}`}
+                                                onClick={() => setSelectedBuddy(id)}
                                             >
-                                                <div className="char-option-badge-wrap">
-                                                    <div
-                                                        className="student-avatar-badge"
-                                                        style={{ width: 72, height: 72, background: bg, color: fg, padding: 15, boxSizing: 'border-box' }}
-                                                    >
-                                                        <Icon />
-                                                    </div>
-                                                    {selectedChar === id && <span className="char-check">✓</span>}
+                                                <div className="char-option-stage">
+                                                    <BuddySprite buddyId={id} size={160} />
+                                                    {selectedBuddy === id && <span className="char-check">✓</span>}
                                                 </div>
-                                                <span className="char-label">{label}</span>
+                                                <span className="char-label">{name}</span>
                                             </button>
                                         ))}
                                     </div>
-                                    {avatarError && <p className="avatar-error">{avatarError}</p>}
+                                    {buddyError && <p className="avatar-error">{buddyError}</p>}
                                     <div className="avatar-picker-actions">
                                         <button
                                             className="play-button"
-                                            onClick={handleAvatarSave}
-                                            disabled={!selectedChar || avatarSaving}
+                                            onClick={handleBuddySave}
+                                            disabled={!selectedBuddy || buddySaving}
                                         >
-                                            {avatarSaving ? 'Tallennetaan...' : 'Valitse hahmo'}
+                                            {buddySaving ? 'Tallennetaan...' : 'Tallenna'}
                                         </button>
-                                        {avatarSelecting && (
-                                            <button className="logout-button" onClick={() => setAvatarSelecting(false)}>
+                                        {buddySelecting && (
+                                            <button className="logout-button" onClick={() => setBuddySelecting(false)}>
                                                 Peruuta
                                             </button>
                                         )}

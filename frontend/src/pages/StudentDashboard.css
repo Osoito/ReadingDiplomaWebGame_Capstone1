@@ -74,6 +74,12 @@
     letter-spacing: 0.03em;
 }
 
+.header-right span strong {
+    color: #D8B25A;
+    font-style: normal;
+    font-weight: 800;
+}
+
 /* Play button — solid brass */
 .play-button {
     background: linear-gradient(180deg, #D8B25A 0%, #C4973A 48%, #A67E1E 100%);
@@ -161,7 +167,7 @@
     animation: cardRise 0.55s cubic-bezier(0.34, 1.3, 0.64, 1) both;
 }
 
-.avatar-selection-section { animation-delay: 0s; }
+.buddy-selection-section { animation-delay: 0s; }
 .voyage-log { animation-delay: 0.08s; }
 .rewards-section { animation-delay: 0.22s; }
 
@@ -357,8 +363,8 @@
     box-shadow: none !important;
 }
 
-/* ── Avatar Selection Section ────────────────────────────── */
-.avatar-selection-section--prominent {
+/* ── Buddy Selection Section ─────────────────────────────── */
+.buddy-selection-section--prominent {
     border-color: #C4973A;
     animation: cardRise 0.55s cubic-bezier(0.34, 1.3, 0.64, 1) both, prominentPulse 2.4s 0.6s ease-in-out infinite;
 }
@@ -368,24 +374,41 @@
     50%       { box-shadow: 0 6px 32px rgba(196, 151, 58, 0.28), 0 0 0 5px rgba(196, 151, 58, 0); }
 }
 
-.avatar-current {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.avatar-current-info {
+.buddy-current {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    padding: 1.5rem 1rem 1.25rem;
 }
 
-.avatar-current-name {
-    font-size: 1.1rem;
+.buddy-current-showcase {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+/* Warm radial glow behind the character */
+.buddy-current-glow {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 130%;
+    height: 55%;
+    background: radial-gradient(ellipse at center, rgba(196, 151, 58, 0.14) 0%, rgba(196, 151, 58, 0.05) 50%, transparent 75%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.buddy-current-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #1e3a5f;
-    margin: 0;
+    margin: 0.25rem 0 0;
+    letter-spacing: 0.05em;
 }
 
 .change-avatar-button {
@@ -409,16 +432,16 @@
     border-color: #C4973A;
 }
 
-/* ── Character Picker ─────────────────────────────────────── */
-.avatar-picker {
+/* ── Buddy Picker ────────────────────────────────────────── */
+.buddy-picker {
     margin-top: 1rem;
 }
 
 .char-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.25rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
 @media (max-width: 600px) {
@@ -426,60 +449,102 @@
 }
 
 .char-option {
-    background: rgba(253, 251, 244, 0.6);
-    border: 2px solid rgba(196, 151, 58, 0.2);
-    border-radius: 8px;
-    padding: 1rem 0.5rem;
+    background:
+        radial-gradient(ellipse 80% 45% at 50% 85%, rgba(196, 151, 58, 0.10) 0%, transparent 70%),
+        rgba(253, 251, 244, 0.6);
+    border: 2.5px solid rgba(196, 151, 58, 0.18);
+    border-radius: 12px;
+    padding: 1.5rem 0.75rem 1.25rem;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
-    transition: all 0.2s ease;
+    gap: 0.75rem;
+    transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), border-color 0.2s, background 0.2s, box-shadow 0.25s;
     font-family: 'Nunito', sans-serif;
     position: relative;
+    overflow: hidden;
+}
+
+/* Subtle stage shine at the bottom */
+.char-option::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(196, 151, 58, 0.25), transparent);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.25s;
 }
 
 .char-option:hover {
     border-color: rgba(196, 151, 58, 0.5);
-    background: rgba(253, 251, 244, 0.9);
-    transform: translateY(-2px);
+    background:
+        radial-gradient(ellipse 80% 45% at 50% 85%, rgba(196, 151, 58, 0.18) 0%, transparent 70%),
+        rgba(253, 251, 244, 0.95);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 28px rgba(196, 151, 58, 0.18);
+}
+
+.char-option:hover::after {
+    opacity: 1;
+}
+
+/* Bounce the sprite on hover */
+.char-option:hover .buddy-sprite {
+    animation: buddyBounce 0.45s cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+
+@keyframes buddyBounce {
+    0%   { transform: translateY(0); }
+    40%  { transform: translateY(-8px); }
+    70%  { transform: translateY(2px); }
+    100% { transform: translateY(0); }
 }
 
 .char-option--selected {
     border-color: #C4973A;
-    background: rgba(196, 151, 58, 0.08);
-    box-shadow: 0 4px 16px rgba(196, 151, 58, 0.2);
+    background:
+        radial-gradient(ellipse 80% 50% at 50% 80%, rgba(196, 151, 58, 0.15) 0%, transparent 65%),
+        rgba(253, 246, 227, 0.85);
+    box-shadow:
+        0 0 0 1px rgba(196, 151, 58, 0.3),
+        0 6px 24px rgba(196, 151, 58, 0.22);
 }
 
-.char-option-badge-wrap {
+.char-option-stage {
     position: relative;
     display: inline-flex;
 }
 
 .char-check {
     position: absolute;
-    bottom: -4px;
-    right: -4px;
-    width: 20px;
-    height: 20px;
-    background: #C4973A;
+    bottom: 2px;
+    right: -6px;
+    width: 26px;
+    height: 26px;
+    background: linear-gradient(135deg, #D8B25A, #C4973A);
     color: #fff;
     border-radius: 50%;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 900;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #FDFBF4;
+    border: 2.5px solid #FDFBF4;
+    box-shadow: 0 2px 8px rgba(196, 151, 58, 0.35);
+    z-index: 1;
 }
 
 .char-label {
-    font-size: 0.85rem;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1rem;
     font-weight: 700;
-    color: #3a2a10;
+    color: #1e3a5f;
     letter-spacing: 0.06em;
-    text-transform: uppercase;
 }
 
 .avatar-picker-actions {

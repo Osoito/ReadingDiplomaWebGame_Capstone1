@@ -548,7 +548,8 @@
     margin: 0;
 }
 
-/* ── Avatar column centering ─────────────────────────────── */
+/* ── Avatar column centering — commented out, avatar column removed ── */
+/*
 .data-table th:first-child,
 .data-table td:first-child {
     width: 56px;
@@ -556,6 +557,7 @@
     padding-left: 0.5rem;
     padding-right: 0.5rem;
 }
+*/
 
 /* ── Gmail G badge ───────────────────────────────────────── */
 .gmail-g {

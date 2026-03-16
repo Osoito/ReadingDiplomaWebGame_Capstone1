@@ -1,0 +1,43 @@
+{ "frames": {
+   "buddies-0001 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 590, "h": 779 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 121, "y": 70, "w": 590, "h": 779 },
+    "sourceSize": { "w": 900, "h": 900 },
+    "duration": 100
+   },
+   "buddies-0001 1.aseprite": {
+    "frame": { "x": 590, "y": 0, "w": 590, "h": 779 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 121, "y": 70, "w": 590, "h": 779 },
+    "sourceSize": { "w": 900, "h": 900 },
+    "duration": 100
+   },
+   "buddies-0001 2.aseprite": {
+    "frame": { "x": 1180, "y": 0, "w": 590, "h": 779 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 121, "y": 70, "w": 590, "h": 779 },
+    "sourceSize": { "w": 900, "h": 900 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.17-x64",
+  "image": "buddies-0001.png",
+  "format": "RGBA8888",
+  "size": { "w": 1770, "h": 779 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "图层 3", "opacity": 255, "blendMode": "normal" },
+   { "name": "图层 2", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}
