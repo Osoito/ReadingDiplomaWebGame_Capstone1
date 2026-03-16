@@ -26,6 +26,9 @@ export default function PhaserGame() {
     const config = createGameConfig(parentEl, initW, initH);
     const game   = new Phaser.Game(config);
 
+    // Pass selected buddy to Phaser scenes
+    game.registry.set('buddyId', user?.avatar || 'buddy_1');
+
     // 注入返回逻辑
     game.handleBackNavigation = () => {
       if (user?.role === 'teacher') navigate('/teacher/dashboard');

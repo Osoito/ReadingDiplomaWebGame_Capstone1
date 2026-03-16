@@ -1,6 +1,5 @@
 import BaseMapScene from './BaseMapScene.js';
 import africaImg from '../../assets/africa.png';
-import tokenImg from '../../assets/redtoken.png';
 
 class AfricaMapScene extends BaseMapScene {
     constructor() {
@@ -23,7 +22,7 @@ class AfricaMapScene extends BaseMapScene {
 
     preload() {
         this.load.image('africaMap', africaImg);
-        this.load.image('token', tokenImg);
+        this.preloadBuddy();
     }
 }
 

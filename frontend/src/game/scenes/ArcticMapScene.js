@@ -1,6 +1,5 @@
 import BaseMapScene from './BaseMapScene.js';
 import arcticImg from '../../assets/arctic.png';
-import tokenImg from '../../assets/redtoken.png';
 
 class ArcticMapScene extends BaseMapScene {
     constructor() {
@@ -25,7 +24,7 @@ class ArcticMapScene extends BaseMapScene {
 
     preload() {
         this.load.image('arcticMap', arcticImg);
-        this.load.image('token', tokenImg);
+        this.preloadBuddy();
     }
 }
 

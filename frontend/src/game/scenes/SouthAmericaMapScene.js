@@ -1,6 +1,5 @@
 import BaseMapScene from './BaseMapScene.js';
 import southamericaImg from '../../assets/southamerica.png';
-import tokenImg from '../../assets/redtoken.png';
 
 class SouthAmericaMapScene extends BaseMapScene {
     constructor() {
@@ -24,7 +23,7 @@ class SouthAmericaMapScene extends BaseMapScene {
 
     preload() {
         this.load.image('southAmericaMap', southamericaImg);
-        this.load.image('token', tokenImg);
+        this.preloadBuddy();
     }
 }
 

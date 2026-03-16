@@ -1,6 +1,5 @@
 import BaseMapScene from './BaseMapScene.js';
 import oceaniaImg from '../../assets/oceania.png';
-import tokenImg from '../../assets/redtoken.png';
 
 class OceaniaMapScene extends BaseMapScene {
     constructor() {
@@ -25,7 +24,7 @@ class OceaniaMapScene extends BaseMapScene {
 
     preload() {
         this.load.image('oceaniaMap', oceaniaImg);
-        this.load.image('token', tokenImg);
+        this.preloadBuddy();
     }
 }
 

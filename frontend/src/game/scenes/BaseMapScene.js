@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
+import pandaIdlePng from '../../assets/buddyAvatar/panda/panda_idle.png';
+import pandaIdleJson from '../../assets/buddyAvatar/panda/panda_idle.json';
+import buddiesPortraitImg from '../../assets/buddyAvatar/buddies-0001.png';
 
 class BaseMapScene extends Phaser.Scene {
 
@@ -27,8 +30,15 @@ class BaseMapScene extends Phaser.Scene {
         this.viewedVideos = new Set();
         
         // 动态对象容器
-        this.dotObjects = []; 
+        this.dotObjects = [];
         this.dotTexts = [];
+    }
+
+    preloadBuddy() {
+        this.load.atlas('buddy_panda_idle', pandaIdlePng, pandaIdleJson);
+        this.load.spritesheet('buddies_portraits', buddiesPortraitImg, {
+            frameWidth: 590, frameHeight: 779
+        });
     }
 
         create() {
@@ -91,10 +101,32 @@ class BaseMapScene extends Phaser.Scene {
             this.showBookList();
         });
 
-        // 6. 初始化 Token
+        // 6. Initialize buddy token
         const savedIndex = ReadingState.tokenPositions?.[this.scene.key] ?? 0;
-        this.token = this.add.image(0, 0, 'token');
-        this.token.setScale(0.12);
+        const buddyId = this.game.registry.get('buddyId') || 'buddy_1';
+        const BUDDY_FRAME = { buddy_2: 1, buddy_3: 2 };
+
+        if (buddyId === 'buddy_1') {
+            this.token = this.add.sprite(0, 0, 'buddy_panda_idle');
+            if (!this.anims.exists('panda_idle')) {
+                this.anims.create({
+                    key: 'panda_idle',
+                    frames: this.anims.generateFrameNames('buddy_panda_idle'),
+                    frameRate: 1000 / 300,
+                    repeat: -1
+                });
+            }
+            this.token.play('panda_idle');
+            this.tokenBaseScale = 0.1;
+        } else if (BUDDY_FRAME[buddyId] != null) {
+            this.token = this.add.sprite(0, 0, 'buddies_portraits', BUDDY_FRAME[buddyId]);
+            this.tokenBaseScale = 0.1;
+        } else {
+            this.token = this.add.sprite(0, 0, 'buddies_portraits', 0);
+            this.tokenBaseScale = 0.1;
+        }
+
+        this.token.setScale(this.tokenBaseScale);
         this.token.setDepth(10);
         this.token.lastPointIndex = savedIndex;
 
@@ -228,7 +260,7 @@ class BaseMapScene extends Phaser.Scene {
         this.bookBtn.setPosition(20, height - 20);
 
         // F. 更新 Token 位置
-        this.token.setScale(0.12 * this.baseScale);
+        this.token.setScale((this.tokenBaseScale || 0.1) * this.baseScale);
         const curIdx = this.token.lastPointIndex ?? 0;
         this.token.setPosition(this.pointPositions[curIdx].x, this.pointPositions[curIdx].y);
         
