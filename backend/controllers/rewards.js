@@ -31,7 +31,7 @@ rewardsRouter.get('/:id', middleware.requireTeacherRole, async(request, response
 
     try{
         const rewards = await RewardService.getUserRewards(id)
-        response.status(201).json(rewards)
+        response.status(200).json(rewards)
     } catch(error){
         next(error)
     }
@@ -40,7 +40,7 @@ rewardsRouter.get('/:id', middleware.requireTeacherRole, async(request, response
 rewardsRouter.get('/', middleware.requireAuthentication(true), async(request, response, next) => {
     try {
         const rewards = await RewardService.getUserRewards(request.user.id)
-        response.status(201).json(rewards)
+        response.status(200).json(rewards)
     } catch(error){
         next(error)
     }

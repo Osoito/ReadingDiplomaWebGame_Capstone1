@@ -19,7 +19,7 @@ app.use(session({
     saveUninitialized: false
 }))
 app.use((request, response, next) => {
-    request.user = { id: 123, role: 'teacher' }
+    request.user = { id: 1, role: 'teacher' }
     next()
 })
 // mocked passport middleware
@@ -182,6 +182,7 @@ describe('Reward integration tests', () => {
         await resetDB()
         //await db('users').insert({ id:1, name: 'Test User', role: 'student', avatar: 'default.jpg' })
     })
+
     test('Add a reward to the database', async() => {
         const input = {
             owner: 1,
@@ -198,5 +199,83 @@ describe('Reward integration tests', () => {
         expect(response.body.owner).toBe(input.owner)
         expect(response.body.reward_type).toBe(input.reward_type)
         expect(response.body.reward).toBe(input.reward)
+    })
+
+    test('Get specific reward from database', async() => {
+        const reward1 = {
+            owner: 1,
+            reward_type: 'avatar',
+            reward: 'avatar.jpg'
+        }
+        const reward2 = {
+            owner: 1,
+            reward_type: 'badge',
+            reward: 'badge.jpg'
+        }
+        const reward3 = {
+            owner: 2,
+            reward_type: 'avatar',
+            reward: 'avatar2.jpg'
+        }
+        const expectedOutcome = [
+            {
+                reward_type: 'avatar',
+                reward: 'avatar.jpg'
+            },
+            {
+                reward_type: 'badge',
+                reward: 'badge.jpg'
+            }
+        ]
+        await api.post('/api/rewards/add-reward').send(reward1)
+        await api.post('/api/rewards/add-reward').send(reward2)
+        await api.post('/api/rewards/add-reward').send(reward3)
+
+        const response = await api
+            .get('/api/rewards/1')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Get current user rewards', async () => {
+        const reward1 = {
+            owner: 1,
+            reward_type: 'avatar',
+            reward: 'avatar.jpg'
+        }
+        const reward2 = {
+            owner: 1,
+            reward_type: 'badge',
+            reward: 'badge.jpg'
+        }
+        const reward3 = {
+            owner: 2,
+            reward_type: 'avatar',
+            reward: 'avatar2.jpg'
+        }
+        const expectedOutcome = [
+            {
+                reward_type: 'avatar',
+                reward: 'avatar.jpg'
+            },
+            {
+                reward_type: 'badge',
+                reward: 'badge.jpg'
+            }
+        ]
+
+        await api.post('/api/rewards/add-reward').send(reward1)
+        await api.post('/api/rewards/add-reward').send(reward2)
+        await api.post('/api/rewards/add-reward').send(reward3)
+
+        const response = await api
+            .get('/api/rewards/')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
     })
 })

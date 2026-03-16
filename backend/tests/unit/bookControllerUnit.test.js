@@ -45,7 +45,7 @@ const api = supertest(app)
 
 
 
-describe('Book unit tests', () => {
+describe('Book controller unit tests', () => {
     beforeEach(() => {
         vi.resetAllMocks()
     })
