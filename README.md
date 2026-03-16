@@ -240,7 +240,7 @@ backend/
 │   │   ├── migration.stub              # Template for the migration files
 │   │   └── README.md
 │   └── seeds/
-│       ├── users_seed.js               # Populates database with users for testing (currently not in use)
+│       ├── users_seed.js               # Populates (integration)database with users for testing
 │       └── seed.stub                   # Template for seed files
 ├── models/                             # Models are used to make SQL requests to the database (called by services)
 │   ├── book.js                         
@@ -257,12 +257,16 @@ backend/
 │   └── README.md
 ├── tests/
 │   ├── integration/                    # Integration tests
-│   │   └── book_api_integration.test.js
+│   │   └── api_integration.test.js     # All integration tests, currently in one file so that they even work, could try to seperate them later on if there is time.
 │   ├── unit/                           # Unit tests
 │   │   ├── models/                     # Tests for database interaction
-│   │   │   └── userModel.test.js
+│   │   │   ├── userModel.test.js
+│   │   │   ├── bookModel.test.js
+│   │   │   └── rewardModel.test.js
 │   │   ├── services/                   # Unit tests for service functions
-│   │   │   └── userService.test.js
+│   │   │   ├── userService.test.js
+│   │   │   ├── bookService.test.js
+│   │   │   └── rewardService.test.js
 │   │   ├── bookControllerUnit.test.js
 │   │   ├── rewardControllerUnit.test.js
 │   │   └── user_api.test.js            # variety of tests for user functions
