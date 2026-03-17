@@ -20,10 +20,13 @@ const app = express()
 
 logger.info('Connecting')
 
+// Check environment mode development/production/test
+const environmentMode = process.env.NODE_ENV || 'development'
+
 // Allows JavaScript from only this specific origin to read responses
 const CORS_OPTIONS = {
     // In production the PUBLIC_URL is the public domain
-    origin: [process.env.NODE_ENV === 'production' ? process.env.PUBLIC_URL : 'http://localhost:5173'],
+    origin: [environmentMode === 'production' ? process.env.PUBLIC_URL : 'http://localhost:5173'],
     credentials: true
 }
 
@@ -46,8 +49,14 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
-// prints all requests in the console
-app.use(middleware.requestLogger)
+// prints all requests in the console (not required during production)
+if (environmentMode !== 'production') {
+    app.use(middleware.requestLogger)
+}
+
+if (environmentMode === 'production' && process.env.PUBLIC_URL === 'https://lukudiplomi.onrender.com/') {
+    app.set('trust proxy', ['74.220.51.0/24', '74.220.59.0/24'])
+}
 
 app.use('/auth', authRouter)
 app.use('/api/users', usersRouter)
@@ -56,7 +65,7 @@ app.use('/api/progress', progressRouter)
 app.use('/api/rewards', rewardsRouter)
 app.use('/api/submissions', submissionsRouter)
 
-if (process.env.NODE_ENV === 'production') {
+if (environmentMode === 'production') {
     // derive __filename and __dirname in ESM
     const __filename = fileURLToPath(import.meta.url)
     const __dirname = path.dirname(__filename)
@@ -66,6 +75,7 @@ if (process.env.NODE_ENV === 'production') {
     // ∨∨∨ for debugging production build (dist/) path
     // logger.info(`serving frontend from ${distPath}`)
 
+    // Servers the frontend statically from the dist build folder
     app.use(express.static(distPath))
 
     // SPA fallback for client-side routing

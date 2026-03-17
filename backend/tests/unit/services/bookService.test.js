@@ -1,6 +1,6 @@
-import { vi, test, expect } from 'vitest'
+import { vi, test, expect, describe } from 'vitest'
 import Book from '../../../models/book.js'
-import bookService from '../../../services/bookService.js'
+import BookService from '../../../services/bookService.js'
 
 
 // Mock the required functions from book model
@@ -43,7 +43,7 @@ describe('Bookservice unit tests', () => {
                 content: 'test/testPath'
             }
         )
-        const result = await bookService.addBook(input)
+        const result = await BookService.addBook(input)
 
         expect(Book.findByTitle).toBeCalledTimes(1)
         expect(Book.create).toHaveBeenCalledWith(input)
@@ -78,7 +78,7 @@ describe('Bookservice unit tests', () => {
             }
         )
 
-        await expect(bookService.addBook(input))
+        await expect(BookService.addBook(input))
             .rejects
             .toThrow(`A book with the title '${input.title}' already exists`)
 
@@ -116,7 +116,7 @@ describe('Bookservice unit tests', () => {
 
         Book.getAll.mockResolvedValue(mockBooks)
 
-        const result = await bookService.getAllBooks()
+        const result = await BookService.getAllBooks()
 
         expect(Book.getAll).toBeCalledTimes(1)
         expect(result).toEqual(mockBooks)
@@ -129,7 +129,7 @@ describe('Bookservice unit tests', () => {
         ]
         Book.findByTitle.mockResolvedValue(mockEmptyBooks)
 
-        await expect(bookService.getAllBooks())
+        await expect(BookService.getAllBooks())
             .rejects
             .toThrow(`No books were found`)
 
@@ -149,7 +149,7 @@ describe('Bookservice unit tests', () => {
 
         Book.findBookById.mockResolvedValue(mockBook)
 
-        const result = await bookService.findBookById(1)
+        const result = await BookService.findBookById(1)
 
         expect(Book.findBookById).toBeCalledTimes(1)
         expect(result).toEqual(mockBook)
@@ -159,7 +159,7 @@ describe('Bookservice unit tests', () => {
 
         Book.findBookById.mockResolvedValue(null)
 
-        await expect(bookService.findBookById(1))
+        await expect(BookService.findBookById(1))
             .rejects
             .toThrow('Book not found')
 
@@ -178,7 +178,7 @@ describe('Bookservice unit tests', () => {
         ]
         Book.findBookById.mockResolvedValue(mockBook)
 
-        await bookService.deleteBook(1)
+        await BookService.deleteBook(1)
 
         expect(Book.findBookById).toBeCalledTimes(1)
         expect(Book.findBookById).toBeCalledWith(1)
@@ -188,7 +188,7 @@ describe('Bookservice unit tests', () => {
     test('Fail to remove a book', async () => {
         Book.findBookById.mockResolvedValue(null)
 
-        await expect(bookService.deleteBook(1))
+        await expect(BookService.deleteBook(1))
             .rejects
             .toThrow('Book not found')
 

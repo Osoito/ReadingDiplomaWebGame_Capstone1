@@ -2,7 +2,7 @@ import Progress from '../models/progress.js'
 
 const ProgressService = {
     async addNewProgress({ level, user, book }) {
-        const existing = await Progress.findByLevel(level, user)
+        const existing = await Progress.findSpecificEntry(level, user)
         if (existing) {
             const err = new Error(`This user already has a progress entry for level ${level}`)
             err.status = 400
@@ -19,7 +19,7 @@ const ProgressService = {
     },
 
     async completeLevel(level, { user }) {
-        const existing = await Progress.findByLevel(level, user)
+        const existing = await Progress.findSpecificEntry(level, user)
         if (!existing) {
             const err = new Error(`Level ${level} was not found for this user`)
             err.status = 404
