@@ -9,10 +9,10 @@ import {
 } from './data/index.js';
 
 const ReadingState = {
-    // 当前阅读进度（用于 ReadingScene 内部）
+    // Current reading progress (used internally by ReadingScene)
     progress: 0,
 
-    // 各洲进度（驱动 token）
+    // Progress in each continent (driving token)
     europeProgress: 0,
     africaProgress: 0,
     antarcticaProgress: 0,
@@ -22,22 +22,22 @@ const ReadingState = {
     southAmericaProgress: 0,
     oceaniaProgress: 0,
 
-    // 每本书的阅读进度：bookId -> 0-100
+    // Reading progress for each book: bookId -> 0-100
     bookProgress: {},
 
-    // 已经“完整读完”的书（用于从书单中排除）
+    // Books that have been "completely read" (used to exclude from the book list)
     completedBookIds: {},
     mapFinished: {},
 
-    // 每个洲当前绑定的书：mapKey -> bookId
+    // The book currently bound to each continent: mapKey -> bookId
     mapSelectedBook: {},
 
-    // 完成的书本数量 & 目标数量（8 个洲）
+    // Number of books completed & target number (8 continents)
     booksRead: 0,
     targetBooks: 8,
 
     /**
-     * 全局 10 本书列表（你原 main.js 的 globalBooks）
+     * A global list of 10 books (from your original main.js's globalBooks).
      */
     globalBooks: [
         { title: "The Frozen Pirate", author: "W. Clark Russell", id: "34346" },
@@ -53,7 +53,7 @@ const ReadingState = {
     ],
 
     /**
-     * 洲解锁顺序：从北到南
+     * Continent unlocking order: from north to south
      */
     mapOrder: [
         'ArcticMap',
@@ -66,7 +66,7 @@ const ReadingState = {
         'AntarcticaMap'
     ],
     /**
-     * 每个洲的配置（合并你 React 版本的 book 数据）
+     * Configuration for each continent (merging your React version of book data)
      */
     mapConfig: {
         'EuropeMap': {
@@ -88,7 +88,7 @@ const ReadingState = {
     },
 
     /**
-     * 洲是否解锁
+     * Is the continent unlocked?
      */
     mapUnlock: {
         'ArcticMap': true,

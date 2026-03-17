@@ -7,12 +7,12 @@ class BaseMapScene extends Phaser.Scene {
         super(key);
         this.assetKey = assetKey;
         this.title = title;
-        this.LOGICAL_WIDTH = 1280; // ⭐ 新增：假设你的原始点位是在 1280px 宽的图上标注的
+        this.LOGICAL_WIDTH = 1280; // ⭐ Added: Assuming your original points are marked on a 1280px wide map.
         
-        // --- 原始逻辑：功能锁与配置 ---
+        // --- Original Logic: Function Locks and Configuration ---
         this.isDoingQuiz = false; 
 
-        // --- 原始逻辑：Video 检查点定义 ---
+        // --- Original Logic: Video Checkpoint Definition ---
         this.videoCheckpoints = {
             3: { 
                 title: "Lukuvinkki: Visualisointi", 
@@ -24,10 +24,10 @@ class BaseMapScene extends Phaser.Scene {
             }
         };
 
-        // --- 原始逻辑：已观看视频记录 ---
+        // --- Original logic: Video viewing history already viewed ---
         this.viewedVideos = new Set();
         
-        // 动态对象容器
+        // Dynamic object container
         this.dotObjects = []; 
         this.dotTexts = [];
     }
@@ -35,14 +35,14 @@ class BaseMapScene extends Phaser.Scene {
         create() {
         const { width, height } = this.scale;
 
-        // 1. 初始化背景
+        // 1. Initialize background
         this.bg = this.add.image(0, 0, this.assetKey).setOrigin(0);
         
-        // 2. 初始化路径图形层（必须在 Token 下方）
+        // 2. Initialize the path graph layer (must be below the Token)
         this.pathGraphics = this.add.graphics();
         this.pathGraphics.setDepth(5);
 
-        // 3. 初始化标题文本 (带原始 Stroke 样式)
+        // 3. Initialize the title text (with the original Stroke style)
         this.titleText = this.add.text(0, 0, this.title, {
             fontSize: '32px', 
             color: '#fff', 
@@ -53,7 +53,7 @@ class BaseMapScene extends Phaser.Scene {
         this.titleText.setScrollFactor(0);
         this.titleText.setDepth(2000);
 
-        // 4. 初始化返回按钮 (带原始颜色和 Padding)
+        // 4. Initialize the back button (with original color and padding)
         this.backBtn = this.add.text(0, 0, '← TAKAISIN', {
             fontSize: '18px', 
             color: '#fff', 
@@ -68,7 +68,7 @@ class BaseMapScene extends Phaser.Scene {
             this.scene.start('WorldMap');
         });
 
-        // 5. 初始化书籍按钮 (带原始颜色和 📖 符号)
+        // 5. Initialize the book button (with original color and 📖 symbol)
         this.bookBtn = this.add.text(20, height - 20, '📖 AVAA KIRJA', {
             fontSize: '28px', 
             color: '#ffcc00', 
@@ -83,28 +83,28 @@ class BaseMapScene extends Phaser.Scene {
     const globalBooks = ReadingState.globalBooks || [];
     const completedBookIds = ReadingState.completedBookIds || {};
 
-    // 1. 核心判定：查找当前大陆是否有任何一本书已经完成了
+    // 1. Core Decision: Check if any book in the current mainland has been completed.
     const finishedBook = globalBooks.find(book => !!completedBookIds[book.id]);
 
     if (finishedBook) {
-        // --- 场景：已经读完书了 ---
-        // 直接去回顾 Quiz，不给看书单的机会
+        // --- Scenario: The book has already been read ---
+        // Go directly to review the quiz, without giving the reader a chance to look at the reading list.
         this.showStoryQuiz();
     } else {
-        // --- 场景：还没读完书 ---
-        // 正常弹书单选书
+        // --- Scenario: Not finished reading the book yet ---
+        // Normal pop-up book selection
         this.showBookList();
     }
 });
 
-        // 6. 初始化 Token
+        // 6. Initialize Token
         const savedIndex = ReadingState.tokenPositions?.[this.scene.key] ?? 0;
         this.token = this.add.image(0, 0, 'token');
         this.token.setScale(0.12);
         this.token.setDepth(10);
         this.token.lastPointIndex = savedIndex;
 
-        // 7. 原始交互监听：拖拽摄像机
+        // 7. Raw interactive listening: drag and drop the camera
         this.input.on('pointermove', (pointer) => {
             if (pointer.isDown) {
                 this.cameras.main.stopFollow();
@@ -113,16 +113,16 @@ class BaseMapScene extends Phaser.Scene {
             }
         });
 
-        // 8. 音频上下文恢复
+        // 8. Audio Context Restoration
         this.input.once('pointerdown', () => {
             if (this.sound.context && this.sound.context.state === 'suspended') {
                 this.sound.context.resume();
             }
         });
 
-        // 9. 场景恢复监听
+        // 9. Scene Resumption Listening
         this.events.on('resume', () => {
-            // 修复：确保返回时清理可能存在的列表残留
+            // Fix: Ensures that any remaining list items are cleared upon returning.
             if (this.listUI) {
                 if (this._resizeBookListHandler) {
                     this.scale.off('resize', this._resizeBookListHandler, this);
@@ -136,30 +136,30 @@ class BaseMapScene extends Phaser.Scene {
             });
         });
 
-        // ⭐⭐⭐ 核心修复：调整初始化顺序 ⭐⭐⭐
-        // 1. 现在标记场景已完全就绪，这样 handleResize 内部的 camera 调用就不会失败
+        // ⭐⭐⭐ Core Fix: Adjusted Initialization Order ⭐⭐⭐
+        // 1. Now the scene is fully marked as ready, so camera calls inside handleResize will not fail.
         this.isReady = true;
 
-        // 2. 安全地进行第一次布局计算，这会创建 pointPositions 数组
+        // 2. Perform the first layout calculation safely, which will create the pointPositions array.
         this.handleResize();
 
-        // 3. 然后再设置未来的 resize 事件监听
+        // 3. Then set up a listener for the future resize event.
         this.scale.on('resize', this.handleResize, this);
         this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
             this.scale.off('resize', this.handleResize, this);
         });
 
-        // 4. 最后，安全地调用 updateTokenPosition，因为它现在可以确定 pointPositions 存在
+        // 4. Finally, it is safe to call updateTokenPosition, as it can now confirm that pointPositions exist.
         this.time.delayedCall(50, () => {
             this.updateTokenPosition(false);
         });
     }
 
-    // ⭐ 适配微调逻辑：确保在各种设备上 UI 大小和位置都正确，并解决重合问题
+    // ⭐ Adaptation and fine-tuning logic: Ensure the UI size and position are correct on various devices and resolve overlap issues.
     handleResize() {
         const { width, height } = this.scale;
         
-        // --- A, B, C, D 保持原始逻辑不变 ---
+        // --- A, B, C, D retain their original logic ---
         const fillScale = Math.max(width / this.bg.width, height / this.bg.height); 
         this.bg.setScale(fillScale);
         this.cameras.main.setBounds(0, 0, this.bg.displayWidth, this.bg.displayHeight);
@@ -196,27 +196,27 @@ class BaseMapScene extends Phaser.Scene {
             }
         });
 
-        // --- E. 顶部 UI ---
+        // --- E. Top UI ---
         this.titleText.setFontSize(32 * uiScale);
         const radius = Math.round(35 * uiScale);
 
         this.bookBtn.setVisible(false);
         this.backBtn.setVisible(false);
 
-        // 重置图书按钮容器
+        // Reset the book button container
         if (this.bookIconContainer) this.bookIconContainer.destroy();
         this.bookIconContainer = this.add.container(0, 0);
 
-        // 1. 背景圆圈
+        // 1. Background circle
         const bookBg = this.add.graphics();
         bookBg.lineStyle(5, 0x3d2b1f, 1).fillStyle(0xd4a74a, 1);
         bookBg.fillCircle(0, 0, radius).strokeCircle(0, 0, radius);
         bookBg.lineStyle(2, 0xffffff, 0.5).strokeCircle(0, 0, radius * 0.88);
         this.bookIconContainer.add(bookBg);
 
-        // 2. 绘制的书本图标 (给它命名以便隐藏)
+        // 2. Draw a book icon
         const bookG = this.add.graphics();
-        bookG.name = 'bookGraphic'; // ⭐ 添加名字
+        bookG.name = 'bookGraphic'; 
         const bw = radius * 1.0; const bh = radius * 0.75;
         bookG.fillStyle(0x5d4037, 1).fillRoundedRect(-bw/2 + 2, -bh/2 + 2, bw, bh, 4); 
         bookG.fillStyle(0xa52a2a, 1).fillRoundedRect(-bw/2, -bh/2, bw, bh, 4);
@@ -224,14 +224,14 @@ class BaseMapScene extends Phaser.Scene {
         bookG.lineStyle(1.5, 0x3d2b1f, 0.3).lineBetween(0, -bh*0.4, 0, bh*0.4);
         this.bookIconContainer.add(bookG);
 
-        // 3. ⏳ 加载图标 (初始化为隐藏)
+        // 3. ⏳ Load icon (initially hidden)
         const loadingIcon = this.add.text(0, 0, '⏳', { 
             fontSize: (radius * 1.2) + 'px' 
         }).setOrigin(0.5).setVisible(false);
-        loadingIcon.name = 'loadingIcon'; // ⭐ 添加名字
+        loadingIcon.name = 'loadingIcon';
         this.bookIconContainer.add(loadingIcon);
 
-        // 重置返回按钮容器
+        // Reset the back button container
         if (this.backIconContainer) this.backIconContainer.destroy();
         this.backIconContainer = this.add.container(0, 0);
         const backBg = this.add.graphics();
@@ -245,7 +245,7 @@ class BaseMapScene extends Phaser.Scene {
         arrowG.beginPath().moveTo(aw/2, -aw*0.8).lineTo(-aw*0.7, 0).lineTo(aw/2, aw*0.8).closePath().fillPath();
         this.backIconContainer.add(arrowG);
 
-        // 布局计算
+        // Layout calculation
         const isNarrowScreen = width < 600;
         const margin = isNarrowScreen ? 15 : 25;
         const backX = margin + radius;
@@ -257,7 +257,7 @@ class BaseMapScene extends Phaser.Scene {
         this.bookIconContainer.setPosition(bookX, bookY);
         this.titleText.setOrigin(0.5, 0).setPosition(width / 2, isNarrowScreen ? backY + radius + 10 : 20);
 
-        // 按钮交互逻辑
+        // Button interaction logic
         const setupBtn = (container, callback) => {
             container.setInteractive(new Phaser.Geom.Circle(0, 0, radius), Phaser.Geom.Circle.Contains);
             container.on('pointerdown', () => container.setScale(0.85));
@@ -282,7 +282,7 @@ class BaseMapScene extends Phaser.Scene {
             this.scene.start('WorldMap');
         });
 
-        // 层级与缩放系数
+        // Hierarchy and scaling factor
         this.bookIconContainer.setDepth(2000).setScrollFactor(0);
         this.backIconContainer.setDepth(2000).setScrollFactor(0);
         this.titleText.setDepth(2000).setScrollFactor(0);
@@ -293,7 +293,7 @@ class BaseMapScene extends Phaser.Scene {
         this.updateTokenPosition(false);
     }
 
-    // --- 以下为原始业务逻辑，严禁删减 ---
+    // --- The following is the original logic, and deletion is strictly prohibited ---
     showBookList() {
         this._listEnableTime = Date.now();
         const mapKey = this.scene.key;
@@ -305,8 +305,8 @@ class BaseMapScene extends Phaser.Scene {
 
         if (!mapCfg || !globalBooks) return;
 
-        // ⭐⭐⭐ 核心修改：使用你定义的标志位精准判定当前大陆是否已通关 ⭐⭐⭐
-        // 这样只要这个大陆触发过 showFinalCelebration，以后就只进 Quiz，不进书单
+        // ⭐⭐⭐ Core Modification: Use defined flag to precisely determine whether the current continent has been cleared ⭐⭐⭐
+        // Once showFinalCelebration has been triggered on this continent, it will only enter the Quiz and not the Book List.
         if (ReadingState._continentCompletedFlags && ReadingState._continentCompletedFlags[mapKey] === true) {
             console.log("此大陆任务已完成，直接跳转 Quiz 回顾");
             this.showStoryQuiz(); 
@@ -324,7 +324,7 @@ class BaseMapScene extends Phaser.Scene {
 
         this.listUI = this.add.container(0, 0).setDepth(10000).setScrollFactor(0);
 
-        // 1. 背景遮罩
+        // 1. Background mask
         const overlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.9)
             .setOrigin(0).setScrollFactor(0).setInteractive();
         this.listUI.add(overlay);
@@ -356,7 +356,7 @@ class BaseMapScene extends Phaser.Scene {
         });
         this.listUI.add(closeBtn);
 
-        // 2. 列表区域设定
+        // 2. List area settings
         const listY = closeBtnY + closeBtn.height + (25 * uiScale);
         const bottomSafety = isMobile ? 120 : 40; 
         const viewH = height - listY - bottomSafety;
@@ -383,7 +383,7 @@ class BaseMapScene extends Phaser.Scene {
             isCurrent: book.id === currentBookId
         }));
 
-        // 4. 渲染书项
+        // 4. Render the book item
         availableBooks.forEach((book, idx) => {
             const itemH = 100 * uiScale;
             const y = idx * itemH;
@@ -408,7 +408,7 @@ class BaseMapScene extends Phaser.Scene {
             this.scrollContainer.add([btnBg, text, pctText]);
         });
 
-        // 5. 滚动逻辑 (保留所有原始计算)
+        // 5. Scrolling Logic 
         const contentH = availableBooks.length * (100 * uiScale);
         const maxY = listY;
         const minY = contentH <= viewH ? maxY : listY - (contentH - viewH);
@@ -481,15 +481,15 @@ class BaseMapScene extends Phaser.Scene {
     }
 
     async fetchGutenbergBook(book, config, readOnly = false) {
-    // --- 1. 获取图标组件 ---
+    // --- 1. Get the icon component ---
     const bookG = this.bookIconContainer.getByName('bookGraphic');
     const loadingI = this.bookIconContainer.getByName('loadingIcon');
 
-    // --- 2. 切换到加载状态 (显示 ⏳, 隐藏 📖) ---
+    // --- 2. Switch to loading state (show ⏳, hide 📖) ---
     if (bookG) bookG.setVisible(false);
     if (loadingI) {
         loadingI.setVisible(true);
-        // 让沙漏转起来，更有加载感
+        // Making the hourglass spin adds a sense of loading.
         this.tweens.add({
             targets: loadingI,
             angle: 360,
@@ -554,7 +554,7 @@ class BaseMapScene extends Phaser.Scene {
         });
     }
 
-    // --- 3. 结束加载，还原图标 (隐藏 ⏳, 显示 📖) ---
+    // --- 3. End loading and restore icons (hide ⏳, show 📖) ---
     if (loadingI) {
         this.tweens.killTweensOf(loadingI);
         loadingI.setAngle(0).setVisible(false);
@@ -592,7 +592,7 @@ class BaseMapScene extends Phaser.Scene {
         let targetIndex = Math.floor((currentProg / 100) * (this.pointPositions.length - 1));
         targetIndex = Phaser.Math.Clamp(targetIndex, 0, this.pointPositions.length - 1);
 
-        // 绘制路径线条
+        // Draw path lines
         if (this.pathGraphics) {
             this.pathGraphics.clear();
             this.pathGraphics.lineStyle(4, this.themeColor || 0xffffff, 0.4);
@@ -653,12 +653,12 @@ class BaseMapScene extends Phaser.Scene {
     }
 
     checkCheckpointEvents(index) {
-        // Video 触发
+        // Video Trigger
         if (this.videoCheckpoints[index]) {
             this.showVideoPopup(this.videoCheckpoints[index], index, false);
         }
 
-        // 终点 Quiz 触发
+        // Quiz Triggered
         if (index === this.pointPositions.length - 1) {
             if (!ReadingState._continentCompletedFlags) {
                 ReadingState._continentCompletedFlags = {};
@@ -672,25 +672,25 @@ class BaseMapScene extends Phaser.Scene {
     }
 
    showVideoPopup(videoData, index, isManual = false) {
-        // 调试：确保在控制台看到 index 的真实值
+        // Debugging: Ensure you see the actual value of index in the console.
         console.log("Current Video Index:", index);
 
         if (!isManual && this.viewedVideos.has(index)) return;
 
-        // 1) 清理旧的弹窗
+        // 1) Clean up old pop-ups
         if (this.videoPopupUI) {
             this.videoPopupUI.destroy(true);
         }
 
-        // 2) 基础配置
+        // 2) Basic Configuration
         const { width, height } = this.scale;
         const uiScale = Phaser.Math.Clamp(width / 1200, 0.7, 1.2);
         const depthBase = 9999999;
 
-        // 3) 创建组
+        // 3) Create a group
         this.videoPopupUI = this.add.group();
 
-        // 4) 遮罩层
+        // 4) Masking layer
         const overlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.85)
             .setOrigin(0)
             .setScrollFactor(0)
@@ -698,7 +698,7 @@ class BaseMapScene extends Phaser.Scene {
             .setInteractive();
         this.videoPopupUI.add(overlay);
 
-        // 5) 背景主框
+        // 5) Background frame
         const boxW = 450 * uiScale;
         const boxH = 300 * uiScale;
         const box = this.add.rectangle(width / 2, height / 2, boxW, boxH, 0x1e3a5f)
@@ -707,7 +707,7 @@ class BaseMapScene extends Phaser.Scene {
             .setDepth(depthBase + 1);
         this.videoPopupUI.add(box);
 
-        // 6) 标题
+        // 6) Title
         const title = this.add.text(width / 2, height / 2 - (100 * uiScale), "💡 LUKUVINKKI AVATTU", {
             fontFamily: '"Cinzel Decorative", serif',
             fontSize: (26 * uiScale) + 'px',
@@ -716,9 +716,9 @@ class BaseMapScene extends Phaser.Scene {
         }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2);
         this.videoPopupUI.add(title);
 
-        // 7) 副标题 - 根据索引动态切换标题
-        let displayTitle = "Liisan seikkailut ihmemaassa"; // 默认标题
-        const currentIdx = String(index); // 转为字符串确保匹配稳健
+        // 7) Subheading - Dynamically switch headings based on the index
+        let displayTitle = "Liisan seikkailut ihmemaassa"; 
+        const currentIdx = String(index); // 
 
         if (currentIdx === "7") {
             displayTitle = "Seitsemän veljestä -laulu";
@@ -735,7 +735,7 @@ class BaseMapScene extends Phaser.Scene {
         }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2);
         this.videoPopupUI.add(subTitle);
 
-        // 8) 观看按钮背景
+        // 8) View button background
         const btnW = 260 * uiScale;
         const btnH = 60 * uiScale;
         const btnBg = this.add.rectangle(width / 2, height / 2 + (50 * uiScale), btnW, btnH, 0xc4973a)
@@ -744,7 +744,7 @@ class BaseMapScene extends Phaser.Scene {
             .setInteractive({ useHandCursor: true });
         this.videoPopupUI.add(btnBg);
 
-        // 9) 按钮文字
+        // 9) Button Text
         const btnLabel = this.add.text(width / 2, height / 2 + (50 * uiScale), "KATSO TÄSSÄ", {
             fontFamily: 'Nunito',
             fontSize: (20 * uiScale) + 'px',
@@ -753,7 +753,7 @@ class BaseMapScene extends Phaser.Scene {
         }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 3);
         this.videoPopupUI.add(btnLabel);
 
-        // 10) 关闭文字
+        // 10) Close text
         const closeBtn = this.add.text(width / 2, height / 2 + (120 * uiScale), "[ Sulje ]", {
             fontFamily: 'Nunito',
             fontSize: (18 * uiScale) + 'px',
@@ -763,7 +763,7 @@ class BaseMapScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true });
         this.videoPopupUI.add(closeBtn);
 
-        // --- 核心清理逻辑 ---
+        // --- Core cleanup logic ---
         const cleanup = () => {
             if (this.videoPopupUI) {
                 this.videoPopupUI.destroy(true);
@@ -774,22 +774,22 @@ class BaseMapScene extends Phaser.Scene {
             window.removeEventListener('keydown', escHandler);
         };
 
-        // --- 交互绑定 ---
+        // --- Interactive Binding ---
         btnBg.on('pointerover', () => { btnBg.setFillStyle(0xd4a74a); });
         btnBg.on('pointerout', () => { btnBg.setFillStyle(0xc4973a); });
         
         btnBg.on('pointerdown', () => {
-            // 根据 index 选择不同的视频 ID
-            let targetVideoId = "TZoNz-2rk8c"; // 默认 30 号视频 (爱丽丝)
+            // Select different video IDs based on index
+            let targetVideoId = "TZoNz-2rk8c"; // Default video number 30 (Alice)
             const currentIdxStr = String(index);
             
             if (currentIdxStr === "7") {
-                targetVideoId = "jDZcdgDgM48"; // 7 号点位的视频 (七兄弟)
+                targetVideoId = "jDZcdgDgM48"; // Video of point 7 (Seven Brothers)
             }
 
             const embedUrl = `https://www.youtube.com/embed/${targetVideoId}?autoplay=1&rel=0&modestbranding=1`;
 
-            // 创建 DOM 层
+            // Create DOM layer
             const videoOverlay = document.createElement('div');
             videoOverlay.id = "video-dom-layer";
             videoOverlay.style = `
@@ -836,7 +836,7 @@ class BaseMapScene extends Phaser.Scene {
 
         closeBtn.on('pointerdown', () => cleanup());
 
-        // ESC 退出逻辑
+        // ESC Exit Logic
         const escHandler = (e) => { 
             if (e.key === 'Escape') {
                 const domLayer = document.getElementById('video-dom-layer');
@@ -846,7 +846,7 @@ class BaseMapScene extends Phaser.Scene {
         };
         window.addEventListener('keydown', escHandler);
 
-        // 窗口缩放自适应逻辑
+        // Window scaling adaptive logic
         this._resizeVideoHandler = () => {
             if (this.videoPopupUI) {
                 this.showVideoPopup(videoData, index, true);
@@ -858,14 +858,13 @@ class BaseMapScene extends Phaser.Scene {
     showStoryQuiz() {
     const mapKey = this.scene.key;
     
-    // 1. 强制关闭可能残留在屏幕上的书单 UI
-
+    // 1. Force close any remaining book list UI elements on the screen.
     if (this.listUI) {
         this.listUI.destroy(true);
         this.listUI = null;
     }
     
-    // 2. 标记状态，防止逻辑重叠
+    // 2. Mark the state to prevent logical overlap.
     this.isDoingQuiz = true;
 
     console.log("Attempting to open React Quiz for:", mapKey);
@@ -878,13 +877,13 @@ class BaseMapScene extends Phaser.Scene {
 
     showFinalCelebration() {
         const mapKey = this.scene.key;
-        // 1) 更新完成状态
+        // 1) Update complete status
         if (!ReadingState._continentCompletedFlags) {
             ReadingState._continentCompletedFlags = {};
         }
         ReadingState._continentCompletedFlags[mapKey] = true;
 
-        // 2) 如果已有旧弹窗，先销毁并卸载监听
+        // 2) If the old pop-up already exists, destroy and uninstall the listener first.
         if (this.celebrationUI) {
             this.celebrationUI.destroy(true);
             if (this._resizeCelebrationHandler) {

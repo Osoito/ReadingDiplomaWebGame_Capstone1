@@ -8,7 +8,7 @@ class WorldMapScene extends Phaser.Scene {
         super('WorldMap');
         this.isMinimapMaximized = false;
         this.ORIGINAL_MAP_WIDTH = 1280; 
-        // 在构造函数里先声明
+        // Declare in the constructor first
         this.pointGroup = null;
     }
 
@@ -18,7 +18,7 @@ class WorldMapScene extends Phaser.Scene {
     }
 
     create() {
-        // --- 1. 背景层 ---
+        // --- 1. Background layer ---
         const bg = this.add.image(0, 0, 'worldMap').setOrigin(0);
         const bgSimple = this.add.image(0, 0, 'worldMapSimple').setOrigin(0);
         
@@ -35,7 +35,7 @@ class WorldMapScene extends Phaser.Scene {
 
         let currentZoomScale = setupBackgrounds();
 
-        // --- 2. 点位设置 ---
+        // --- 2. Point Setting ---
         const continentPositions = {
             arctic: { x: 450, y: 120, name: 'ARKTIS', mapKey: 'ArcticMap' }, 
             europe: { x: 700, y: 250, name: 'EUROOPPA', mapKey: 'EuropeMap' },
@@ -47,11 +47,11 @@ class WorldMapScene extends Phaser.Scene {
             antarctica: { x: 750, y: 700, name: 'ETELÄMANNER', mapKey: 'AntarcticaMap' }
         };
 
-        // ⭐ 修改：改为类的属性，确保生命周期内永远可访问
+        // ⭐ Modification: Change to a class attribute to ensure it is always accessible throughout the class's lifetime.
         this.pointGroup = this.add.group();
         
         const renderPoints = () => {
-            // ⭐ 增加多重防御检查
+            // ⭐ Added multiple defense checks
             if (!this.pointGroup || !this.pointGroup.scene || !this.pointGroup.active) return;
 
             this.pointGroup.clear(true, true);
@@ -74,7 +74,7 @@ class WorldMapScene extends Phaser.Scene {
         };
         renderPoints();
 
-        // --- 3. UI 元素 ---
+        // --- 3. UI Elements ---
         const uiStyle = { 
             fontFamily: '"Cinzel", serif', fontSize: '24px', fill: '#1A237E', 
             stroke: '#ffffff', strokeThickness: 5, fontStyle: 'bold',
@@ -85,7 +85,7 @@ class WorldMapScene extends Phaser.Scene {
         this.backBtn = this.add.text(this.scale.width - 20, 20, 'POISTU', uiStyle).setOrigin(1, 0).setScrollFactor(0).setDepth(2000).setInteractive({ useHandCursor: true });
         this.backBtn.on('pointerdown', () => { if (this.game.handleBackNavigation) this.game.handleBackNavigation(); });
 
-        // --- 4. 小地图配置 ---
+        // --- 4. Minimap Configuration ---
         const getLayoutConfig = (isMaximized) => {
             const { width: currentW, height: currentH } = this.scale;
             if (!bg || !bg.active) return { x:0, y:0, w:100, h:100 };
@@ -170,7 +170,7 @@ class WorldMapScene extends Phaser.Scene {
         };
 
         const onResize = () => {
-            // ⭐ 核心防御：如果场景不是 Active 状态，坚决不运行逻辑
+            // ⭐ Core Defense: Never run logic if the scenario is not in an Active state.
             if (!this.scene.isActive() || !bg || !bg.active) return;
 
             currentZoomScale = setupBackgrounds();
@@ -191,7 +191,7 @@ class WorldMapScene extends Phaser.Scene {
         this.scale.on('resize', onResize);
         this.events.on('update', syncUI);
 
-        // 清理事件监听，防止内存泄漏和僵尸回调
+        // Clean up event listeners to prevent memory leaks and zombie callbacks
         this.events.on('shutdown', () => {
             this.scale.off('resize', onResize);
         });

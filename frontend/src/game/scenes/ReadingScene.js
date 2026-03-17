@@ -40,7 +40,7 @@ class ReadingScene extends Phaser.Scene {
         
         this.uiContainer = this.add.container(0, 0);
 
-        // --- 1. 响应式布局计算 (保留原始适配逻辑) ---
+        // --- 1. Responsive layout calculation (retaining original adaptation logic) ---
         const isMobile = width < 768;
         const isLandscape = width > height && height < 600;
         const isDesktop = width >= 1024;
@@ -57,13 +57,13 @@ class ReadingScene extends Phaser.Scene {
         const titleFontSize = isLandscape ? Math.max(18, height * 0.07) : Math.max(22, Math.min(width * 0.05, 36));
         const bodyFontSize = isMobile ? (isLandscape ? 17 : 18) : 20;
 
-        // --- 2. 视觉层 ---
+        // --- 2. Visual Layer ---
         const background = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.85).setOrigin(0).setInteractive();
         const paper = this.add.rectangle(centerX, centerY, paperWidth, paperHeight, 0xfdf6e3)
             .setOrigin(0.5)
             .setStrokeStyle(3, 0xc4973a);
 
-        // --- 3. 标题与作者 ---
+        // --- 3. Title and Author ---
         const titleY = paperTop + (isLandscape ? 10 : paperHeight * 0.06);
         const titleTxt = this.add.text(centerX, titleY, this.bookData.title, {
             fontSize: `${titleFontSize}px`, color: '#1e3a5f', fontWeight: 'bold',
@@ -76,7 +76,7 @@ class ReadingScene extends Phaser.Scene {
             fontSize: `${bodyFontSize * 0.8}px`, color: '#8d6e63', fontFamily: 'Nunito, sans-serif'
         }).setOrigin(0.5, 0);
 
-        // --- 4. 进度条 (新位置：作者下方) ---
+        // --- 4. Progress Bar (New location: below the author) ---
         const savedPct = ReadingState.bookProgress[this.bookData.id] || 0;
         const barY = authorTxt.y + authorTxt.height + (isLandscape ? 15 : 25);
         this.barW = paperWidth * 0.7; 
@@ -88,11 +88,11 @@ class ReadingScene extends Phaser.Scene {
             fontSize: isLandscape ? '12px' : '14px', color: '#1e3a5f', fontWeight: 'bold', fontFamily: 'Nunito'
         }).setOrigin(0.5);
 
-        // 分割线移到进度条下方
+        // Move the separator line below the progress bar
         const lineY = this.progressLabel.y + this.progressLabel.height + (isLandscape ? 5 : 10);
         const separator = this.add.rectangle(centerX, lineY, paperWidth * 0.8, 1, 0xc4973a, 0.6).setOrigin(0.5);
 
-        // --- 5. 文本清洗逻辑 (完整保留原始正则) ---
+        // --- 5. Text Cleaning Logic (Completely Preserving Original Regular Expressions) ---
         const cleanedContent = this.bookData.content
             .replace(/\r\n/g, '\n')
             .replace(/(?<!\n)\n(?!\n)/g, ' ')
@@ -100,7 +100,7 @@ class ReadingScene extends Phaser.Scene {
             .replace(/\n\s*\n/g, '\n\n')
             .trim();
 
-        // --- 6. 正文区域 (DOM) 与 HTML 关闭按钮 ---
+        // --- 6. Content Area (DOM) and HTML Close Button ---
         const contentStartY = lineY + (isLandscape ? 10 : 25);
         const bottomReserved = isLandscape ? 30 : 50; 
         const contentWindowHeight = Math.max(80, (paperTop + paperHeight - bottomReserved) - contentStartY);
@@ -144,7 +144,7 @@ class ReadingScene extends Phaser.Scene {
             </div>
         `).setOrigin(0.5, 0);
 
-        // --- 7. 事件绑定 (保留原始滚动逻辑) ---
+        // --- 7. Event Binding (Preserve Original Scrolling Logic) ---
         const htmlBtn = document.getElementById('close-book-btn');
         if (htmlBtn) {
             htmlBtn.onclick = () => this.handleExit(document.getElementById('phaser-book-content'));
@@ -152,7 +152,7 @@ class ReadingScene extends Phaser.Scene {
 
         const scrollDiv = document.getElementById('phaser-book-content');
         if (scrollDiv) {
-            // 保留 50ms 延迟恢复位置逻辑
+            // Reserve a 50ms delay to restore position logic
             setTimeout(() => {
                 const maxScroll = scrollDiv.scrollHeight - scrollDiv.clientHeight;
                 if (maxScroll > 0) scrollDiv.scrollTop = maxScroll * (savedPct / 100);
@@ -162,22 +162,21 @@ class ReadingScene extends Phaser.Scene {
                 const maxScroll = scrollDiv.scrollHeight - scrollDiv.clientHeight;
                 const currentPct = maxScroll > 0 ? Math.round((scrollDiv.scrollTop / maxScroll) * 100) : 0;
                 
-                // 实时同步 UI
+                // Real-time UI synchronization
                 this.barFill.width = (currentPct / 100) * this.barW;
                 this.progressLabel.setText(`${currentPct}%`);
                 
-                // 实时同步到 ReadingState (保留原始逻辑)
+                // Real-time synchronization to ReadingState (preserving original logic)
                 ReadingState.progress = currentPct;
                 ReadingState.bookProgress[this.bookData.id] = currentPct;
             });
         }
 
-        // --- 8. 组合容器 ---
+        // --- 8. Composite Containers ---
         this.uiContainer.add([background, paper, titleTxt, authorTxt, barBg, this.barFill, this.progressLabel, separator]);
         this.isRendering = false;
     }
 
-    // --- 保留原始方法：handleExit ---
     handleExit(scrollDiv) {
         if (scrollDiv) {
             const maxScroll = scrollDiv.scrollHeight - scrollDiv.clientHeight;
@@ -195,7 +194,6 @@ class ReadingScene extends Phaser.Scene {
         this.exitScene();
     }
 
-    // --- 保留原始方法：handleMapUnlock ---
     handleMapUnlock() {
         if (!ReadingState.completedBookIds[this.bookData.id]) {
             ReadingState.completedBookIds[this.bookData.id] = true;
@@ -209,7 +207,6 @@ class ReadingScene extends Phaser.Scene {
         }
     }
 
-    // --- 保留原始方法：exitScene ---
     exitScene() {
         this.scale.off('resize', this.initializeUI, this);
         this.scene.resume(this.sourceMap);

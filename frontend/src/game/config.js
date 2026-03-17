@@ -1,4 +1,4 @@
-// 文件路径：game/config.js
+// Route：game/config.js
 
 import Phaser from 'phaser';
 import WorldMapScene from './scenes/WorldMapScene.js';
@@ -14,7 +14,7 @@ import ReadingScene from './scenes/ReadingScene.js';
 
 export default function createGameConfig(parent, width, height) {
   return {
-    type: Phaser.AUTO, // 确保使用 WebGL 才能发挥 Mipmap 效果
+    type: Phaser.AUTO, 
     parent,
     dom: {
       createContainer: true
@@ -28,7 +28,7 @@ export default function createGameConfig(parent, width, height) {
       autoCenter: Phaser.Scale.CENTER_BOTH,
       width,
       height,
-      // ⭐ 适配手机高分屏，防止物理像素级闪烁
+      // ⭐ Adapted for high-resolution mobile screens, preventing physical pixel-level flickering.
       resolution: window.devicePixelRatio || 1 
     },
     scene: [

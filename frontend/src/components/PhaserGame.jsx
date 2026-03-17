@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Phaser from 'phaser';
 import createGameConfig from '../game/config.js';
-import ReactQuiz from './ReactQuiz'; // 我们稍后创建这个组件
+import ReactQuiz from './ReactQuiz'; 
 
 export default function PhaserGame() {
   const containerRef = useRef(null);
@@ -12,7 +12,7 @@ export default function PhaserGame() {
   const navigate    = useNavigate();
   const { user }    = useAuth();
 
-  // ⭐ 新增状态：控制 Quiz 弹窗显示，并传递地图 key
+  // ⭐ New feature: Control the display of the Quiz pop-up and pass the map key.
   const [quizInfo, setQuizInfo] = useState({ visible: false, mapKey: null });
 
   useEffect(() => {
@@ -27,13 +27,13 @@ export default function PhaserGame() {
     const config = createGameConfig(parentEl, initW, initH);
     const game   = new Phaser.Game(config);
 
-    // 注入返回逻辑
+    // return logic
     game.handleBackNavigation = () => {
       if (user?.role === 'teacher') navigate('/teacher/dashboard');
       else                          navigate('/student/dashboard');
     };
 
-    // ⭐ 注入 React 唤起逻辑：给 window 挂载一个方法，让 Phaser 脚本能调用
+    // ⭐ React wake-up logic: Attach a method to the window so that Phaser scripts can call it.
     window.openReactQuiz = (mapKey) => {
       setQuizInfo({ visible: true, mapKey: mapKey });
     };
@@ -50,7 +50,7 @@ export default function PhaserGame() {
 
     return () => {
       ro.disconnect();
-      window.openReactQuiz = null; // 清理全局变量
+      window.openReactQuiz = null; 
       if (gameRef.current) {
         gameRef.current.destroy(true);
         gameRef.current = null;
@@ -60,22 +60,22 @@ export default function PhaserGame() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
-      {/* 1. Phaser 游戏层 - 保持在底层 */}
+      {/* 1. Phaser game layer - kept at the bottom layer */}
       <div
         id="game-container"
         ref={containerRef}
         style={{ width: '100%', height: '100%', backgroundColor: '#000', zIndex: 1 }}
       />
 
-      {/* 2. React UI 层 - 必须在 Phaser 容器外面，且 zIndex 更高 */}
+      {/* 2. React UI layer - must be outside the Phaser container, and have a higher zIndex. */}
       {quizInfo.visible && (
         <ReactQuiz 
           mapKey={quizInfo.mapKey} 
           onClose={() => {
             setQuizInfo({ visible: false, mapKey: null });
-            // 恢复 Phaser 交互
+            // Restore Phaser interaction
             if (gameRef.current) {
-                // 这里的逻辑是确保 Phaser 里的 isDoingQuiz 状态同步
+                // The logic here is to ensure that the isDoingQuiz state in Phaser is synchronized.
                 const activeScenes = gameRef.current.scene.getScenes(true);
                 if (activeScenes.length > 0) activeScenes[0].isDoingQuiz = false;
             }

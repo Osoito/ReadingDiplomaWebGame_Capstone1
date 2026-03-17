@@ -12,7 +12,6 @@ export default function ReactQuiz({ mapKey, onClose }) {
 
     const isReadOnly = !!(ReadingState?.quizAnswers && ReadingState.quizAnswers[mapKey]);
     
-    // 芬兰语问题列表
     const questions = [
         "Mikä on tämän tarinan juoni?",
         "Ketkä ovat tarinan päähenkilöt?",
