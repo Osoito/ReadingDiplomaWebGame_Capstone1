@@ -67,7 +67,7 @@ jobs:
 
     - name: Install backend depedencies
       working-directory: ./backend
-      run: npm install
+      run: npm install --ignore-scripts
 
     - name: Install frontend depedencies
       working-directory: ./frontend
