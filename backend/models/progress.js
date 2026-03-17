@@ -11,14 +11,6 @@ const Progress = {
             .select('level', 'user', 'book', 'current_progress', 'level_status')
             .where({ user:user })
     },
-    async findByLevel(level, user, dbConn = db){
-        level = Number(level)
-        user = Number(user)
-        return dbConn('progress')
-            .select('level', 'user', 'book', 'current_progress', 'level_status')
-            .where({ level, user })
-            .first()
-    },
     async findSpecificEntry(level, user, dbConn = db){
         level = Number(level)
         user = Number(user)
