@@ -27,6 +27,7 @@ const ReadingState = {
 
     // 已经“完整读完”的书（用于从书单中排除）
     completedBookIds: {},
+    mapFinished: {},
 
     // 每个洲当前绑定的书：mapKey -> bookId
     mapSelectedBook: {},
@@ -64,7 +65,6 @@ const ReadingState = {
         'OceaniaMap',
         'AntarcticaMap'
     ],
-
     /**
      * 每个洲的配置（合并你 React 版本的 book 数据）
      */

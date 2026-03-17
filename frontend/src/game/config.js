@@ -14,16 +14,22 @@ import ReadingScene from './scenes/ReadingScene.js';
 
 export default function createGameConfig(parent, width, height) {
   return {
-    type: Phaser.AUTO,
+    type: Phaser.AUTO, // 确保使用 WebGL 才能发挥 Mipmap 效果
     parent,
     dom: {
       createContainer: true
     },
+    render: {
+      antialias: true,
+      roundPixels: true 
+    },
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
-      width,    // 使用传入的数值宽度
-      height    // 使用传入的数值高度
+      width,
+      height,
+      // ⭐ 适配手机高分屏，防止物理像素级闪烁
+      resolution: window.devicePixelRatio || 1 
     },
     scene: [
       WorldMapScene,
