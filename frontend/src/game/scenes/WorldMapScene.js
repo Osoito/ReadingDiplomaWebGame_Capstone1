@@ -1,39 +1,41 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
-import worldmapImg from '../../assets/worldmap.png';
-import pandaWorldImg from '../../assets/buddyAvatar/panda/panda_world.png';
+import worldmapImg from '../../assets/worldmap.png'; 
+import worldmapSimpleImg from '../../assets/worldmap_simple.png'; 
 
 class WorldMapScene extends Phaser.Scene {
     constructor() {
         super('WorldMap');
         this.isMinimapMaximized = false;
+        this.ORIGINAL_MAP_WIDTH = 1280; 
+        // Declare in the constructor first
+        this.pointGroup = null;
     }
 
     preload() {
         this.load.image('worldMap', worldmapImg);
-        this.load.image('pandaWorld', pandaWorldImg);
+        this.load.image('worldMapSimple', worldmapSimpleImg);
     }
 
     create() {
-        // 1. 基础尺寸和背景 (完全保留)
-        let { width, height } = this.scale;
+        // --- 1. Background layer ---
         const bg = this.add.image(0, 0, 'worldMap').setOrigin(0);
-        const mapRatio = bg.width / bg.height;
+        const bgSimple = this.add.image(0, 0, 'worldMapSimple').setOrigin(0);
         
-        const setupBackground = () => {
-            if (!this.cameras || !this.cameras.main) return;
-            const currentW = this.scale.width;
-            const currentH = this.scale.height;
+        const setupBackgrounds = () => {
+            if (!this.cameras || !this.cameras.main || !bg.active) return;
+            const { width: currentW, height: currentH } = this.scale;
             const fillScale = Math.max(currentW / bg.width, currentH / bg.height);
-            const zoomScale = fillScale * 1.5; 
-            bg.setScale(zoomScale);
+            const mainScale = fillScale * 1.5;
+            bg.setScale(mainScale);
+            bgSimple.setDisplaySize(bg.displayWidth, bg.displayHeight);
             this.cameras.main.setBounds(0, 0, bg.displayWidth, bg.displayHeight);
-            return zoomScale;
+            return bg.displayWidth / this.ORIGINAL_MAP_WIDTH;
         };
 
-        let currentZoomScale = setupBackground();
+        let currentZoomScale = setupBackgrounds();
 
-        // 2. 洲点位设置 (功能完整，无删改)
+        // --- 2. Point Setting ---
         const continentPositions = {
             arctic: { x: 450, y: 120, name: 'ARKTIS', mapKey: 'ArcticMap' }, 
             europe: { x: 700, y: 250, name: 'EUROOPPA', mapKey: 'EuropeMap' },
@@ -42,143 +44,54 @@ class WorldMapScene extends Phaser.Scene {
             northAmerica: { x: 200, y: 300, name: 'POHJOIS-AMERIKKA', mapKey: 'NorthAmericaMap' },
             southAmerica: { x: 350, y: 550, name: 'ETELÄ-AMERIKKA', mapKey: 'SouthAmericaMap' },
             oceania: { x: 1100, y: 600, name: 'OSEANIA', mapKey: 'OceaniaMap' },
-            antarctica: { x: 800, y: 750, name: 'ETELÄMANNER', mapKey: 'AntarcticaMap' }
+            antarctica: { x: 750, y: 700, name: 'ETELÄMANNER', mapKey: 'AntarcticaMap' }
         };
 
-        const pointGroup = this.add.group();
-        const currentContinent = ReadingState.getCurrentContinent();
-        const completedFlags = ReadingState._continentCompletedFlags || {};
-
+        // ⭐ Modification: Change to a class attribute to ensure it is always accessible throughout the class's lifetime.
+        this.pointGroup = this.add.group();
+        
         const renderPoints = () => {
-            pointGroup.clear(true, true);
-            // Stop any previous buddy bob tween
-            if (this._buddyBobTween) {
-                this._buddyBobTween.stop();
-                this._buddyBobTween = null;
-            }
+            // ⭐ Added multiple defense checks
+            if (!this.pointGroup || !this.pointGroup.scene || !this.pointGroup.active) return;
 
+            this.pointGroup.clear(true, true);
             Object.entries(continentPositions).forEach(([key, pos]) => {
                 const finalX = pos.x * currentZoomScale;
                 const finalY = pos.y * currentZoomScale;
                 const unlocked = ReadingState.mapUnlock[pos.mapKey] === true;
-                const isCurrent = pos.mapKey === currentContinent;
-                const isCompleted = !!completedFlags[pos.mapKey];
-
-                let indicator;
-                if (isCurrent && unlocked) {
-                    // Current continent: panda boat with golden glow ring
-                    const buddyScale = 0.08 * currentZoomScale;
-                    const glowRadius = 35 * currentZoomScale;
-
-                    // Pulsing glow circle behind panda
-                    const glow = this.add.circle(finalX, finalY, glowRadius, 0xffd700, 0.25)
-                        .setStrokeStyle(2, 0xffd700, 0.5);
-                    pointGroup.add(glow);
-                    this.tweens.add({
-                        targets: glow,
-                        scaleX: 1.3, scaleY: 1.3, alpha: 0.08,
-                        duration: 1000, ease: 'Sine.easeInOut',
-                        yoyo: true, repeat: -1
-                    });
-
-                    indicator = this.add.image(finalX, finalY, 'pandaWorld')
-                        .setScale(buddyScale)
-                        .setInteractive({ useHandCursor: true });
-                    indicator.on('pointerdown', () => this.scene.start(pos.mapKey));
-                    // Floating bob animation
-                    this._buddyBobTween = this.tweens.add({
-                        targets: indicator,
-                        y: finalY - 8 * currentZoomScale,
-                        duration: 1200,
-                        ease: 'Sine.easeInOut',
-                        yoyo: true,
-                        repeat: -1
-                    });
-
-                    // Sparkle particles around panda
-                    const sparkleChars = ['✨', '⭐', '💫'];
-                    for (let i = 0; i < 3; i++) {
-                        const angle = (i / 3) * Math.PI * 2;
-                        const dist = (40 + Math.random() * 15) * currentZoomScale;
-                        const sx = finalX + Math.cos(angle) * dist;
-                        const sy = finalY + Math.sin(angle) * dist;
-                        const sparkle = this.add.text(sx, sy, sparkleChars[i], {
-                            fontSize: `${Math.round(12 * currentZoomScale)}px`
-                        }).setOrigin(0.5).setAlpha(0);
-                        pointGroup.add(sparkle);
-                        this.tweens.add({
-                            targets: sparkle,
-                            alpha: { from: 0, to: 0.8 },
-                            y: sy - 10 * currentZoomScale,
-                            duration: 1500 + i * 400,
-                            ease: 'Sine.easeInOut',
-                            yoyo: true, repeat: -1,
-                            delay: i * 500
-                        });
-                    }
-                } else if (isCompleted && unlocked) {
-                    // Completed continent: bouncy gold star
-                    indicator = this.add.text(finalX, finalY, '⭐', {
-                        fontSize: `${Math.round(32 * currentZoomScale)}px`,
-                    }).setOrigin(0.5);
-                    indicator.setInteractive({ useHandCursor: true });
-                    indicator.on('pointerdown', () => this.scene.start(pos.mapKey));
-                    // Gentle pulse animation
-                    this.tweens.add({
-                        targets: indicator,
-                        scaleX: 1.15, scaleY: 1.15,
-                        duration: 900, ease: 'Sine.easeInOut',
-                        yoyo: true, repeat: -1
-                    });
-                } else if (unlocked) {
-                    // Unlocked but not current, not completed: small gold dot
-                    indicator = this.add.circle(finalX, finalY, 14 * currentZoomScale, 0xc4973a, 0.7);
-                    indicator.setInteractive({ useHandCursor: true });
-                    indicator.on('pointerdown', () => this.scene.start(pos.mapKey));
-                } else {
-                    // Locked: grey dot with lock icon
-                    indicator = this.add.text(finalX, finalY, '🔒', {
-                        fontSize: `${Math.round(20 * currentZoomScale)}px`,
-                    }).setOrigin(0.5).setAlpha(0.5);
-                }
-
+                
+                const btn = this.add.circle(finalX, finalY, 40 * currentZoomScale, unlocked ? 0x00ff00 : 0x555555, 0.4);
+                if (unlocked) btn.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.scene.start(pos.mapKey));
+                
                 const txt = this.add.text(finalX, finalY + (55 * currentZoomScale), pos.name, {
-                    fontSize: `${Math.round(16 * currentZoomScale)}px`,
-                    color: unlocked ? '#ffffff' : '#888888',
-                    backgroundColor: '#1e3a5f', padding: { x: 10, y: 5 }, fontStyle: 'bold'
+                    fontFamily: '"Cinzel", serif', fontSize: `${Math.round(16 * currentZoomScale)}px`,
+                    color: unlocked ? '#ffffff' : '#bbbbbb', fontStyle: 'bold', stroke: '#000000', strokeThickness: 4
                 }).setOrigin(0.5);
-                pointGroup.add(indicator);
-                pointGroup.add(txt);
+                
+                this.pointGroup.add(btn);
+                this.pointGroup.add(txt);
             });
         };
         renderPoints();
 
-        // 3. UI elements — playful adventure style
-        const uiBtnStyle = {
-            fontSize: '20px', color: '#fdf6e3',
-            backgroundColor: '#1e3a5f',
-            padding: { x: 14, y: 8 },
-            fontFamily: 'Nunito, sans-serif',
-            fontStyle: 'bold',
-            shadow: { offsetX: 0, offsetY: 2, color: '#000', blur: 3, fill: true }
+        // --- 3. UI Elements ---
+        const uiStyle = { 
+            fontFamily: '"Cinzel", serif', fontSize: '24px', fill: '#1A237E', 
+            stroke: '#ffffff', strokeThickness: 5, fontStyle: 'bold',
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A237E80', blur: 3, fill: true }
         };
 
-        const bookCountText = this.add.text(20, 20, `📚 KIRJAT: ${ReadingState.booksRead}/8`, uiBtnStyle)
-            .setScrollFactor(0).setDepth(1000);
+        this.bookCountText = this.add.text(20, 20, `KIRJAT: ${ReadingState.booksRead}/8`, uiStyle).setScrollFactor(0).setDepth(2000);
+        this.backBtn = this.add.text(this.scale.width - 20, 20, 'POISTU', uiStyle).setOrigin(1, 0).setScrollFactor(0).setDepth(2000).setInteractive({ useHandCursor: true });
+        this.backBtn.on('pointerdown', () => { if (this.game.handleBackNavigation) this.game.handleBackNavigation(); });
 
-        const backBtn = this.add.text(this.scale.width - 20, 20, '🚪 POISTU', uiBtnStyle)
-            .setOrigin(1, 0).setScrollFactor(0).setDepth(1000)
-            .setInteractive({ useHandCursor: true });
-
-        // Hover effect on back button
-        backBtn.on('pointerover', () => backBtn.setBackgroundColor('#c4973a'));
-        backBtn.on('pointerout',  () => backBtn.setBackgroundColor('#1e3a5f'));
-        backBtn.on('pointerdown', () => { if (this.game.handleBackNavigation) this.game.handleBackNavigation(); });
-
-        // 4. 小地图核心逻辑 (包含 Resize 适配)
+        // --- 4. Minimap Configuration ---
         const getLayoutConfig = (isMaximized) => {
-            const currentW = this.scale.width;
-            const currentH = this.scale.height;
+            const { width: currentW, height: currentH } = this.scale;
+            if (!bg || !bg.active) return { x:0, y:0, w:100, h:100 };
+            const mapRatio = bg.width / bg.height;
+            const safePaddingBottom = currentH * 0.15; 
+            const sidePadding = 20;
             let targetW, targetH, targetX, targetY;
             if (isMaximized) {
                 const padding = 60;
@@ -189,133 +102,133 @@ class WorldMapScene extends Phaser.Scene {
                 } else {
                     targetW = availW; targetH = availW / mapRatio;
                 }
-                targetX = (currentW - targetW) / 2;
-                targetY = (currentH - targetH) / 2;
+                targetX = (currentW - targetW) / 2; targetY = (currentH - targetH) / 2;
             } else {
-                const minimapPct = currentW < 600 ? 0.35 : 0.25;
-                targetW = currentW * minimapPct;
+                targetW = currentW * 0.22;
+                if (targetW < 140) targetW = 140; 
                 targetH = targetW / mapRatio;
-                targetX = currentW - targetW - 20;
-                targetY = currentH - targetH - 20;
+                targetX = currentW - targetW - sidePadding;
+                targetY = currentH - targetH - safePaddingBottom;
             }
             return { x: targetX, y: targetY, w: targetW, h: targetH };
         };
 
         const initial = getLayoutConfig(false);
-        const minimapCamera = this.cameras.add(initial.x, initial.y, initial.w, initial.h).setBackgroundColor(0x000000);
-        const miniFrame = this.add.graphics().setScrollFactor(0).setDepth(1001);
-        const interactiveRegion = this.add.rectangle(initial.x, initial.y, initial.w, initial.h, 0x000000, 0).setOrigin(0).setScrollFactor(0).setDepth(1002).setInteractive({ useHandCursor: true });
-        const toggleBtn = this.add.text(initial.x, initial.y - 35, '🔍 SUURENNA', { fontSize: '18px', fill: '#FFD700', fontStyle: 'bold', backgroundColor: '#1e3a5f', padding: 5 }).setScrollFactor(0).setDepth(1003).setInteractive({ useHandCursor: true });
+        this.minimapCamera = this.cameras.add(initial.x, initial.y, initial.w, initial.h).setBackgroundColor(0x000000);
+        
+        this.cameras.main.ignore(bgSimple);
+        this.minimapCamera.ignore(bg);
 
-        // ⭐ 解决中间矩形框的关键：让小地图不渲染 UI 元素和它自己的边框
-        // 这样小地图里就只有干净的背景图和点位了
-        minimapCamera.ignore([bookCountText, backBtn, miniFrame, interactiveRegion, toggleBtn]);
+        this.viewRectGraphics = this.add.graphics().setDepth(1005).setScrollFactor(0);
+        this.miniFrame = this.add.graphics().setScrollFactor(0).setDepth(1001);
+        this.interactiveRegion = this.add.rectangle(initial.x, initial.y, initial.w, initial.h, 0, 0).setOrigin(0).setScrollFactor(0).setDepth(1002).setInteractive({ useHandCursor: true });
+        
+        this.toggleBtn = this.add.text(initial.x, initial.y - 35, '🔍 SUURENNA', { 
+            fontFamily: '"Cinzel", serif', fontSize: '18px', fill: '#1A237E', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 4, padding: 5 
+        }).setScrollFactor(0).setDepth(1003).setInteractive({ useHandCursor: true });
+
+        this.tipText = this.add.text(initial.x - 20, initial.y + initial.h / 2, 'NAPAUTA 👉', {
+            fontFamily: '"Cinzel", serif', fontSize: '32px', color: '#ff0000', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 5,
+            shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 4, fill: true }
+        }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(5000);
+
+        this.tweens.add({
+            targets: this.tipText,
+            alpha: { from: 1, to: 0.5 },
+            x: initial.x - 40, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'      
+        });
+
+        this.minimapCamera.ignore([this.bookCountText, this.backBtn, this.miniFrame, this.interactiveRegion, this.toggleBtn, this.viewRectGraphics, this.tipText]);
 
         const syncUI = () => {
-            if (!minimapCamera.scene) return;
-            minimapCamera.setZoom(minimapCamera.width / bg.displayWidth);
-            minimapCamera.centerOn(bg.displayWidth / 2, bg.displayHeight / 2);
-            miniFrame.clear();
-            miniFrame.lineStyle(4, 0xFFD700, 1);
-            miniFrame.strokeRect(minimapCamera.x, minimapCamera.y, minimapCamera.width, minimapCamera.height);
-            interactiveRegion.setPosition(minimapCamera.x, minimapCamera.y);
-            interactiveRegion.setDisplaySize(minimapCamera.width, minimapCamera.height);
+            if (!this.scene.isActive() || !this.minimapCamera || !this.minimapCamera.scene || !bg || !bg.active) return;
+
+            const ratio = this.minimapCamera.width / bg.displayWidth;
+            this.minimapCamera.setZoom(ratio);
+            this.minimapCamera.centerOn(bg.displayWidth / 2, bg.displayHeight / 2);
             
-            // 保持你要求的按钮向左偏移
-            toggleBtn.setPosition(minimapCamera.x - 50, minimapCamera.y - 35);
-            backBtn.setPosition(this.scale.width - 20, 20);
+            this.miniFrame.clear().lineStyle(4, 0x1A237E, 1).strokeRect(this.minimapCamera.x, this.minimapCamera.y, this.minimapCamera.width, this.minimapCamera.height);
+            this.interactiveRegion.setPosition(this.minimapCamera.x, this.minimapCamera.y).setDisplaySize(this.minimapCamera.width, this.minimapCamera.height);
+            this.toggleBtn.setPosition(this.minimapCamera.x, this.minimapCamera.y - 35);
+            
+            if (this.tipText && this.tipText.active) {
+                this.tipText.setPosition(this.minimapCamera.x - 10, this.minimapCamera.y + this.minimapCamera.height / 2);
+                this.tipText.setVisible(!this.isMinimapMaximized);
+            }
+
+            this.viewRectGraphics.clear();
+            if (!this.isMinimapMaximized) {
+                const mainCam = this.cameras.main;
+                if (mainCam) {
+                    const vW = mainCam.width * ratio; const vH = mainCam.height * ratio;
+                    const vX = this.minimapCamera.x + (mainCam.scrollX * ratio);
+                    const vY = this.minimapCamera.y + (mainCam.scrollY * ratio);
+                    this.viewRectGraphics.lineStyle(2, 0xffffff, 0.7).strokeRect(vX, vY, vW, vH);
+                    this.viewRectGraphics.fillStyle(0xffffff, 0.15).fillRect(vX, vY, vW, vH);
+                }
+            }
         };
 
-        const onResize = (gameSize) => {
-            currentZoomScale = setupBackground();
+        const onResize = () => {
+            // ⭐ Core Defense: Never run logic if the scenario is not in an Active state.
+            if (!this.scene.isActive() || !bg || !bg.active) return;
+
+            currentZoomScale = setupBackgrounds();
             renderPoints();
+            
             const layout = getLayoutConfig(this.isMinimapMaximized);
-            minimapCamera.setPosition(layout.x, layout.y);
-            minimapCamera.setSize(layout.w, layout.h);
-            syncUIWithHints();
+            
+            if (this.backBtn && this.backBtn.active) {
+                this.backBtn.setX(this.scale.width - 20);
+            }
+
+            if (this.minimapCamera && this.minimapCamera.scene) {
+                this.minimapCamera.setPosition(layout.x, layout.y).setSize(layout.w, layout.h);
+            }
+            syncUI();
         };
 
         this.scale.on('resize', onResize);
-        this.events.once('shutdown', () => {
+        this.events.on('update', syncUI);
+
+        // Clean up event listeners to prevent memory leaks and zombie callbacks
+        this.events.on('shutdown', () => {
             this.scale.off('resize', onResize);
         });
 
-        syncUI();
-
-        // 5. Navigation hints (playful, auto-fade)
-        const hintStyle = {
-            fontSize: '15px', color: '#fdf6e3',
-            backgroundColor: 'rgba(30,58,95,0.85)',
-            padding: { x: 14, y: 8 },
-            fontFamily: 'Nunito, sans-serif',
-            fontStyle: 'italic',
-            shadow: { offsetX: 0, offsetY: 1, color: '#000', blur: 2, fill: true }
-        };
-
-        // Main map hint - appears briefly on entry
-        const mapHint = this.add.text(width / 2, height - 80, '🗺️ Klikkaa maanosan merkkiä aloittaaksesi seikkailun!', hintStyle)
-            .setOrigin(0.5).setScrollFactor(0).setDepth(1000).setAlpha(0);
-        minimapCamera.ignore(mapHint);
-
-        // Minimap hint - below toggle button
-        const miniHint = this.add.text(0, 0, '👆 Klikkaa pienoiskarttaa\nsiirtyäksesi kartalla', {
-            ...hintStyle, fontSize: '12px', align: 'center'
-        }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(1000).setAlpha(0);
-        minimapCamera.ignore(miniHint);
-
-        // Position miniHint below toggle on syncUI
-        const origSyncUI = syncUI;
-        const syncUIWithHints = () => {
-            origSyncUI();
-            miniHint.setPosition(
-                minimapCamera.x + minimapCamera.width / 2,
-                minimapCamera.y + minimapCamera.height + 8
-            );
-        };
-
-        // Animate hints in then fade out
-        this.tweens.add({
-            targets: mapHint, alpha: 1,
-            duration: 600, delay: 300, ease: 'Back.easeOut',
-            onComplete: () => {
-                this.tweens.add({
-                    targets: mapHint, alpha: 0,
-                    duration: 800, delay: 4000
-                });
-            }
-        });
-        this.tweens.add({
-            targets: miniHint, alpha: 0.9,
-            duration: 600, delay: 800, ease: 'Back.easeOut',
-            onComplete: () => {
-                this.tweens.add({
-                    targets: miniHint, alpha: 0,
-                    duration: 800, delay: 5000
-                });
-            }
-        });
-
-        syncUIWithHints();
-
-        // 切换动画 (完全保留)
         const toggleMinimap = () => {
+            if (!this.minimapCamera || !this.minimapCamera.scene) return;
             this.isMinimapMaximized = !this.isMinimapMaximized;
             const target = getLayoutConfig(this.isMinimapMaximized);
             this.tweens.add({
-                targets: minimapCamera,
+                targets: this.minimapCamera,
                 x: target.x, y: target.y, width: target.w, height: target.h,
-                duration: 450, ease: 'Cubic.easeInOut',
-                onUpdate: () => syncUI()
+                duration: 450, ease: 'Cubic.easeInOut'
             });
-            toggleBtn.setText(this.isMinimapMaximized ? '✖ SULJE' : '🔍 SUURENNA');
+            this.toggleBtn.setText(this.isMinimapMaximized ? '✖ SULJE' : '🔍 SUURENNA');
         };
 
-        toggleBtn.on('pointerdown', (p) => { p.event.stopPropagation(); toggleMinimap(); });
-        interactiveRegion.on('pointerdown', (pointer) => {
-            const relX = (pointer.x - minimapCamera.x) / minimapCamera.width;
-            const relY = (pointer.y - minimapCamera.y) / minimapCamera.height;
-            this.cameras.main.pan(relX * bg.displayWidth, relY * bg.displayHeight, 500, 'Power2');
-            if (this.isMinimapMaximized) toggleMinimap();
+        this.toggleBtn.on('pointerdown', (p) => { p.event.stopPropagation(); toggleMinimap(); });
+
+        let pressX, pressY;
+        this.interactiveRegion.on('pointerdown', (p) => { 
+            pressX = p.x; pressY = p.y; 
+            if (this.tipText && this.tipText.active) this.tipText.destroy();
+        });
+        
+        this.interactiveRegion.on('pointerup', (p) => {
+            const dist = Phaser.Math.Distance.Between(pressX, pressY, p.x, p.y);
+            if (dist < 10) {
+                if (this.isMinimapMaximized) {
+                    toggleMinimap();
+                } else {
+                    const r = this.add.circle(p.x, p.y, 2, 0xff0000, 0.6).setScrollFactor(0).setDepth(3000);
+                    this.tweens.add({ targets: r, scale: 12, alpha: 0, duration: 300, onComplete: () => r.destroy() });
+                    const relX = (p.x - this.minimapCamera.x) / this.minimapCamera.width;
+                    const relY = (p.y - this.minimapCamera.y) / this.minimapCamera.height;
+                    this.cameras.main.pan(relX * bg.displayWidth, relY * bg.displayHeight, 500, 'Power2');
+                }
+            }
         });
 
         this.input.on('pointermove', (pointer) => {

@@ -6,17 +6,17 @@ class AfricaMapScene extends BaseMapScene {
         super('AfricaMap', 'africaMap', 'AFRIKAN SEIKKAILU');
         this.themeColor = 0xe67e22;
         this.rawPoints = [
-            { x: 200, y: 100 },
-            { x: 250, y: 250 },
-            { x: 450, y: 300 },
-            { x: 650, y: 450 },
-            { x: 250, y: 450 },
-            { x: 500, y: 550 },
-            { x: 400, y: 600 },
-            { x: 450, y: 700 },
-            { x: 600, y: 750 },
+            { x: 250, y: 150 },
+            { x: 350, y: 500 },
+            { x: 700, y: 550 },
+            { x: 350, y: 750 },
+            { x: 700, y: 700 },
+            { x: 950, y: 650 },
+            { x: 1000, y: 800 },
             { x: 750, y: 850 },
-            { x: 500, y: 950 },
+            { x: 650, y: 1100 },
+            { x: 900, y: 1200 },
+            { x: 700, y: 1400 },
         ];
     }
 

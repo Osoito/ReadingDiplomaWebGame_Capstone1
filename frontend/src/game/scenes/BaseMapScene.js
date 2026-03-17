@@ -1,10 +1,5 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
-import ModalBuilder from '../ui/ModalBuilder.js';
-import { COLORS, CSS_COLORS, FONTS, uiScale as calcUiScale } from '../ui/constants.js';
-import pandaIdlePng from '../../assets/buddyAvatar/panda/panda_idle.png';
-import pandaIdleJson from '../../assets/buddyAvatar/panda/panda_idle.json';
-import buddiesPortraitImg from '../../assets/buddyAvatar/buddies-0001.png';
 
 class BaseMapScene extends Phaser.Scene {
 
@@ -12,11 +7,12 @@ class BaseMapScene extends Phaser.Scene {
         super(key);
         this.assetKey = assetKey;
         this.title = title;
+        this.LOGICAL_WIDTH = 1280; // ⭐ Added: Assuming your original points are marked on a 1280px wide map.
         
-        // --- 原始逻辑：功能锁与配置 ---
+        // --- Original Logic: Function Locks and Configuration ---
         this.isDoingQuiz = false; 
 
-        // --- 原始逻辑：Video 检查点定义 ---
+        // --- Original Logic: Video Checkpoint Definition ---
         this.videoCheckpoints = {
             3: { 
                 title: "Lukuvinkki: Visualisointi", 
@@ -28,32 +24,25 @@ class BaseMapScene extends Phaser.Scene {
             }
         };
 
-        // --- 原始逻辑：已观看视频记录 ---
+        // --- Original logic: Video viewing history already viewed ---
         this.viewedVideos = new Set();
         
-        // 动态对象容器
-        this.dotObjects = [];
+        // Dynamic object container
+        this.dotObjects = []; 
         this.dotTexts = [];
-    }
-
-    preloadBuddy() {
-        this.load.atlas('buddy_panda_idle', pandaIdlePng, pandaIdleJson);
-        this.load.spritesheet('buddies_portraits', buddiesPortraitImg, {
-            frameWidth: 590, frameHeight: 779
-        });
     }
 
         create() {
         const { width, height } = this.scale;
 
-        // 1. 初始化背景
+        // 1. Initialize background
         this.bg = this.add.image(0, 0, this.assetKey).setOrigin(0);
         
-        // 2. 初始化路径图形层（必须在 Token 下方）
+        // 2. Initialize the path graph layer (must be below the Token)
         this.pathGraphics = this.add.graphics();
         this.pathGraphics.setDepth(5);
 
-        // 3. 初始化标题文本 (带原始 Stroke 样式)
+        // 3. Initialize the title text (with the original Stroke style)
         this.titleText = this.add.text(0, 0, this.title, {
             fontSize: '32px', 
             color: '#fff', 
@@ -64,7 +53,7 @@ class BaseMapScene extends Phaser.Scene {
         this.titleText.setScrollFactor(0);
         this.titleText.setDepth(2000);
 
-        // 4. 初始化返回按钮 (带原始颜色和 Padding)
+        // 4. Initialize the back button (with original color and padding)
         this.backBtn = this.add.text(0, 0, '← TAKAISIN', {
             fontSize: '18px', 
             color: '#fff', 
@@ -79,7 +68,7 @@ class BaseMapScene extends Phaser.Scene {
             this.scene.start('WorldMap');
         });
 
-        // 5. 初始化书籍按钮 (带原始颜色和 📖 符号)
+        // 5. Initialize the book button (with original color and 📖 symbol)
         this.bookBtn = this.add.text(20, height - 20, '📖 AVAA KIRJA', {
             fontSize: '28px', 
             color: '#ffcc00', 
@@ -91,48 +80,31 @@ class BaseMapScene extends Phaser.Scene {
         this.bookBtn.setScrollFactor(0);
         this.bookBtn.setDepth(2000);
         this.bookBtn.on('pointerdown', () => {
-            const mapKey = this.scene.key;
-            const cfg = ReadingState.mapConfig[mapKey];
-            const storageKey = cfg.storage;
-            const continentProg = ReadingState[storageKey] || 0;
+    const globalBooks = ReadingState.globalBooks || [];
+    const completedBookIds = ReadingState.completedBookIds || {};
 
-            if (continentProg >= 100) {
-                this.showStoryQuiz();
-                return;
-            }
-            this.showBookList();
-        });
+    // 1. Core Decision: Check if any book in the current mainland has been completed.
+    const finishedBook = globalBooks.find(book => !!completedBookIds[book.id]);
 
-        // 6. Initialize buddy token
+    if (finishedBook) {
+        // --- Scenario: The book has already been read ---
+        // Go directly to review the quiz, without giving the reader a chance to look at the reading list.
+        this.showStoryQuiz();
+    } else {
+        // --- Scenario: Not finished reading the book yet ---
+        // Normal pop-up book selection
+        this.showBookList();
+    }
+});
+
+        // 6. Initialize Token
         const savedIndex = ReadingState.tokenPositions?.[this.scene.key] ?? 0;
-        const buddyId = this.game.registry.get('buddyId') || 'buddy_1';
-        const BUDDY_FRAME = { buddy_2: 1, buddy_3: 2 };
-
-        if (buddyId === 'buddy_1') {
-            this.token = this.add.sprite(0, 0, 'buddy_panda_idle');
-            if (!this.anims.exists('panda_idle')) {
-                this.anims.create({
-                    key: 'panda_idle',
-                    frames: this.anims.generateFrameNames('buddy_panda_idle'),
-                    frameRate: 1000 / 300,
-                    repeat: -1
-                });
-            }
-            this.token.play('panda_idle');
-            this.tokenBaseScale = 0.1;
-        } else if (BUDDY_FRAME[buddyId] != null) {
-            this.token = this.add.sprite(0, 0, 'buddies_portraits', BUDDY_FRAME[buddyId]);
-            this.tokenBaseScale = 0.1;
-        } else {
-            this.token = this.add.sprite(0, 0, 'buddies_portraits', 0);
-            this.tokenBaseScale = 0.1;
-        }
-
-        this.token.setScale(this.tokenBaseScale);
+        this.token = this.add.image(0, 0, 'token');
+        this.token.setScale(0.12);
         this.token.setDepth(10);
         this.token.lastPointIndex = savedIndex;
 
-        // 7. 原始交互监听：拖拽摄像机
+        // 7. Raw interactive listening: drag and drop the camera
         this.input.on('pointermove', (pointer) => {
             if (pointer.isDown) {
                 this.cameras.main.stopFollow();
@@ -141,452 +113,454 @@ class BaseMapScene extends Phaser.Scene {
             }
         });
 
-        // 8. 音频上下文恢复
+        // 8. Audio Context Restoration
         this.input.once('pointerdown', () => {
             if (this.sound.context && this.sound.context.state === 'suspended') {
                 this.sound.context.resume();
             }
         });
 
-        // 9. 场景恢复监听
+        // 9. Scene Resumption Listening
         this.events.on('resume', () => {
-            this.input.enabled = true;
+            // Fix: Ensures that any remaining list items are cleared upon returning.
+            if (this.listUI) {
+                if (this._resizeBookListHandler) {
+                    this.scale.off('resize', this._resizeBookListHandler, this);
+                    this._resizeBookListHandler = null;
+                }
+                this.listUI.destroy(true);
+                this.listUI = null;
+            }
             this.time.delayedCall(100, () => {
                 this.updateTokenPosition(true);
             });
         });
 
-        // Book button gentle bounce to attract attention
-        this.tweens.add({
-            targets: this.bookBtn,
-            y: height - 24,
-            duration: 1600,
-            ease: 'Sine.easeInOut',
-            yoyo: true,
-            repeat: -1
-        });
-
-        // ⭐⭐⭐ 核心修复：调整初始化顺序 ⭐⭐⭐
-        // 1. 现在标记场景已完全就绪，这样 handleResize 内部的 camera 调用就不会失败
+        // ⭐⭐⭐ Core Fix: Adjusted Initialization Order ⭐⭐⭐
+        // 1. Now the scene is fully marked as ready, so camera calls inside handleResize will not fail.
         this.isReady = true;
 
-        // 2. 安全地进行第一次布局计算，这会创建 pointPositions 数组
+        // 2. Perform the first layout calculation safely, which will create the pointPositions array.
         this.handleResize();
 
-        // 3. 然后再设置未来的 resize 事件监听
+        // 3. Then set up a listener for the future resize event.
         this.scale.on('resize', this.handleResize, this);
         this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
             this.scale.off('resize', this.handleResize, this);
         });
 
-        // 4. 最后，安全地调用 updateTokenPosition，因为它现在可以确定 pointPositions 存在
+        // 4. Finally, it is safe to call updateTokenPosition, as it can now confirm that pointPositions exist.
         this.time.delayedCall(50, () => {
             this.updateTokenPosition(false);
         });
     }
 
-    // ⭐ 适配微调逻辑：确保在各种设备上 UI 大小和位置都正确，并解决重合问题
+    // ⭐ Adaptation and fine-tuning logic: Ensure the UI size and position are correct on various devices and resolve overlap issues.
     handleResize() {
         const { width, height } = this.scale;
         
-        // A. 背景 Cover 适配
-        this.baseScale = Math.max(width / this.bg.width, height / this.bg.height);
-        this.bg.setScale(this.baseScale);
+        // --- A, B, C, D retain their original logic ---
+        const fillScale = Math.max(width / this.bg.width, height / this.bg.height); 
+        this.bg.setScale(fillScale);
         this.cameras.main.setBounds(0, 0, this.bg.displayWidth, this.bg.displayHeight);
-
-        // B. UI 缩放因子：根据屏幕宽度自适应文字大小
+        this.baseScale = this.bg.displayWidth / this.LOGICAL_WIDTH;
         const uiScale = Phaser.Math.Clamp(width / 1200, 0.7, 1.2);
 
-        // C. 更新地图坐标点（根据 baseScale 重算）
         this.pointPositions = this.rawPoints.map(p => ({
             x: p.x * this.baseScale,
             y: p.y * this.baseScale
         }));
 
-        // D. 销毁并重建地图点图标
         this.dotObjects.forEach(d => d.destroy());
         this.dotTexts.forEach(t => t.destroy());
         this.dotObjects = [];
         this.dotTexts = [];
 
-        // Stop old dot tweens
-        if (this._dotTweens) this._dotTweens.forEach(t => t.stop());
-        this._dotTweens = [];
-
-        const currentIdx = this.token?.lastPointIndex ?? 0;
-
         this.pointPositions.forEach((pos, index) => {
             const isVideo = this.videoCheckpoints[index];
-            const dotRadius = Math.max(12, 18 * this.baseScale);
-            const isVisited = index <= currentIdx;
-            const isCurrent = index === currentIdx;
-
-            // Visual differentiation: visited = bright, unvisited = faded outline
-            let dotColor, dotAlpha, strokeColor;
-            if (isVideo) {
-                dotColor = 0xffcc00;
-                dotAlpha = isVisited ? 1 : 0.4;
-                strokeColor = 0xffffff;
-            } else if (isVisited) {
-                dotColor = this.themeColor || 0xc4973a;
-                dotAlpha = 1;
-                strokeColor = 0xffd700;
-            } else {
-                dotColor = 0xffffff;
-                dotAlpha = 0.3;
-                strokeColor = 0xaaaaaa;
-            }
-
-            const dot = this.add.circle(pos.x, pos.y, dotRadius, dotColor, dotAlpha);
-            dot.setStrokeStyle(2, strokeColor);
+            const dotColor = isVideo ? 0xffcc00 : (this.themeColor || 0xffffff);
+            const dotRadius = 18 * this.baseScale;
+            const dot = this.add.circle(pos.x, pos.y, dotRadius, dotColor, 1).setStrokeStyle(2, 0xffffff).setDepth(10);
             this.dotObjects.push(dot);
-
-            // Current position: pulsing glow
-            if (isCurrent && !isVideo) {
-                const tw = this.tweens.add({
-                    targets: dot,
-                    scaleX: 1.3, scaleY: 1.3,
-                    alpha: 0.5,
-                    duration: 800, ease: 'Sine.easeInOut',
-                    yoyo: true, repeat: -1
-                });
-                this._dotTweens.push(tw);
-            }
-
-            // Last waypoint: flag emoji
-            if (index === this.pointPositions.length - 1) {
-                const flag = this.add.text(pos.x, pos.y - dotRadius - 6 * this.baseScale, '🏁', {
-                    fontSize: `${Math.round(16 * this.baseScale)}px`
-                }).setOrigin(0.5, 1);
-                this.dotTexts.push(flag);
-            }
 
             if (isVideo) {
                 const iconSize = (14 * this.baseScale) + 'px';
-                const txt = this.add.text(pos.x, pos.y, '▶', {
-                    fontSize: iconSize,
-                    color: '#000'
-                });
-                txt.setOrigin(0.5);
+                const txt = this.add.text(pos.x, pos.y, '▶', { fontSize: iconSize, color: '#000' }).setOrigin(0.5).setDepth(11);
                 this.dotTexts.push(txt);
-
                 dot.setInteractive({ useHandCursor: true });
                 dot.on('pointerdown', () => {
                     if (this.token && this.token.lastPointIndex >= index) {
-                        this.showVideoPopup(this.videoCheckpoints[index], index, true);
+                        this.showVideoPopup(this.videoCheckpoints[index], index, true); 
                     }
                 });
             }
         });
 
-        // E. 重新定位固定 UI 元素并调整字体大小
+        // --- E. Top UI ---
         this.titleText.setFontSize(32 * uiScale);
-        this.backBtn.setFontSize(18 * uiScale);
-        this.bookBtn.setFontSize(28 * uiScale);
+        const radius = Math.round(35 * uiScale);
 
-        // ⭐ 错开位置逻辑：解决标题和返回按钮重合问题
-        const isNarrowScreen = width < 600; // 判定是否为窄屏（手机竖屏）
+        this.bookBtn.setVisible(false);
+        this.backBtn.setVisible(false);
 
-        if (isNarrowScreen) {
-            // --- 窄屏模式：垂直布局 ---
-            // 1. 返回按钮在最上方左侧
-            this.backBtn.setOrigin(0, 0); // 确保 Origin 在左上角
-            this.backBtn.setPosition(15, 15); // 留出一点边距
+        // Reset the book button container
+        if (this.bookIconContainer) this.bookIconContainer.destroy();
+        this.bookIconContainer = this.add.container(0, 0);
 
-            // 2. 标题下移，位于返回按钮下方，且居中
-            // 计算返回按钮的高度（ Phraser Text 的高度受 FontSize 和 Padding 影响）
-            const backBtnHeight = this.backBtn.height;
-            const titleY = 15 + backBtnHeight + 10; // 按钮下方留 10px 间距
+        // 1. Background circle
+        const bookBg = this.add.graphics();
+        bookBg.lineStyle(5, 0x3d2b1f, 1).fillStyle(0xd4a74a, 1);
+        bookBg.fillCircle(0, 0, radius).strokeCircle(0, 0, radius);
+        bookBg.lineStyle(2, 0xffffff, 0.5).strokeCircle(0, 0, radius * 0.88);
+        this.bookIconContainer.add(bookBg);
 
-            this.titleText.setOrigin(0.5, 0); // Origin 在顶部居中
-            this.titleText.setPosition(width / 2, titleY);
-        } else {
-            // --- 宽屏模式：原始布局 ---
-            // 1. 返回按钮在左上角
-            this.backBtn.setOrigin(0, 0);
-            this.backBtn.setPosition(20, 20);
+        // 2. Draw a book icon
+        const bookG = this.add.graphics();
+        bookG.name = 'bookGraphic'; 
+        const bw = radius * 1.0; const bh = radius * 0.75;
+        bookG.fillStyle(0x5d4037, 1).fillRoundedRect(-bw/2 + 2, -bh/2 + 2, bw, bh, 4); 
+        bookG.fillStyle(0xa52a2a, 1).fillRoundedRect(-bw/2, -bh/2, bw, bh, 4);
+        bookG.fillStyle(0xfff5e1, 1).fillRect(-bw*0.42, -bh*0.4, bw*0.84, bh*0.8);
+        bookG.lineStyle(1.5, 0x3d2b1f, 0.3).lineBetween(0, -bh*0.4, 0, bh*0.4);
+        this.bookIconContainer.add(bookG);
 
-            // 2. 标题在最上方正中间
-            this.titleText.setOrigin(0.5, 0);
-            this.titleText.setPosition(width / 2, 20);
-        }
+        // 3. ⏳ Load icon (initially hidden)
+        const loadingIcon = this.add.text(0, 0, '⏳', { 
+            fontSize: (radius * 1.2) + 'px' 
+        }).setOrigin(0.5).setVisible(false);
+        loadingIcon.name = 'loadingIcon';
+        this.bookIconContainer.add(loadingIcon);
 
-        // 书籍按钮始终在左下角
-        this.bookBtn.setPosition(20, height - 20);
+        // Reset the back button container
+        if (this.backIconContainer) this.backIconContainer.destroy();
+        this.backIconContainer = this.add.container(0, 0);
+        const backBg = this.add.graphics();
+        backBg.lineStyle(5, 0x2c3e50, 1).fillStyle(0x6d7a7a, 1);
+        backBg.fillCircle(0, 0, radius).strokeCircle(0, 0, radius);
+        backBg.lineStyle(2, 0xffffff, 0.4).strokeCircle(0, 0, radius * 0.88);
+        this.backIconContainer.add(backBg);
+        const arrowG = this.add.graphics();
+        arrowG.fillStyle(0xffffff, 1);
+        const aw = radius * 0.6;
+        arrowG.beginPath().moveTo(aw/2, -aw*0.8).lineTo(-aw*0.7, 0).lineTo(aw/2, aw*0.8).closePath().fillPath();
+        this.backIconContainer.add(arrowG);
 
-        // F. 更新 Token 位置
-        this.token.setScale((this.tokenBaseScale || 0.1) * this.baseScale);
+        // Layout calculation
+        const isNarrowScreen = width < 600;
+        const margin = isNarrowScreen ? 15 : 25;
+        const backX = margin + radius;
+        const backY = margin + radius;
+        const bookX = width - margin - radius;
+        const bookY = margin + radius;
+
+        this.backIconContainer.setPosition(backX, backY);
+        this.bookIconContainer.setPosition(bookX, bookY);
+        this.titleText.setOrigin(0.5, 0).setPosition(width / 2, isNarrowScreen ? backY + radius + 10 : 20);
+
+        // Button interaction logic
+        const setupBtn = (container, callback) => {
+            container.setInteractive(new Phaser.Geom.Circle(0, 0, radius), Phaser.Geom.Circle.Contains);
+            container.on('pointerdown', () => container.setScale(0.85));
+            container.on('pointerup', () => { 
+                container.setScale(1); 
+                callback(); 
+            });
+            container.on('pointerout', () => container.setScale(1));
+        };
+
+        setupBtn(this.bookIconContainer, () => {
+            const mapKey = this.scene.key;
+            if (ReadingState._continentCompletedFlags && ReadingState._continentCompletedFlags[mapKey] === true) {
+                this.showStoryQuiz(); 
+            } else {
+                this.showBookList();
+            }
+        });
+
+        setupBtn(this.backIconContainer, () => {
+            if (this.mapBgm) this.mapBgm.stop();
+            this.scene.start('WorldMap');
+        });
+
+        // Hierarchy and scaling factor
+        this.bookIconContainer.setDepth(2000).setScrollFactor(0);
+        this.backIconContainer.setDepth(2000).setScrollFactor(0);
+        this.titleText.setDepth(2000).setScrollFactor(0);
+
+        this.token.setScale(0.12 * this.baseScale).setDepth(50);
         const curIdx = this.token.lastPointIndex ?? 0;
         this.token.setPosition(this.pointPositions[curIdx].x, this.pointPositions[curIdx].y);
-        
-        // G. 重新绘制路径
         this.updateTokenPosition(false);
     }
 
-    // --- 以下为原始业务逻辑，严禁删减 ---
-
+    // --- The following is the original logic, and deletion is strictly prohibited ---
     showBookList() {
-      const mapKey = this.scene.key;
-      const mapCfg = ReadingState.mapConfig[mapKey];
-      const globalBooks = ReadingState.globalBooks;
-      const completedBookIds = ReadingState.completedBookIds || {};
-      const mapSelectedBook = ReadingState.mapSelectedBook || {};
-      const currentBookId = mapSelectedBook[mapKey] || null;
+        this._listEnableTime = Date.now();
+        const mapKey = this.scene.key;
+        const mapCfg = ReadingState.mapConfig[mapKey];
+        const globalBooks = ReadingState.globalBooks;
+        const completedBookIds = ReadingState.completedBookIds || {};
+        const mapSelectedBook = ReadingState.mapSelectedBook || {};
+        const currentBookId = mapSelectedBook[mapKey] || null;
 
-      if (!mapCfg || !globalBooks) return;
+        if (!mapCfg || !globalBooks) return;
 
-      // Cleanup previous
-      if (this._bookListModal) this._bookListModal.destroy();
+        // ⭐⭐⭐ Core Modification: Use defined flag to precisely determine whether the current continent has been cleared ⭐⭐⭐
+        // Once showFinalCelebration has been triggered on this continent, it will only enter the Quiz and not the Book List.
+        if (ReadingState._continentCompletedFlags && ReadingState._continentCompletedFlags[mapKey] === true) {
+            console.log("此大陆任务已完成，直接跳转 Quiz 回顾");
+            this.showStoryQuiz(); 
+            return; 
+        }
 
-      const { width, height } = this.scale;
-      const s = Phaser.Math.Clamp(width / 1200, 0.8, 1.1);
+        const { width, height } = this.scale;
+        const isMobile = !this.sys.game.device.os.desktop;
+        const uiScale = Phaser.Math.Clamp(width / 1200, 0.8, 1.1);
 
-      // Use a simple container (book list has custom scroll, not a standard modal box)
-      const modal = new ModalBuilder(this);
-      this._bookListModal = modal;
+        if (this.listUI) {
+            this.listUI.destroy(true);
+            this.listUI = null;
+        }
 
-      this.listUI = this.add.container(0, 0).setDepth(10000).setScrollFactor(0);
-      modal.container = this.listUI; // let ModalBuilder manage resize cleanup
+        this.listUI = this.add.container(0, 0).setDepth(10000).setScrollFactor(0);
 
-      // Overlay
-      const overlay = this.add.rectangle(0, 0, width, height, COLORS.DARK_NAVY, 0.9)
-          .setOrigin(0).setInteractive().setScrollFactor(0);
-      this.listUI.add(overlay);
+        // 1. Background mask
+        const overlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.9)
+            .setOrigin(0).setScrollFactor(0).setInteractive();
+        this.listUI.add(overlay);
 
-      // Title
-      const title = this.add.text(width / 2, 60 * s, "Valitse klassikkokirja", {
-          fontSize: `${32 * s}px`, color: CSS_COLORS.GOLD,
-          fontFamily: FONTS.HEADING, fontWeight: 'bold'
-      }).setOrigin(0.5).setScrollFactor(0);
-      this.listUI.add(title);
+        const titleY = 50 * uiScale;
+        const title = this.add.text(width / 2, titleY, "Valitse klassikkokirja", {
+            fontSize: `${32 * uiScale}px`,
+            color: '#c4973a',
+            fontFamily: '"Cinzel Decorative", serif',
+            fontWeight: 'bold'
+        }).setOrigin(0.5).setScrollFactor(0);
+        this.listUI.add(title);
 
-      // Scroll area
-      const listY = 130 * s;
-      const viewH = height - (220 * s);
+        const closeBtnY = titleY + (55 * uiScale);
+        const closeBtn = this.add.text(width / 2, closeBtnY, "[ PERUUTA ]", {
+            fontSize: `${20 * uiScale}px`,
+            color: '#ffffff',
+            backgroundColor: '#1e3a5f',
+            padding: { x: 20, y: 10 },
+            fontFamily: 'Nunito'
+        })
+        .setOrigin(0.5, 0).setInteractive({ useHandCursor: true }).setScrollFactor(0);
+        
+        closeBtn.on('pointerdown', () => {
+            if (this._resizeBookListHandler) {
+                this.scale.off('resize', this._resizeBookListHandler, this);
+            }
+            this.listUI.destroy(true);
+        });
+        this.listUI.add(closeBtn);
 
-      this.scrollContainer = this.add.container(0, listY).setScrollFactor(0);
-      this.listUI.add(this.scrollContainer);
+        // 2. List area settings
+        const listY = closeBtnY + closeBtn.height + (25 * uiScale);
+        const bottomSafety = isMobile ? 120 : 40; 
+        const viewH = height - listY - bottomSafety;
 
-      const maskG = this.add.graphics().setScrollFactor(0)
-          .fillStyle(0xffffff, 1).fillRect(0, listY, width, viewH).setVisible(false);
-      this.scrollContainer.setMask(maskG.createGeometryMask());
+        this.scrollContainer = this.add.container(0, listY).setScrollFactor(0);
+        this.listUI.add(this.scrollContainer);
 
-      const availableBooks = globalBooks.map(book => ({
-          ...book,
-          isCompleted: !!completedBookIds[book.id],
-          isCurrent: book.id === currentBookId
-      }));
+        const scrollHitArea = this.add.rectangle(width/2, listY + viewH/2, width, viewH, 0x000000, 0)
+            .setInteractive()
+            .setScrollFactor(0);
+        this.listUI.add(scrollHitArea);
 
-      availableBooks.forEach((book, idx) => {
-          const itemH = 100 * s;
-          const y = idx * itemH;
-          let bg = COLORS.NAVY, bd = COLORS.GOLD, a = 1;
-          if (book.isCompleted) { bg = 0x1a2a44; bd = 0x4a5568; a = 0.6; }
-          if (book.isCurrent)   { bg = 0x2d4a77; bd = COLORS.WHITE; }
+        this.listUI.bringToTop(closeBtn);
+        this.listUI.bringToTop(title);
 
-          const btnBg = this.add.rectangle(width/2, y+itemH/2, width*0.8, itemH*0.9, bg, a)
-              .setStrokeStyle(2, bd).setInteractive({ useHandCursor: true }).setScrollFactor(0);
+        const maskG = this.add.graphics().setScrollFactor(0).fillStyle(0xffffff, 1)
+            .fillRect(0, listY, width, viewH).setVisible(false);
+        const mask = maskG.createGeometryMask();
+        this.scrollContainer.setMask(mask);
 
-          const pct = ReadingState.bookProgress[book.id] || 0;
-          const pctLabel = book.isCompleted ? "✔ VALMIS" : `${pct}%`;
+        const availableBooks = globalBooks.map(book => ({
+            ...book,
+            isCompleted: !!completedBookIds[book.id],
+            isCurrent: book.id === currentBookId
+        }));
 
-          const text = this.add.text(width*0.15, y+itemH/2, `${book.title}\n${book.author}`, {
-              fontSize: `${18*s}px`, color: book.isCompleted ? CSS_COLORS.GREY : CSS_COLORS.PARCHMENT,
-              fontFamily: FONTS.BODY, align: 'left'
-          }).setOrigin(0, 0.5).setScrollFactor(0);
+        // 4. Render the book item
+        availableBooks.forEach((book, idx) => {
+            const itemH = 100 * uiScale;
+            const y = idx * itemH;
+            let bg = 0x1e3a5f, bd = 0xc4973a, α = 1;
+            if (book.isCompleted) { bg = 0x1a2a44; bd = 0x4a5568; α = 0.6; }
+            if (book.isCurrent)   { bg = 0x2d4a77; bd = 0xffffff; }
 
-          const pctText = this.add.text(width*0.85, y+itemH/2, pctLabel, {
-              fontSize: `${20*s}px`, color: book.isCompleted ? '#00ff88' : CSS_COLORS.GOLD,
-              fontFamily: FONTS.BODY, fontWeight: 'bold'
-          }).setOrigin(1, 0.5).setScrollFactor(0);
+            const btnBg = this.add.rectangle(width/2, y+itemH/2, width*0.8, itemH*0.9, bg, α)
+                .setStrokeStyle(2, bd).setScrollFactor(0);
 
-          btnBg.on('pointerdown', () => {
-              const dragDist = Math.abs(this.input.activePointer.upY - this.input.activePointer.downY);
-              if (dragDist >= 15) return;
-              if (this._bookListModal) { this._bookListModal.destroy(); this._bookListModal = null; }
-              if (book.isCompleted) {
-                  this.fetchGutenbergBook(book, mapCfg, true);
-              } else {
-                  ReadingState.mapSelectedBook[mapKey] = book.id;
-                  this.fetchGutenbergBook(book, mapCfg, false);
-              }
-          });
+            const text = this.add.text(width*0.15, y+itemH/2, `${book.title}\nBy: ${book.author}`, {
+                fontSize:`${18*uiScale}px`, color: book.isCompleted ? '#888888' : '#fdf6e3',
+                fontFamily:'Nunito, Arial'
+            }).setOrigin(0,0.5).setScrollFactor(0);
 
-          this.scrollContainer.add([btnBg, text, pctText]);
-      });
+            const pct = ReadingState.bookProgress[book.id] || 0;
+            const pctText = this.add.text(width*0.85, y+itemH/2, book.isCompleted ? "✔ DONE" : `${pct}%`, {
+                fontSize:`${20*uiScale}px`, color: book.isCompleted ? '#00ff88' : '#c4973a',
+                fontFamily:'Nunito', fontWeight:'bold'
+            }).setOrigin(1,0.5).setScrollFactor(0);
 
-      // Scroll inertia
-      const contentH = availableBooks.length * (100 * s);
-      const maxY = listY;
-      const minY = contentH <= viewH ? maxY : listY - (contentH - viewH);
+            this.scrollContainer.add([btnBg, text, pctText]);
+        });
 
-      let dragging = false, startY = 0, last = 0, vel = 0;
-      overlay.on('pointerdown', p => { dragging = true; startY = p.y; vel = 0; });
-      overlay.on('pointermove', p => {
-          if (!dragging) return;
-          const d = p.y - startY; startY = p.y;
-          this.scrollContainer.y = Phaser.Math.Clamp(this.scrollContainer.y + d, minY, maxY);
-          last = d;
-      });
-      overlay.on('pointerup', () => {
-          dragging = false; vel = last;
-          this.time.addEvent({
-              delay: 16, repeat: 40,
-              callback: () => {
-                  if (Math.abs(vel) < 0.5) return;
-                  this.scrollContainer.y = Phaser.Math.Clamp(this.scrollContainer.y + vel, minY, maxY);
-                  vel *= 0.9;
-              }
-          });
-      });
-      this.input.on('wheel', (_, __, dx, dy) => {
-          if (this.listUI && this.listUI.active) {
-              this.scrollContainer.y = Phaser.Math.Clamp(this.scrollContainer.y - dy * 0.5, minY, maxY);
-          }
-      });
+        // 5. Scrolling Logic 
+        const contentH = availableBooks.length * (100 * uiScale);
+        const maxY = listY;
+        const minY = contentH <= viewH ? maxY : listY - (contentH - viewH);
+        let dragging = false, startY = 0, lastD = 0, vel = 0, touchStartTime = 0;
 
-      // Close button
-      const closeBtn = this.add.text(width/2, height - (40*s), "[ Peruuta ]", {
-          fontSize: `${20*s}px`, color: CSS_COLORS.WHITE,
-          backgroundColor: '#1e3a5f', padding: 10, fontFamily: FONTS.BODY
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScrollFactor(0);
+        scrollHitArea.on('wheel', (pointer, deltaX, deltaY) => {
+            const scrollSpeed = 0.5; 
+            const newY = this.scrollContainer.y - (deltaY * scrollSpeed);
+            this.scrollContainer.y = Phaser.Math.Clamp(newY, minY, maxY);
+        });
 
-      closeBtn.on('pointerover', () => closeBtn.setBackgroundColor('#c4973a'));
-      closeBtn.on('pointerout',  () => closeBtn.setBackgroundColor('#1e3a5f'));
-      closeBtn.on('pointerdown', () => {
-          if (this._bookListModal) { this._bookListModal.destroy(); this._bookListModal = null; }
-      });
-      this.listUI.add(closeBtn);
+        scrollHitArea.on('pointerdown', p => {
+            dragging = true;
+            startY = p.y;
+            this._rawStartY = p.y;
+            touchStartTime = Date.now();
+            vel = 0;
+        });
 
-      modal.enableAutoResize(() => {
-          if (this._bookListModal) {
-              this._bookListModal.destroy();
-              this._bookListModal = null;
-              this.showBookList();
-          }
-      });
-  }
+        scrollHitArea.on('pointermove', p => {
+            if (!dragging) return;
+            const d = (p.y - startY) * (isMobile ? 1.5 : 1);
+            startY = p.y;
+            this.scrollContainer.y = Phaser.Math.Clamp(this.scrollContainer.y + d, minY, maxY);
+            lastD = d;
+        });
+
+        scrollHitArea.on('pointerup', p => {
+            dragging = false;
+            const duration = Date.now() - touchStartTime;
+            const totalDist = Math.abs(p.y - this._rawStartY);
+
+            if (totalDist < 10 && duration < 300) {
+                const localY = p.y - this.scrollContainer.y;
+                const bookIdx = Math.floor(localY / (100 * uiScale));
+                
+                if (bookIdx >= 0 && bookIdx < availableBooks.length) {
+                    const book = availableBooks[bookIdx];
+                    if (Date.now() - this._listEnableTime > 400) {
+                        this.scale.off('resize', this._resizeBookListHandler, this);
+                        this.listUI.destroy(true);
+                        
+                        if (book.isCompleted) {
+                            this.fetchGutenbergBook(book, mapCfg, true);
+                        } else {
+                            ReadingState.mapSelectedBook[mapKey] = book.id;
+                            this.fetchGutenbergBook(book, mapCfg, false);
+                        }
+                    }
+                }
+            } else {
+                vel = isMobile ? lastD * 1.8 : lastD;
+                this.time.addEvent({
+                    delay: 16, repeat: 50,
+                    callback: () => {
+                        if (!this.listUI) return; 
+                        if (Math.abs(vel) < 0.2) return;
+                        this.scrollContainer.y = Phaser.Math.Clamp(this.scrollContainer.y + vel, minY, maxY);
+                        vel *= 0.95;
+                    }
+                });
+            }
+        });
+
+        if (this._resizeBookListHandler) {
+            this.scale.off('resize', this._resizeBookListHandler, this);
+        }
+        this._resizeBookListHandler = () => { if (this.listUI) this.showBookList(); };
+        this.scale.on('resize', this._resizeBookListHandler, this);
+    }
 
     async fetchGutenbergBook(book, config, readOnly = false) {
-        // Show playful loading overlay
-        const { width, height } = this.scale;
-        const spinnerGroup = this.add.container(0, 0).setDepth(10000).setScrollFactor(0);
-        const spinnerOverlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.7)
-            .setOrigin(0).setScrollFactor(0).setInteractive();
-        spinnerGroup.add(spinnerOverlay);
+    // --- 1. Get the icon component ---
+    const bookG = this.bookIconContainer.getByName('bookGraphic');
+    const loadingI = this.bookIconContainer.getByName('loadingIcon');
 
-        // Bouncing book emoji
-        const bookEmoji = this.add.text(width / 2, height / 2 - 20, '📖', {
-            fontSize: '48px'
-        }).setOrigin(0.5).setScrollFactor(0);
-        spinnerGroup.add(bookEmoji);
+    // --- 2. Switch to loading state (show ⏳, hide 📖) ---
+    if (bookG) bookG.setVisible(false);
+    if (loadingI) {
+        loadingI.setVisible(true);
+        // Making the hourglass spin adds a sense of loading.
         this.tweens.add({
-            targets: bookEmoji,
-            y: height / 2 - 40,
-            angle: { from: -8, to: 8 },
-            duration: 600, ease: 'Sine.easeInOut',
-            yoyo: true, repeat: -1
+            targets: loadingI,
+            angle: 360,
+            duration: 1000,
+            repeat: -1
         });
+    }
 
-        // Animated dots text
-        const spinnerText = this.add.text(width / 2, height / 2 + 35, 'Ladataan kirjaa', {
-            fontSize: '20px', color: '#fdf6e3', fontFamily: 'Nunito, sans-serif',
-            fontStyle: 'italic'
-        }).setOrigin(0.5).setScrollFactor(0);
-        spinnerGroup.add(spinnerText);
+    const proxies = [
+        "https://api.allorigins.win/raw?url=",
+        "https://corsproxy.io/?",
+        "https://api.codetabs.com/v1/proxy/?quest="
+    ];
 
-        let dotCount = 0;
-        const spinnerTimer = this.time.addEvent({
-            delay: 400, loop: true,
-            callback: () => {
-                dotCount = (dotCount + 1) % 4;
-                spinnerText.setText('Ladataan kirjaa' + '.'.repeat(dotCount));
-            }
-        });
+    const targetUrl = `https://www.gutenberg.org/cache/epub/${book.id}/pg${book.id}.txt`;
 
-        // Sparkle ring around book
-        const arc = this.add.graphics().setScrollFactor(0);
-        let angle = 0;
-        const arcTimer = this.time.addEvent({
-            delay: 30, loop: true,
-            callback: () => {
-                arc.clear();
-                arc.lineStyle(3, 0xffd700, 0.7);
-                arc.beginPath();
-                arc.arc(width / 2, height / 2 - 20, 38, Phaser.Math.DegToRad(angle), Phaser.Math.DegToRad(angle + 90), false);
-                arc.strokePath();
-                arc.beginPath();
-                arc.arc(width / 2, height / 2 - 20, 38, Phaser.Math.DegToRad(angle + 180), Phaser.Math.DegToRad(angle + 270), false);
-                arc.strokePath();
-                angle = (angle + 5) % 360;
-            }
-        });
-        spinnerGroup.add(arc);
+    let success = false;
+    let fetchedText = "";
 
-        const destroySpinner = () => {
-            spinnerTimer.remove();
-            arcTimer.remove();
-            spinnerGroup.destroy(true);
-        };
-
-        // Parallel proxy fetch with Promise.any
-        const proxies = [
-            "https://api.allorigins.win/raw?url=",
-            "https://corsproxy.io/?",
-            "https://api.codetabs.com/v1/proxy/?quest="
-        ];
-        const targetUrl = `https://www.gutenberg.org/cache/epub/${book.id}/pg${book.id}.txt`;
-
-        let success = false;
-        let fetchedText = "";
-
+    for (const proxy of proxies) {
         try {
-            fetchedText = await Promise.any(
-                proxies.map(async (proxy) => {
-                    const response = await fetch(proxy + encodeURIComponent(targetUrl), {
-                        signal: AbortSignal.timeout(5000)
-                    });
-                    if (!response.ok) throw new Error('Not OK');
-                    const text = await response.text();
-                    if (text.length <= 1000) throw new Error('Too short');
-                    return text;
-                })
-            );
-            success = true;
-        } catch (e) {
-            console.error("All proxies failed:", e);
-        }
-
-        destroySpinner();
-
-        if (success) {
-            const startMarkers = ["*** START OF", "CHAPTER I", "Title:"];
-            let cleanText = fetchedText;
-            for (let m of startMarkers) {
-                let idx = fetchedText.indexOf(m);
-                if (idx !== -1) {
-                    cleanText = fetchedText.substring(idx);
-                    break;
+            const response = await fetch(proxy + encodeURIComponent(targetUrl), {
+                signal: AbortSignal.timeout(5000)
+            });
+            if (response.ok) {
+                fetchedText = await response.text();
+                if (fetchedText.length > 1000) { 
+                    success = true; 
+                    break; 
                 }
             }
-
-            this.launchReading(config, {
-                id: book.id,
-                title: book.title,
-                author: book.author,
-                content: cleanText.substring(0, 20000),
-                readOnly: readOnly
-            });
-        } else {
-            this.launchReading(config, {
-                id: book.id,
-                title: book.title + " (Demo Mode)",
-                author: book.author,
-                content: `[DEMO CONTENT]\n\nUnable to connect to Project Gutenberg.\n\n${"Preview ".repeat(100)}`,
-                readOnly: readOnly
-            });
+        } catch (e) {
+            console.error("Proxy error:", e);
         }
     }
+
+    if (success) {
+        const startMarkers = ["*** START OF", "CHAPTER I", "Title:"];
+        let cleanText = fetchedText;
+        for (let m of startMarkers) {
+            let idx = fetchedText.indexOf(m);
+            if (idx !== -1) { 
+                cleanText = fetchedText.substring(idx); 
+                break; 
+            }
+        }
+
+        this.launchReading(config, {
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            content: cleanText.substring(0, 20000),
+            readOnly: readOnly
+        });
+    } else {
+        this.launchReading(config, {
+            id: book.id,
+            title: book.title + " (Demo Mode)",
+            author: book.author,
+            content: `[DEMO CONTENT]\n\nUnable to connect to Project Gutenberg.\n\n${"Preview ".repeat(100)}`,
+            readOnly: readOnly
+        });
+    }
+
+    // --- 3. End loading and restore icons (hide ⏳, show 📖) ---
+    if (loadingI) {
+        this.tweens.killTweensOf(loadingI);
+        loadingI.setAngle(0).setVisible(false);
+    }
+    if (bookG) bookG.setVisible(true);
+}
 
     launchReading(config, bookData) {
         ReadingState.progress = ReadingState[config.storage] || 0;
@@ -618,36 +592,11 @@ class BaseMapScene extends Phaser.Scene {
         let targetIndex = Math.floor((currentProg / 100) * (this.pointPositions.length - 1));
         targetIndex = Phaser.Math.Clamp(targetIndex, 0, this.pointPositions.length - 1);
 
-        // Draw path: faded full trail + bright walked trail
+        // Draw path lines
         if (this.pathGraphics) {
             this.pathGraphics.clear();
-            const tc = this.themeColor || 0xffffff;
-
-            // Full path (faded dotted line)
-            if (this.pointPositions.length >= 2) {
-                this.pathGraphics.lineStyle(2, tc, 0.15);
-                for (let i = 0; i < this.pointPositions.length - 1; i++) {
-                    const a = this.pointPositions[i];
-                    const b = this.pointPositions[i + 1];
-                    const dx = b.x - a.x, dy = b.y - a.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    const dashLen = 8, gapLen = 6;
-                    let drawn = 0;
-                    while (drawn < dist) {
-                        const s = drawn / dist;
-                        const e = Math.min((drawn + dashLen) / dist, 1);
-                        this.pathGraphics.beginPath();
-                        this.pathGraphics.moveTo(a.x + dx * s, a.y + dy * s);
-                        this.pathGraphics.lineTo(a.x + dx * e, a.y + dy * e);
-                        this.pathGraphics.strokePath();
-                        drawn += dashLen + gapLen;
-                    }
-                }
-            }
-
-            // Walked path (bright solid line)
+            this.pathGraphics.lineStyle(4, this.themeColor || 0xffffff, 0.4);
             if (targetIndex >= 1) {
-                this.pathGraphics.lineStyle(4, tc, 0.6);
                 this.pathGraphics.beginPath();
                 this.pathGraphics.moveTo(this.pointPositions[0].x, this.pointPositions[0].y);
                 for (let i = 1; i <= targetIndex; i++) {
@@ -704,12 +653,12 @@ class BaseMapScene extends Phaser.Scene {
     }
 
     checkCheckpointEvents(index) {
-        // Video 触发
+        // Video Trigger
         if (this.videoCheckpoints[index]) {
             this.showVideoPopup(this.videoCheckpoints[index], index, false);
         }
 
-        // 终点 Quiz 触发
+        // Quiz Triggered
         if (index === this.pointPositions.length - 1) {
             if (!ReadingState._continentCompletedFlags) {
                 ReadingState._continentCompletedFlags = {};
@@ -723,247 +672,287 @@ class BaseMapScene extends Phaser.Scene {
     }
 
    showVideoPopup(videoData, index, isManual = false) {
+        // Debugging: Ensure you see the actual value of index in the console.
+        console.log("Current Video Index:", index);
+
         if (!isManual && this.viewedVideos.has(index)) return;
 
-        // Cleanup previous popup
-        if (this._videoModal) this._videoModal.destroy();
+        // 1) Clean up old pop-ups
+        if (this.videoPopupUI) {
+            this.videoPopupUI.destroy(true);
+        }
 
-        const modal = new ModalBuilder(this);
-        this._videoModal = modal;
-
-        const { width, height, uiScale: s } = modal.createFrame({
-            title: '💡 LUKUVINKKI AVATTU',
-            maxWidth: 450,
-            boxHeight: 300,
-            depth: 9999999,
-            useContainer: false
-        });
-
+        // 2) Basic Configuration
+        const { width, height } = this.scale;
+        const uiScale = Phaser.Math.Clamp(width / 1200, 0.7, 1.2);
         const depthBase = 9999999;
 
-        // Subtitle
-        const subTitle = this.add.text(width / 2, height / 2 - (40 * s), videoData.title, {
-            fontFamily: FONTS.BODY, fontSize: (18 * s) + 'px', color: CSS_COLORS.WHITE,
-            align: 'center', wordWrap: { width: width * 0.6 }
+        // 3) Create a group
+        this.videoPopupUI = this.add.group();
+
+        // 4) Masking layer
+        const overlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.85)
+            .setOrigin(0)
+            .setScrollFactor(0)
+            .setDepth(depthBase)
+            .setInteractive();
+        this.videoPopupUI.add(overlay);
+
+        // 5) Background frame
+        const boxW = 450 * uiScale;
+        const boxH = 300 * uiScale;
+        const box = this.add.rectangle(width / 2, height / 2, boxW, boxH, 0x1e3a5f)
+            .setStrokeStyle(4, 0xc4973a)
+            .setScrollFactor(0)
+            .setDepth(depthBase + 1);
+        this.videoPopupUI.add(box);
+
+        // 6) Title
+        const title = this.add.text(width / 2, height / 2 - (100 * uiScale), "💡 LUKUVINKKI AVATTU", {
+            fontFamily: '"Cinzel Decorative", serif',
+            fontSize: (26 * uiScale) + 'px',
+            color: '#c4973a',
+            shadow: { offsetX: 0, offsetY: 2, color: '#000', blur: 4, fill: true }
         }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2);
-        modal.container.add(subTitle);
+        this.videoPopupUI.add(title);
 
-        // Watch button
-        const btnBg = this.add.rectangle(width / 2, height / 2 + (50 * s), 260 * s, 60 * s, COLORS.GOLD)
-            .setScrollFactor(0).setDepth(depthBase + 2).setInteractive({ useHandCursor: true });
-        const btnLabel = this.add.text(width / 2, height / 2 + (50 * s), "KATSO YOUTUBESSA", {
-            fontFamily: FONTS.BODY, fontSize: (20 * s) + 'px', color: CSS_COLORS.NAVY, fontWeight: 'bold'
+        // 7) Subheading - Dynamically switch headings based on the index
+        let displayTitle = "Liisan seikkailut ihmemaassa"; 
+        const currentIdx = String(index); // 
+
+        if (currentIdx === "7") {
+            displayTitle = "Seitsemän veljestä -laulu";
+        } else if (currentIdx === "30") {
+            displayTitle = "Liisan seikkailut ihmemaassa";
+        }
+
+        const subTitle = this.add.text(width / 2, height / 2 - (40 * uiScale), displayTitle, {
+            fontFamily: 'Nunito, sans-serif',
+            fontSize: (18 * uiScale) + 'px',
+            color: '#ffffff',
+            align: 'center',
+            wordWrap: { width: boxW - 50 }
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2);
+        this.videoPopupUI.add(subTitle);
+
+        // 8) View button background
+        const btnW = 260 * uiScale;
+        const btnH = 60 * uiScale;
+        const btnBg = this.add.rectangle(width / 2, height / 2 + (50 * uiScale), btnW, btnH, 0xc4973a)
+            .setScrollFactor(0)
+            .setDepth(depthBase + 2)
+            .setInteractive({ useHandCursor: true });
+        this.videoPopupUI.add(btnBg);
+
+        // 9) Button Text
+        const btnLabel = this.add.text(width / 2, height / 2 + (50 * uiScale), "KATSO TÄSSÄ", {
+            fontFamily: 'Nunito',
+            fontSize: (20 * uiScale) + 'px',
+            color: '#1e3a5f',
+            fontWeight: 'bold'
         }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 3);
-        modal.container.addMultiple([btnBg, btnLabel]);
+        this.videoPopupUI.add(btnLabel);
 
-        // Close button
-        const closeBtn = this.add.text(width / 2, height / 2 + (120 * s), "[ Sulje ]", {
-            fontFamily: FONTS.BODY, fontSize: (18 * s) + 'px', color: CSS_COLORS.LIGHT_BLUE, padding: 10
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2).setInteractive({ useHandCursor: true });
-        modal.container.add(closeBtn);
+        // 10) Close text
+        const closeBtn = this.add.text(width / 2, height / 2 + (120 * uiScale), "[ Sulje ]", {
+            fontFamily: 'Nunito',
+            fontSize: (18 * uiScale) + 'px',
+            color: '#a9c1de',
+            padding: 10
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2)
+        .setInteractive({ useHandCursor: true });
+        this.videoPopupUI.add(closeBtn);
 
+        // --- Core cleanup logic ---
         const cleanup = () => {
+            if (this.videoPopupUI) {
+                this.videoPopupUI.destroy(true);
+                this.videoPopupUI = null;
+            }
             this.viewedVideos.add(index);
-            if (this._videoModal) { this._videoModal.destroy(); this._videoModal = null; }
+            this.scale.off('resize', this._resizeVideoHandler);
+            window.removeEventListener('keydown', escHandler);
         };
 
-        btnBg.on('pointerover', () => btnBg.setFillStyle(COLORS.GOLD_HOVER));
-        btnBg.on('pointerout',  () => btnBg.setFillStyle(COLORS.GOLD));
+        // --- Interactive Binding ---
+        btnBg.on('pointerover', () => { btnBg.setFillStyle(0xd4a74a); });
+        btnBg.on('pointerout', () => { btnBg.setFillStyle(0xc4973a); });
+        
         btnBg.on('pointerdown', () => {
-            const url = videoData.url;
-            cleanup();
-            if (url) this.time.delayedCall(10, () => window.open(url, '_blank'));
+            // Select different video IDs based on index
+            let targetVideoId = "TZoNz-2rk8c"; // Default video number 30 (Alice)
+            const currentIdxStr = String(index);
+            
+            if (currentIdxStr === "7") {
+                targetVideoId = "jDZcdgDgM48"; // Video of point 7 (Seven Brothers)
+            }
+
+            const embedUrl = `https://www.youtube.com/embed/${targetVideoId}?autoplay=1&rel=0&modestbranding=1`;
+
+            // Create DOM layer
+            const videoOverlay = document.createElement('div');
+            videoOverlay.id = "video-dom-layer";
+            videoOverlay.style = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.95); z-index: 20000000;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                padding: 10px; box-sizing: border-box;
+            `;
+
+            videoOverlay.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: flex-end; width: min(92vw, 160vh); max-width: 1000px;">
+                    <button id="close-dom-video" style="
+                        background: #c4973a; color: #1e3a5f; 
+                        border: none; padding: 10px 25px; 
+                        margin-bottom: 8px;
+                        font-weight: bold; cursor: pointer; 
+                        border-radius: 4px; font-size: 16px;
+                        font-family: sans-serif;
+                    ">✕ SULJE </button>
+                    
+                    <div style="
+                        width: 100%; 
+                        aspect-ratio: 16/9; 
+                        max-height: 70vh; 
+                        border: 3px solid #c4973a;
+                        background: #000;
+                    ">
+                        <iframe width="100%" height="100%" src="${embedUrl}" 
+                                frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(videoOverlay);
+
+            document.getElementById('close-dom-video').onclick = () => {
+                const el = document.getElementById('video-dom-layer');
+                if (el) document.body.removeChild(el);
+            };
+
+            cleanup(); 
         });
+
         closeBtn.on('pointerdown', () => cleanup());
 
-        modal.enableEscClose(cleanup);
-        modal.enableAutoResize(() => {
-            if (this._videoModal) this.showVideoPopup(videoData, index, true);
-        });
+        // ESC Exit Logic
+        const escHandler = (e) => { 
+            if (e.key === 'Escape') {
+                const domLayer = document.getElementById('video-dom-layer');
+                if (domLayer) document.body.removeChild(domLayer);
+                cleanup(); 
+            }
+        };
+        window.addEventListener('keydown', escHandler);
+
+        // Window scaling adaptive logic
+        this._resizeVideoHandler = () => {
+            if (this.videoPopupUI) {
+                this.showVideoPopup(videoData, index, true);
+            }
+        };
+        this.scale.on('resize', this._resizeVideoHandler);
     }
 
     showStoryQuiz() {
-      const mapKey = this.scene.key;
+    const mapKey = this.scene.key;
+    
+    // 1. Force close any remaining book list UI elements on the screen.
+    if (this.listUI) {
+        this.listUI.destroy(true);
+        this.listUI = null;
+    }
+    
+    // 2. Mark the state to prevent logical overlap.
+    this.isDoingQuiz = true;
 
-      // Initialize quiz state
-      if (!ReadingState.quizAnswers) ReadingState.quizAnswers = {};
-      const saved = ReadingState.quizAnswers[mapKey];
-      if (saved) {
-          this.tempAnswers = [...saved];
-      } else if (!this.tempAnswers) {
-          this.tempAnswers = ["", "", ""];
-      }
-      this._quizStep = this._quizStep != null ? this._quizStep : 0;
-      const currentStep = this._quizStep;
-      const isReadOnly = !!saved;
-      this.isDoingQuiz = true;
+    console.log("Attempting to open React Quiz for:", mapKey);
+    if (window.openReactQuiz) {
+        window.openReactQuiz(mapKey);
+    } else {
+        console.error("Critical: window.openReactQuiz is undefined!");
+    }
+}
 
-      // Cleanup previous
-      if (this._quizModal) this._quizModal.destroy();
-
-      const modal = new ModalBuilder(this);
-      this._quizModal = modal;
-
-      const { container, width, height, uiScale: s } = modal.createFrame({
-          title: isReadOnly ? "POHDINTASI" : "TARINAKYSELY",
-          widthRatio: 0.85,
-          boxHeight: 480,
-          depth: 100000
-      });
-
-      // Book subtitle
-      const bookData = ReadingState.globalBooks?.find(b => b.id === ReadingState.mapSelectedBook?.[mapKey]);
-      const bookTitle = bookData ? bookData.title : "The Classic Story";
-      const bookLabel = this.add.text(width / 2, height / 2 - (135 * s), `Kirja: ${bookTitle}`, {
-          fontSize: `${18 * s}px`, color: CSS_COLORS.PARCHMENT,
-          fontFamily: FONTS.BODY, fontStyle: 'italic'
-      }).setOrigin(0.5).setScrollFactor(0);
-      container.add(bookLabel);
-
-      // Questions in Finnish
-      const questions = [
-          "Mikä on tarinan juoni?",
-          "Ketkä ovat tarinan päähenkilöt?",
-          "Mitä ajatuksia tai tunteita tarina herätti sinussa?"
-      ];
-
-      const qText = this.add.text(width / 2, height / 2 - (80 * s), questions[currentStep], {
-          fontSize: `${20 * s}px`, color: CSS_COLORS.WHITE,
-          fontFamily: FONTS.BODY, align: 'center', wordWrap: { width: width * 0.75 }
-      }).setOrigin(0.5).setScrollFactor(0);
-      container.add(qText);
-
-      // DOM textarea
-      const textarea = document.createElement('textarea');
-      textarea.style.width           = `${width * 0.65}px`;
-      textarea.style.height          = `${140 * s}px`;
-      textarea.style.fontSize        = `${16 * s}px`;
-      textarea.style.padding         = '12px';
-      textarea.style.fontFamily      = 'Nunito, sans-serif';
-      textarea.style.border          = '2px solid #c4973a';
-      textarea.style.borderRadius    = '4px';
-      textarea.style.backgroundColor = isReadOnly ? '#dcd7ca' : '#fdf6e3';
-      textarea.style.color           = '#1e3a5f';
-      textarea.placeholder           = 'Kirjoita pohdintasi tähän...';
-      if (isReadOnly) {
-          textarea.value = this.tempAnswers[currentStep];
-          textarea.readOnly = true;
-          textarea.style.opacity = '0.8';
-      }
-      const domInput = this.add.dom(width / 2, height / 2 + (40 * s), textarea).setScrollFactor(0);
-      container.add(domInput);
-
-      // Next / Submit button
-      const isLast = (currentStep === questions.length - 1);
-      const btnText = isReadOnly ? "SULJE" : (isLast ? "LÄHETÄ" : "SEURAAVA");
-      const nextBtn = this.add.text(width / 2, height / 2 + (190 * s), btnText, {
-          fontSize: `${22 * s}px`, color: CSS_COLORS.WHITE,
-          backgroundColor: '#c4973a', padding: { x: 40, y: 12 },
-          fontFamily: FONTS.BODY, fontWeight: 'bold'
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScrollFactor(0);
-
-      nextBtn.on('pointerover', () => nextBtn.setBackgroundColor('#d4a74a'));
-      nextBtn.on('pointerout',  () => nextBtn.setBackgroundColor('#c4973a'));
-      nextBtn.on('pointerdown', () => {
-          if (!isReadOnly) this.tempAnswers[currentStep] = textarea.value;
-          this._quizStep++;
-          if (this._quizStep < questions.length) {
-              qText.setText(questions[this._quizStep]);
-              textarea.value = isReadOnly ? this.tempAnswers[this._quizStep] : '';
-              if (this._quizStep === questions.length - 1) {
-                  nextBtn.setText(isReadOnly ? "SULJE" : "LÄHETÄ");
-              }
-          } else {
-              if (!isReadOnly) ReadingState.quizAnswers[mapKey] = this.tempAnswers;
-              if (this._quizModal) { this._quizModal.destroy(); this._quizModal = null; }
-              this.isDoingQuiz = false;
-              if (!isReadOnly) this.showFinalCelebration();
-          }
-      });
-      container.add(nextBtn);
-
-      modal.enableAutoResize(() => {
-          if (this._quizModal) {
-              this._quizModal.destroy();
-              this._quizModal = null;
-              this.showStoryQuiz();
-          }
-      });
-  }
     showFinalCelebration() {
         const mapKey = this.scene.key;
-        if (!ReadingState._continentCompletedFlags) ReadingState._continentCompletedFlags = {};
+        // 1) Update complete status
+        if (!ReadingState._continentCompletedFlags) {
+            ReadingState._continentCompletedFlags = {};
+        }
         ReadingState._continentCompletedFlags[mapKey] = true;
 
-        // Cleanup previous
-        if (this._celebrationModal) this._celebrationModal.destroy();
+        // 2) If the old pop-up already exists, destroy and uninstall the listener first.
+        if (this.celebrationUI) {
+            this.celebrationUI.destroy(true);
+            if (this._resizeCelebrationHandler) {
+                this.scale.off('resize', this._resizeCelebrationHandler, this);
+                this._resizeCelebrationHandler = null;
+            }
+        }
 
-        const modal = new ModalBuilder(this);
-        this._celebrationModal = modal;
+        const { width, height } = this.scale;
+        const uiScale = Phaser.Math.Clamp(width / 1200, 0.8, 1.2);
 
-        const { container, box, width, height, uiScale: s } = modal.createFrame({
-            title: '🎉 ONNISTUKSIA!',
-            maxWidth: 500,
-            boxHeight: 300,
-            depth: 100000
+        this.celebrationUI = this.add.container(0, 0).setDepth(100000).setScrollFactor(0);
+
+        this.celebrationUI.once('destroy', () => {
+            if (this._resizeCelebrationHandler) {
+                this.scale.off('resize', this._resizeCelebrationHandler, this);
+                this._resizeCelebrationHandler = null;
+            }
+            this.celebrationUI = null;
         });
 
-        // Subtitle
-        const subMsg = this.add.text(width / 2, height / 2 + (15 * s),
-            "Olet suorittanut tutkimusmatkan loppuun!", {
-            fontSize: `${20 * s}px`, color: CSS_COLORS.WHITE,
-            fontFamily: FONTS.BODY, align: 'center', wordWrap: { width: width * 0.7 }
-        }).setOrigin(0.5).setScrollFactor(0);
-        container.add(subMsg);
+        const overlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.85).setOrigin(0).setInteractive().setScrollFactor(0);
+        this.celebrationUI.add(overlay);
 
-        // OK button
-        const okBtn = this.add.text(width / 2, height / 2 + (90 * s), " SELVÄ ", {
-            fontSize: `${22 * s}px`, color: CSS_COLORS.WHITE,
-            backgroundColor: '#c4973a', padding: { x: 40, y: 12 },
-            fontFamily: FONTS.BODY, fontWeight: 'bold'
+        const boxW = Math.min(width * 0.85, 500 * uiScale);
+        const boxH = 300 * uiScale;
+        const box = this.add.rectangle(width / 2, height / 2, boxW, boxH, 0x1e3a5f).setStrokeStyle(4, 0xc4973a).setScrollFactor(0);
+        this.celebrationUI.add(box);
+
+        const titleMsg = this.add.text(width / 2, height / 2 - (60 * uiScale), "🎉 ONNISTUKSIA!", {
+            fontSize: `${32 * uiScale}px`,
+            color: '#c4973a',
+            fontFamily: '"Cinzel Decorative", serif',
+            fontWeight: 'bold',
+            shadow: { offsetX: 0, offsetY: 2, color: '#000', blur: 4, fill: true }
+        }).setOrigin(0.5).setScrollFactor(0);
+        this.celebrationUI.add(titleMsg);
+
+        const subMsg = this.add.text(width / 2, height / 2 + (15 * uiScale), "Olet suorittanut tutkimusmatkan loppuun!", {
+            fontSize: `${20 * uiScale}px`,
+            color: '#ffffff',
+            fontFamily: 'Nunito, sans-serif',
+            align: 'center',
+            wordWrap: { width: boxW - 40 }
+        }).setOrigin(0.5).setScrollFactor(0);
+        this.celebrationUI.add(subMsg);
+
+        const okBtn = this.add.text(width / 2, height / 2 + (90 * uiScale), " SELVÄ ", {
+            fontSize: `${22 * uiScale}px`,
+            color: '#ffffff',
+            backgroundColor: '#c4973a',
+            padding: { x: 40, y: 12 },
+            fontFamily: 'Nunito',
+            fontWeight: 'bold'
         }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScrollFactor(0);
 
         okBtn.on('pointerover', () => okBtn.setBackgroundColor('#d4a74a'));
-        okBtn.on('pointerout',  () => okBtn.setBackgroundColor('#c4973a'));
-        okBtn.on('pointerdown', () => {
-            if (this._celebrationModal) { this._celebrationModal.destroy(); this._celebrationModal = null; }
-        });
-        container.add(okBtn);
+        okBtn.on('pointerout', () => okBtn.setBackgroundColor('#c4973a'));
+        okBtn.on('pointerdown', () => this.celebrationUI.destroy(true));
+        this.celebrationUI.add(okBtn);
 
-        modal.enableAutoResize(() => {
-            if (this._celebrationModal) this.showFinalCelebration();
-        });
+        this._resizeCelebrationHandler = () => { if (this.celebrationUI) this.showFinalCelebration(); };
+        this.scale.on('resize', this._resizeCelebrationHandler, this);
 
-        // Entry animation
         box.setScale(0.5);
         this.tweens.add({
-            targets: [box, subMsg, okBtn],
-            scaleX: 1, scaleY: 1,
-            duration: 400, ease: 'Back.easeOut'
+            targets: [box, titleMsg, subMsg, okBtn],
+            scaleX: 1, scaleY: 1, duration: 400, ease: 'Back.easeOut'
         });
-
-        // Confetti celebration particles
-        const confettiEmojis = ['🎉', '⭐', '🌟', '✨', '🎊', '💫', '🏆'];
-        for (let i = 0; i < 12; i++) {
-            const emoji = confettiEmojis[i % confettiEmojis.length];
-            const startX = width / 2 + (Math.random() - 0.5) * width * 0.6;
-            const startY = height / 2 - 50;
-            const confetti = this.add.text(startX, startY, emoji, {
-                fontSize: `${16 + Math.random() * 14}px`
-            }).setOrigin(0.5).setScrollFactor(0).setAlpha(0);
-            container.add(confetti);
-
-            this.tweens.add({
-                targets: confetti,
-                x: startX + (Math.random() - 0.5) * 120,
-                y: startY + 100 + Math.random() * 150,
-                alpha: { from: 1, to: 0 },
-                angle: (Math.random() - 0.5) * 360,
-                duration: 1500 + Math.random() * 1000,
-                delay: 200 + i * 80,
-                ease: 'Cubic.easeOut'
-            });
-        }
     }
 }
 

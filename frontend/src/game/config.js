@@ -1,4 +1,4 @@
-// 文件路径：game/config.js
+// Route：game/config.js
 
 import Phaser from 'phaser';
 import WorldMapScene from './scenes/WorldMapScene.js';
@@ -14,16 +14,22 @@ import ReadingScene from './scenes/ReadingScene.js';
 
 export default function createGameConfig(parent, width, height) {
   return {
-    type: Phaser.AUTO,
+    type: Phaser.AUTO, 
     parent,
     dom: {
       createContainer: true
     },
+    render: {
+      antialias: true,
+      roundPixels: true 
+    },
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
-      width,    // 使用传入的数值宽度
-      height    // 使用传入的数值高度
+      width,
+      height,
+      // ⭐ Adapted for high-resolution mobile screens, preventing physical pixel-level flickering.
+      resolution: window.devicePixelRatio || 1 
     },
     scene: [
       WorldMapScene,
