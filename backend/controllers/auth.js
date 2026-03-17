@@ -1,28 +1,35 @@
 import express from 'express'
 import passport from 'passport'
 import logger from '../utils/logger.js'
-import { rateLimit } from 'express-rate-limit'
+import { rateLimit, ipKeyGenerator } from 'express-rate-limit'
 import middleware from '../utils/middleware.js'
 
 const authRouter = express.Router()
 
 const loginTimeout = 2 * 60 * 1000 // 2 minutes
-const loginLimiter = rateLimit({
+const baseLimiterOptions = {
     windowMs: loginTimeout,
-    max: 5,                    // limit each IP
+    max: 5,
     handler: (req, res) => {
         // Gives the remaining time for retrying login in response.error
         const resetTime = req.rateLimit && req.rateLimit.resetTime
         let secondsLeft = 0
         if (resetTime) {
             secondsLeft = Math.ceil((resetTime.getTime() - Date.now()) / 1000)
-            if (secondsLeft <= 0) secondsLeft = 0
         }
 
         return res.status(429).json({ error: `Liian monta kirjautumisyritystä. Yritä uudelleen ${Math.ceil(secondsLeft / 60)} minuutin kuluttua.` })
     }
-})
-
+}
+const loginLimiter = process.env.NODE_ENV === 'production' && process.env.PUBLIC_URL === 'https://lukudiplomi.onrender.com/'
+    ? rateLimit({
+        ...baseLimiterOptions,
+        keyGenerator: (req) => {
+            const realIP = req.headers['true-client-ip'] || req.headers['true-client-ip'.toLowerCase()]
+            return realIP || ipKeyGenerator(req.ip)
+        },
+    })
+    : rateLimit(baseLimiterOptions)
 
 // Returns the current user session for the frontend auth check
 authRouter.get('/me', (request, response) => {
