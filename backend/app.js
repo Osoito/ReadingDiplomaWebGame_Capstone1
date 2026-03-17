@@ -54,20 +54,9 @@ if (environmentMode !== 'production') {
     app.use(middleware.requestLogger)
 }
 
-if(environmentMode === 'production' && process.env.PUBLIC_URL === 'https://lukudiplomi.onrender.com/') {
+if (environmentMode === 'production' && process.env.PUBLIC_URL === 'https://lukudiplomi.onrender.com/') {
     app.set('trust proxy', ['74.220.51.0/24', '74.220.59.0/24'])
 }
-
-// ∨∨∨ Temporary code for debugging an issue with render,
-// ∨∨∨ where the loginlimiter may not recognise the ip and sets the limit globally instead
-app.get('/debug-ip', (req, res) => {
-    res.json({
-        ip: req.ip,
-        xForwardedFor: req.headers['x-forwarded-for'],
-        trueClientIp: req.headers['true-client-ip']
-    })
-})
-// ∧∧∧ more information at https://express-rate-limit.mintlify.app/reference/error-codes#err_erl_unexpected_x_forwarded_for
 
 app.use('/auth', authRouter)
 app.use('/api/users', usersRouter)
