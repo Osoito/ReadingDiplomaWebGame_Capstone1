@@ -99,6 +99,19 @@ const ReadingState = {
         'AfricaMap': false,
         'OceaniaMap': false,
         'AntarcticaMap': false
+    },
+
+    /**
+     * Return the mapKey of the first unlocked-but-not-completed continent,
+     * i.e. where the player should be right now.
+     */
+    getCurrentContinent() {
+        for (const mapKey of this.mapOrder) {
+            if (!this.mapUnlock[mapKey]) continue;
+            if (!this._continentCompletedFlags?.[mapKey]) return mapKey;
+        }
+        // All completed — return the last one
+        return this.mapOrder[this.mapOrder.length - 1];
     }
 };
 

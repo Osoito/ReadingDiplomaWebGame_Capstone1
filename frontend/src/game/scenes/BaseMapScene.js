@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
+import ModalBuilder from '../ui/ModalBuilder.js';
+import { COLORS, CSS_COLORS, FONTS, uiScale as calcUiScale } from '../ui/constants.js';
 import pandaIdlePng from '../../assets/buddyAvatar/panda/panda_idle.png';
 import pandaIdleJson from '../../assets/buddyAvatar/panda/panda_idle.json';
 import buddiesPortraitImg from '../../assets/buddyAvatar/buddies-0001.png';
@@ -154,6 +156,16 @@ class BaseMapScene extends Phaser.Scene {
             });
         });
 
+        // Book button gentle bounce to attract attention
+        this.tweens.add({
+            targets: this.bookBtn,
+            y: height - 24,
+            duration: 1600,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
+
         // ⭐⭐⭐ 核心修复：调整初始化顺序 ⭐⭐⭐
         // 1. 现在标记场景已完全就绪，这样 handleResize 内部的 camera 调用就不会失败
         this.isReady = true;
@@ -197,20 +209,63 @@ class BaseMapScene extends Phaser.Scene {
         this.dotObjects = [];
         this.dotTexts = [];
 
+        // Stop old dot tweens
+        if (this._dotTweens) this._dotTweens.forEach(t => t.stop());
+        this._dotTweens = [];
+
+        const currentIdx = this.token?.lastPointIndex ?? 0;
+
         this.pointPositions.forEach((pos, index) => {
             const isVideo = this.videoCheckpoints[index];
-            const dotColor = isVideo ? 0xffcc00 : (this.themeColor || 0xffffff);
-            const dotRadius = 18 * this.baseScale;
-            
-            const dot = this.add.circle(pos.x, pos.y, dotRadius, dotColor, 1);
-            dot.setStrokeStyle(2, 0xffffff);
+            const dotRadius = Math.max(12, 18 * this.baseScale);
+            const isVisited = index <= currentIdx;
+            const isCurrent = index === currentIdx;
+
+            // Visual differentiation: visited = bright, unvisited = faded outline
+            let dotColor, dotAlpha, strokeColor;
+            if (isVideo) {
+                dotColor = 0xffcc00;
+                dotAlpha = isVisited ? 1 : 0.4;
+                strokeColor = 0xffffff;
+            } else if (isVisited) {
+                dotColor = this.themeColor || 0xc4973a;
+                dotAlpha = 1;
+                strokeColor = 0xffd700;
+            } else {
+                dotColor = 0xffffff;
+                dotAlpha = 0.3;
+                strokeColor = 0xaaaaaa;
+            }
+
+            const dot = this.add.circle(pos.x, pos.y, dotRadius, dotColor, dotAlpha);
+            dot.setStrokeStyle(2, strokeColor);
             this.dotObjects.push(dot);
+
+            // Current position: pulsing glow
+            if (isCurrent && !isVideo) {
+                const tw = this.tweens.add({
+                    targets: dot,
+                    scaleX: 1.3, scaleY: 1.3,
+                    alpha: 0.5,
+                    duration: 800, ease: 'Sine.easeInOut',
+                    yoyo: true, repeat: -1
+                });
+                this._dotTweens.push(tw);
+            }
+
+            // Last waypoint: flag emoji
+            if (index === this.pointPositions.length - 1) {
+                const flag = this.add.text(pos.x, pos.y - dotRadius - 6 * this.baseScale, '🏁', {
+                    fontSize: `${Math.round(16 * this.baseScale)}px`
+                }).setOrigin(0.5, 1);
+                this.dotTexts.push(flag);
+            }
 
             if (isVideo) {
                 const iconSize = (14 * this.baseScale) + 'px';
-                const txt = this.add.text(pos.x, pos.y, '▶', { 
-                    fontSize: iconSize, 
-                    color: '#000' 
+                const txt = this.add.text(pos.x, pos.y, '▶', {
+                    fontSize: iconSize,
+                    color: '#000'
                 });
                 txt.setOrigin(0.5);
                 this.dotTexts.push(txt);
@@ -218,7 +273,7 @@ class BaseMapScene extends Phaser.Scene {
                 dot.setInteractive({ useHandCursor: true });
                 dot.on('pointerdown', () => {
                     if (this.token && this.token.lastPointIndex >= index) {
-                        this.showVideoPopup(this.videoCheckpoints[index], index, true); 
+                        this.showVideoPopup(this.videoCheckpoints[index], index, true);
                     }
                 });
             }
@@ -280,117 +335,75 @@ class BaseMapScene extends Phaser.Scene {
 
       if (!mapCfg || !globalBooks) return;
 
+      // Cleanup previous
+      if (this._bookListModal) this._bookListModal.destroy();
+
       const { width, height } = this.scale;
-      const uiScale = Phaser.Math.Clamp(width / 1200, 0.8, 1.1);
+      const s = Phaser.Math.Clamp(width / 1200, 0.8, 1.1);
 
-      // 如果已有旧列表，先销毁并卸载 resize 监听
-      if (this.listUI) {
-          this.listUI.destroy(true);
-          if (this._resizeBookListHandler) {
-              this.scale.off('resize', this._resizeBookListHandler, this);
-              this._resizeBookListHandler = null;
-          }
-          this.listUI = null;
-      }
+      // Use a simple container (book list has custom scroll, not a standard modal box)
+      const modal = new ModalBuilder(this);
+      this._bookListModal = modal;
 
-      // 1. 容器
-      this.listUI = this.add.container(0, 0)
-          .setDepth(10000)
-          .setScrollFactor(0);
+      this.listUI = this.add.container(0, 0).setDepth(10000).setScrollFactor(0);
+      modal.container = this.listUI; // let ModalBuilder manage resize cleanup
 
-      // 当 this.listUI 被 destroy 时，自动卸载 resize 监听
-      this.listUI.once('destroy', () => {
-          if (this._resizeBookListHandler) {
-              this.scale.off('resize', this._resizeBookListHandler, this);
-              this._resizeBookListHandler = null;
-          }
-          this.listUI = null;
-      });
-
-      // 2. 遮罩
-      const overlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.9)
-          .setOrigin(0)
-          .setInteractive()
-          .setScrollFactor(0);
+      // Overlay
+      const overlay = this.add.rectangle(0, 0, width, height, COLORS.DARK_NAVY, 0.9)
+          .setOrigin(0).setInteractive().setScrollFactor(0);
       this.listUI.add(overlay);
 
-      // 3. 标题
-      const title = this.add.text(width / 2, 60 * uiScale, "Valitse klassikkokirja", {
-          fontSize: `${32 * uiScale}px`,
-          color: '#c4973a',
-          fontFamily: '"Cinzel Decorative", serif',
-          fontWeight: 'bold'
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0);
+      // Title
+      const title = this.add.text(width / 2, 60 * s, "Valitse klassikkokirja", {
+          fontSize: `${32 * s}px`, color: CSS_COLORS.GOLD,
+          fontFamily: FONTS.HEADING, fontWeight: 'bold'
+      }).setOrigin(0.5).setScrollFactor(0);
       this.listUI.add(title);
 
-      // 4. 列表滚动区
-      const listY = 130 * uiScale;
-      const viewH = height - (220 * uiScale);
+      // Scroll area
+      const listY = 130 * s;
+      const viewH = height - (220 * s);
 
-      this.scrollContainer = this.add.container(0, listY)
-          .setScrollFactor(0);
+      this.scrollContainer = this.add.container(0, listY).setScrollFactor(0);
       this.listUI.add(this.scrollContainer);
 
-      const maskG = this.add.graphics()
-          .setScrollFactor(0)
-          .fillStyle(0xffffff, 1)
-          .fillRect(0, listY, width, viewH)
-          .setVisible(false);
-      const mask = maskG.createGeometryMask();
-      this.scrollContainer.setMask(mask);
+      const maskG = this.add.graphics().setScrollFactor(0)
+          .fillStyle(0xffffff, 1).fillRect(0, listY, width, viewH).setVisible(false);
+      this.scrollContainer.setMask(maskG.createGeometryMask());
 
-      // 数据
       const availableBooks = globalBooks.map(book => ({
           ...book,
           isCompleted: !!completedBookIds[book.id],
           isCurrent: book.id === currentBookId
       }));
 
-      // 5. 渲染
       availableBooks.forEach((book, idx) => {
-          const itemH = 100 * uiScale;
+          const itemH = 100 * s;
           const y = idx * itemH;
-          let bg = 0x1e3a5f, bd = 0xc4973a, α = 1;
-          if (book.isCompleted) { bg = 0x1a2a44; bd = 0x4a5568; α = 0.6; }
-          if (book.isCurrent)   { bg = 0x2d4a77; bd = 0xffffff; }
+          let bg = COLORS.NAVY, bd = COLORS.GOLD, a = 1;
+          if (book.isCompleted) { bg = 0x1a2a44; bd = 0x4a5568; a = 0.6; }
+          if (book.isCurrent)   { bg = 0x2d4a77; bd = COLORS.WHITE; }
 
-          const btnBg = this.add.rectangle(width/2, y+itemH/2, width*0.8, itemH*0.9, bg, α)
-              .setStrokeStyle(2, bd)
-              .setInteractive({ useHandCursor: true })
-              .setScrollFactor(0);
+          const btnBg = this.add.rectangle(width/2, y+itemH/2, width*0.8, itemH*0.9, bg, a)
+              .setStrokeStyle(2, bd).setInteractive({ useHandCursor: true }).setScrollFactor(0);
 
           const pct = ReadingState.bookProgress[book.id] || 0;
-          const pctLabel = book.isCompleted ? "✔ DONE" : `${pct}%`;
+          const pctLabel = book.isCompleted ? "✔ VALMIS" : `${pct}%`;
 
-          const text = this.add.text(
-              width*0.15, y+itemH/2,
-              `${book.title}\nBy: ${book.author}`,
-              {
-                  fontSize:`${18*uiScale}px`,
-                  color: book.isCompleted ? '#888888' : '#fdf6e3',
-                  fontFamily:'Nunito, Arial',
-                  align:'left'
-              }
-          ).setOrigin(0,0.5).setScrollFactor(0);
+          const text = this.add.text(width*0.15, y+itemH/2, `${book.title}\n${book.author}`, {
+              fontSize: `${18*s}px`, color: book.isCompleted ? CSS_COLORS.GREY : CSS_COLORS.PARCHMENT,
+              fontFamily: FONTS.BODY, align: 'left'
+          }).setOrigin(0, 0.5).setScrollFactor(0);
 
-          const pctText = this.add.text(
-              width*0.85, y+itemH/2,
-              pctLabel,
-              {
-                  fontSize:`${20*uiScale}px`,
-                  color: book.isCompleted ? '#00ff88' : '#c4973a',
-                  fontFamily:'Nunito',
-                  fontWeight:'bold'
-              }
-          ).setOrigin(1,0.5).setScrollFactor(0);
+          const pctText = this.add.text(width*0.85, y+itemH/2, pctLabel, {
+              fontSize: `${20*s}px`, color: book.isCompleted ? '#00ff88' : CSS_COLORS.GOLD,
+              fontFamily: FONTS.BODY, fontWeight: 'bold'
+          }).setOrigin(1, 0.5).setScrollFactor(0);
 
           btnBg.on('pointerdown', () => {
               const dragDist = Math.abs(this.input.activePointer.upY - this.input.activePointer.downY);
               if (dragDist >= 15) return;
-
-              this.listUI.destroy(true);
+              if (this._bookListModal) { this._bookListModal.destroy(); this._bookListModal = null; }
               if (book.isCompleted) {
                   this.fetchGutenbergBook(book, mapCfg, true);
               } else {
@@ -402,14 +415,10 @@ class BaseMapScene extends Phaser.Scene {
           this.scrollContainer.add([btnBg, text, pctText]);
       });
 
-      // 6. 滚动惯性（保持原逻辑）
-      const contentH = availableBooks.length * (100 * uiScale);
+      // Scroll inertia
+      const contentH = availableBooks.length * (100 * s);
       const maxY = listY;
-      
-      // ⭐⭐⭐ BUG 修复：移除了固定的 "- 40" ⭐⭐⭐
-      const minY = contentH <= viewH
-          ? maxY
-          : listY - (contentH - viewH); // 之前是: listY - (contentH - viewH) - 40;
+      const minY = contentH <= viewH ? maxY : listY - (contentH - viewH);
 
       let dragging = false, startY = 0, last = 0, vel = 0;
       overlay.on('pointerdown', p => { dragging = true; startY = p.y; vel = 0; });
@@ -422,7 +431,7 @@ class BaseMapScene extends Phaser.Scene {
       overlay.on('pointerup', () => {
           dragging = false; vel = last;
           this.time.addEvent({
-              delay:16, repeat:40,
+              delay: 16, repeat: 40,
               callback: () => {
                   if (Math.abs(vel) < 0.5) return;
                   this.scrollContainer.y = Phaser.Math.Clamp(this.scrollContainer.y + vel, minY, maxY);
@@ -430,79 +439,134 @@ class BaseMapScene extends Phaser.Scene {
               }
           });
       });
-      this.input.on('wheel',(_,__,dx,dy) => {
+      this.input.on('wheel', (_, __, dx, dy) => {
           if (this.listUI && this.listUI.active) {
-              this.scrollContainer.y = Phaser.Math.Clamp(
-                  this.scrollContainer.y - dy*0.5, minY, maxY
-              );
+              this.scrollContainer.y = Phaser.Math.Clamp(this.scrollContainer.y - dy * 0.5, minY, maxY);
           }
       });
 
-      // 7. 取消按钮
-      const closeBtn = this.add.text(width/2, height - (40*uiScale), "[ Peruuta ]", {
-          fontSize:`${20*uiScale}px`,
-          color:'#ffffff',
-          backgroundColor:'#1e3a5f',
-          padding:10,
-          fontFamily:'Nunito'
-      })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0);
+      // Close button
+      const closeBtn = this.add.text(width/2, height - (40*s), "[ Peruuta ]", {
+          fontSize: `${20*s}px`, color: CSS_COLORS.WHITE,
+          backgroundColor: '#1e3a5f', padding: 10, fontFamily: FONTS.BODY
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScrollFactor(0);
 
       closeBtn.on('pointerover', () => closeBtn.setBackgroundColor('#c4973a'));
       closeBtn.on('pointerout',  () => closeBtn.setBackgroundColor('#1e3a5f'));
-      closeBtn.on('pointerdown', () => this.listUI.destroy(true));
-
+      closeBtn.on('pointerdown', () => {
+          if (this._bookListModal) { this._bookListModal.destroy(); this._bookListModal = null; }
+      });
       this.listUI.add(closeBtn);
 
-      // 8. 注册 resize 重建
-      this._resizeBookListHandler = () => {
-          if (this.listUI) this.listUI.destroy(true);
-          this.showBookList();
-      };
-      this.scale.on('resize', this._resizeBookListHandler, this);
+      modal.enableAutoResize(() => {
+          if (this._bookListModal) {
+              this._bookListModal.destroy();
+              this._bookListModal = null;
+              this.showBookList();
+          }
+      });
   }
 
     async fetchGutenbergBook(book, config, readOnly = false) {
-        this.bookBtn.setText("⏳ LADATAAN…");
+        // Show playful loading overlay
+        const { width, height } = this.scale;
+        const spinnerGroup = this.add.container(0, 0).setDepth(10000).setScrollFactor(0);
+        const spinnerOverlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.7)
+            .setOrigin(0).setScrollFactor(0).setInteractive();
+        spinnerGroup.add(spinnerOverlay);
 
+        // Bouncing book emoji
+        const bookEmoji = this.add.text(width / 2, height / 2 - 20, '📖', {
+            fontSize: '48px'
+        }).setOrigin(0.5).setScrollFactor(0);
+        spinnerGroup.add(bookEmoji);
+        this.tweens.add({
+            targets: bookEmoji,
+            y: height / 2 - 40,
+            angle: { from: -8, to: 8 },
+            duration: 600, ease: 'Sine.easeInOut',
+            yoyo: true, repeat: -1
+        });
+
+        // Animated dots text
+        const spinnerText = this.add.text(width / 2, height / 2 + 35, 'Ladataan kirjaa', {
+            fontSize: '20px', color: '#fdf6e3', fontFamily: 'Nunito, sans-serif',
+            fontStyle: 'italic'
+        }).setOrigin(0.5).setScrollFactor(0);
+        spinnerGroup.add(spinnerText);
+
+        let dotCount = 0;
+        const spinnerTimer = this.time.addEvent({
+            delay: 400, loop: true,
+            callback: () => {
+                dotCount = (dotCount + 1) % 4;
+                spinnerText.setText('Ladataan kirjaa' + '.'.repeat(dotCount));
+            }
+        });
+
+        // Sparkle ring around book
+        const arc = this.add.graphics().setScrollFactor(0);
+        let angle = 0;
+        const arcTimer = this.time.addEvent({
+            delay: 30, loop: true,
+            callback: () => {
+                arc.clear();
+                arc.lineStyle(3, 0xffd700, 0.7);
+                arc.beginPath();
+                arc.arc(width / 2, height / 2 - 20, 38, Phaser.Math.DegToRad(angle), Phaser.Math.DegToRad(angle + 90), false);
+                arc.strokePath();
+                arc.beginPath();
+                arc.arc(width / 2, height / 2 - 20, 38, Phaser.Math.DegToRad(angle + 180), Phaser.Math.DegToRad(angle + 270), false);
+                arc.strokePath();
+                angle = (angle + 5) % 360;
+            }
+        });
+        spinnerGroup.add(arc);
+
+        const destroySpinner = () => {
+            spinnerTimer.remove();
+            arcTimer.remove();
+            spinnerGroup.destroy(true);
+        };
+
+        // Parallel proxy fetch with Promise.any
         const proxies = [
             "https://api.allorigins.win/raw?url=",
             "https://corsproxy.io/?",
             "https://api.codetabs.com/v1/proxy/?quest="
         ];
-
         const targetUrl = `https://www.gutenberg.org/cache/epub/${book.id}/pg${book.id}.txt`;
 
         let success = false;
         let fetchedText = "";
 
-        for (const proxy of proxies) {
-            try {
-                const response = await fetch(proxy + encodeURIComponent(targetUrl), {
-                    signal: AbortSignal.timeout(5000)
-                });
-                if (response.ok) {
-                    fetchedText = await response.text();
-                    if (fetchedText.length > 1000) { 
-                        success = true; 
-                        break; 
-                    }
-                }
-            } catch (e) {
-                console.error("Proxy error:", e);
-            }
+        try {
+            fetchedText = await Promise.any(
+                proxies.map(async (proxy) => {
+                    const response = await fetch(proxy + encodeURIComponent(targetUrl), {
+                        signal: AbortSignal.timeout(5000)
+                    });
+                    if (!response.ok) throw new Error('Not OK');
+                    const text = await response.text();
+                    if (text.length <= 1000) throw new Error('Too short');
+                    return text;
+                })
+            );
+            success = true;
+        } catch (e) {
+            console.error("All proxies failed:", e);
         }
+
+        destroySpinner();
 
         if (success) {
             const startMarkers = ["*** START OF", "CHAPTER I", "Title:"];
             let cleanText = fetchedText;
             for (let m of startMarkers) {
                 let idx = fetchedText.indexOf(m);
-                if (idx !== -1) { 
-                    cleanText = fetchedText.substring(idx); 
-                    break; 
+                if (idx !== -1) {
+                    cleanText = fetchedText.substring(idx);
+                    break;
                 }
             }
 
@@ -522,8 +586,6 @@ class BaseMapScene extends Phaser.Scene {
                 readOnly: readOnly
             });
         }
-
-        this.bookBtn.setText("📖 AVAA KIRJA");
     }
 
     launchReading(config, bookData) {
@@ -556,11 +618,36 @@ class BaseMapScene extends Phaser.Scene {
         let targetIndex = Math.floor((currentProg / 100) * (this.pointPositions.length - 1));
         targetIndex = Phaser.Math.Clamp(targetIndex, 0, this.pointPositions.length - 1);
 
-        // 绘制路径线条
+        // Draw path: faded full trail + bright walked trail
         if (this.pathGraphics) {
             this.pathGraphics.clear();
-            this.pathGraphics.lineStyle(4, this.themeColor || 0xffffff, 0.4);
+            const tc = this.themeColor || 0xffffff;
+
+            // Full path (faded dotted line)
+            if (this.pointPositions.length >= 2) {
+                this.pathGraphics.lineStyle(2, tc, 0.15);
+                for (let i = 0; i < this.pointPositions.length - 1; i++) {
+                    const a = this.pointPositions[i];
+                    const b = this.pointPositions[i + 1];
+                    const dx = b.x - a.x, dy = b.y - a.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const dashLen = 8, gapLen = 6;
+                    let drawn = 0;
+                    while (drawn < dist) {
+                        const s = drawn / dist;
+                        const e = Math.min((drawn + dashLen) / dist, 1);
+                        this.pathGraphics.beginPath();
+                        this.pathGraphics.moveTo(a.x + dx * s, a.y + dy * s);
+                        this.pathGraphics.lineTo(a.x + dx * e, a.y + dy * e);
+                        this.pathGraphics.strokePath();
+                        drawn += dashLen + gapLen;
+                    }
+                }
+            }
+
+            // Walked path (bright solid line)
             if (targetIndex >= 1) {
+                this.pathGraphics.lineStyle(4, tc, 0.6);
                 this.pathGraphics.beginPath();
                 this.pathGraphics.moveTo(this.pointPositions[0].x, this.pointPositions[0].y);
                 for (let i = 1; i <= targetIndex; i++) {
@@ -638,126 +725,67 @@ class BaseMapScene extends Phaser.Scene {
    showVideoPopup(videoData, index, isManual = false) {
         if (!isManual && this.viewedVideos.has(index)) return;
 
-        // 1) 清理旧的弹窗（如果存在），防止重复
-        if (this.videoPopupUI) {
-            this.videoPopupUI.destroy(true);
-        }
+        // Cleanup previous popup
+        if (this._videoModal) this._videoModal.destroy();
 
-        // 2) 基础配置
-        const { width, height } = this.scale;
-        const uiScale = Phaser.Math.Clamp(width / 1200, 0.7, 1.2);
-        const depthBase = 9999999;
+        const modal = new ModalBuilder(this);
+        this._videoModal = modal;
 
-        // 3) 创建组 (就像你的 celebrationUI 一样)
-        this.videoPopupUI = this.add.group();
-
-        // 4) 遮罩层 (Overlay)
-        const overlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.85)
-            .setOrigin(0)
-            .setScrollFactor(0)
-            .setDepth(depthBase)
-            .setInteractive();
-        this.videoPopupUI.add(overlay);
-
-        // 5) 背景主框
-        const boxW = 450 * uiScale;
-        const boxH = 300 * uiScale;
-        const box = this.add.rectangle(width / 2, height / 2, boxW, boxH, 0x1e3a5f)
-            .setStrokeStyle(4, 0xc4973a)
-            .setScrollFactor(0)
-            .setDepth(depthBase + 1);
-        this.videoPopupUI.add(box);
-
-        // 6) 标题
-        const title = this.add.text(width / 2, height / 2 - (100 * uiScale), "💡 LUKUVINKKI AVATTU", {
-            fontFamily: '"Cinzel Decorative", serif',
-            fontSize: (26 * uiScale) + 'px',
-            color: '#c4973a',
-            shadow: { offsetX: 0, offsetY: 2, color: '#000', blur: 4, fill: true }
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2);
-        this.videoPopupUI.add(title);
-
-        // 7) 副标题
-        const subTitle = this.add.text(width / 2, height / 2 - (40 * uiScale), videoData.title, {
-            fontFamily: 'Nunito, sans-serif',
-            fontSize: (18 * uiScale) + 'px',
-            color: '#ffffff',
-            align: 'center',
-            wordWrap: { width: boxW - 50 }
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2);
-        this.videoPopupUI.add(subTitle);
-
-        // 8) 观看按钮背景
-        const btnW = 260 * uiScale;
-        const btnH = 60 * uiScale;
-        const btnBg = this.add.rectangle(width / 2, height / 2 + (50 * uiScale), btnW, btnH, 0xc4973a)
-            .setScrollFactor(0)
-            .setDepth(depthBase + 2)
-            .setInteractive({ useHandCursor: true });
-        this.videoPopupUI.add(btnBg);
-
-        // 9) 按钮文字
-        const btnLabel = this.add.text(width / 2, height / 2 + (50 * uiScale), "KATSO YOUTUBESSA", {
-            fontFamily: 'Nunito',
-            fontSize: (20 * uiScale) + 'px',
-            color: '#1e3a5f',
-            fontWeight: 'bold'
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 3);
-        this.videoPopupUI.add(btnLabel);
-
-        // 10) 关闭文字
-        const closeBtn = this.add.text(width / 2, height / 2 + (120 * uiScale), "[ Sulje ]", {
-            fontFamily: 'Nunito',
-            fontSize: (18 * uiScale) + 'px',
-            color: '#a9c1de',
-            padding: 10
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2)
-        .setInteractive({ useHandCursor: true });
-        this.videoPopupUI.add(closeBtn);
-
-        // --- 核心清理逻辑 (包含 viewedVideos 记录) ---
-        const cleanup = () => {
-            if (this.videoPopupUI) {
-                this.videoPopupUI.destroy(true);
-                this.videoPopupUI = null;
-            }
-            this.viewedVideos.add(index);
-            this.scale.off('resize', this._resizeVideoHandler);
-            window.removeEventListener('keydown', escHandler);
-        };
-
-        // --- 交互绑定 ---
-        btnBg.on('pointerover', () => { btnBg.setFillStyle(0xd4a74a); });
-        btnBg.on('pointerout', () => { btnBg.setFillStyle(0xc4973a); });
-        
-        btnBg.on('pointerdown', () => {
-            const url = videoData.url;
-            cleanup(); // 先关窗，解决跳转后的残留问题
-            if (url) {
-                this.time.delayedCall(10, () => window.open(url, '_blank'));
-            }
+        const { width, height, uiScale: s } = modal.createFrame({
+            title: '💡 LUKUVINKKI AVATTU',
+            maxWidth: 450,
+            boxHeight: 300,
+            depth: 9999999,
+            useContainer: false
         });
 
+        const depthBase = 9999999;
+
+        // Subtitle
+        const subTitle = this.add.text(width / 2, height / 2 - (40 * s), videoData.title, {
+            fontFamily: FONTS.BODY, fontSize: (18 * s) + 'px', color: CSS_COLORS.WHITE,
+            align: 'center', wordWrap: { width: width * 0.6 }
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2);
+        modal.container.add(subTitle);
+
+        // Watch button
+        const btnBg = this.add.rectangle(width / 2, height / 2 + (50 * s), 260 * s, 60 * s, COLORS.GOLD)
+            .setScrollFactor(0).setDepth(depthBase + 2).setInteractive({ useHandCursor: true });
+        const btnLabel = this.add.text(width / 2, height / 2 + (50 * s), "KATSO YOUTUBESSA", {
+            fontFamily: FONTS.BODY, fontSize: (20 * s) + 'px', color: CSS_COLORS.NAVY, fontWeight: 'bold'
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 3);
+        modal.container.addMultiple([btnBg, btnLabel]);
+
+        // Close button
+        const closeBtn = this.add.text(width / 2, height / 2 + (120 * s), "[ Sulje ]", {
+            fontFamily: FONTS.BODY, fontSize: (18 * s) + 'px', color: CSS_COLORS.LIGHT_BLUE, padding: 10
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(depthBase + 2).setInteractive({ useHandCursor: true });
+        modal.container.add(closeBtn);
+
+        const cleanup = () => {
+            this.viewedVideos.add(index);
+            if (this._videoModal) { this._videoModal.destroy(); this._videoModal = null; }
+        };
+
+        btnBg.on('pointerover', () => btnBg.setFillStyle(COLORS.GOLD_HOVER));
+        btnBg.on('pointerout',  () => btnBg.setFillStyle(COLORS.GOLD));
+        btnBg.on('pointerdown', () => {
+            const url = videoData.url;
+            cleanup();
+            if (url) this.time.delayedCall(10, () => window.open(url, '_blank'));
+        });
         closeBtn.on('pointerdown', () => cleanup());
 
-        // ESC 支持
-        const escHandler = (e) => { if (e.key === 'Escape') cleanup(); };
-        window.addEventListener('keydown', escHandler);
-
-        // 11) 注册 Resize 处理器：模仿 showFinalCelebration 的销毁重绘逻辑
-        this._resizeVideoHandler = () => {
-            if (this.videoPopupUI) {
-                // 传入 isManual = true 确保重绘时不会因为 viewedVideos 检查而被拦截
-                this.showVideoPopup(videoData, index, true);
-            }
-        };
-        this.scale.on('resize', this._resizeVideoHandler);
+        modal.enableEscClose(cleanup);
+        modal.enableAutoResize(() => {
+            if (this._videoModal) this.showVideoPopup(videoData, index, true);
+        });
     }
 
     showStoryQuiz() {
       const mapKey = this.scene.key;
 
-      // 1) 初始化状态（保存旧答案 & 步骤）
+      // Initialize quiz state
       if (!ReadingState.quizAnswers) ReadingState.quizAnswers = {};
       const saved = ReadingState.quizAnswers[mapKey];
       if (saved) {
@@ -765,305 +793,177 @@ class BaseMapScene extends Phaser.Scene {
       } else if (!this.tempAnswers) {
           this.tempAnswers = ["", "", ""];
       }
-      // 当前题目索引
       this._quizStep = this._quizStep != null ? this._quizStep : 0;
       const currentStep = this._quizStep;
       const isReadOnly = !!saved;
       this.isDoingQuiz = true;
 
-      // 2) 如果已有旧弹窗，先销毁并卸载监听
-      if (this.quizContainer) {
-          this.quizContainer.destroy(true);
-          if (this._quizResizeHandler) {
-              this.scale.off('resize', this._quizResizeHandler, this);
-              this._quizResizeHandler = null;
-          }
-      }
+      // Cleanup previous
+      if (this._quizModal) this._quizModal.destroy();
 
-      // 3) 计算布局参数
-      const { width, height } = this.scale;
-      const uiScale = Phaser.Math.Clamp(width / 1200, 0.8, 1.2);
+      const modal = new ModalBuilder(this);
+      this._quizModal = modal;
 
-      // 4) 创建总容器
-      this.quizContainer = this.add.container(0, 0)
-          .setDepth(100000)
-          .setScrollFactor(0);
-
-      // 容器一旦被销毁，就自动卸载 resize 监听
-      this.quizContainer.once('destroy', () => {
-          if (this._quizResizeHandler) {
-              this.scale.off('resize', this._quizResizeHandler, this);
-              this._quizResizeHandler = null;
-          }
-          this.quizContainer = null;
+      const { container, width, height, uiScale: s } = modal.createFrame({
+          title: isReadOnly ? "POHDINTASI" : "TARINAKYSELY",
+          widthRatio: 0.85,
+          boxHeight: 480,
+          depth: 100000
       });
 
-      // 5) 半透明遮罩
-      const overlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.85)
-          .setOrigin(0)
-          .setInteractive()
-          .setScrollFactor(0);
-      this.quizContainer.add(overlay);
-
-      // 6) 弹窗背景框
-      const boxW = width * 0.85;
-      const boxH = 480 * uiScale;
-      const box = this.add.rectangle(width/2, height/2, boxW, boxH, 0x1e3a5f)
-          .setStrokeStyle(4, 0xc4973a)
-          .setScrollFactor(0);
-      this.quizContainer.add(box);
-
-      // 7) 标题
-      const titleTxt = this.add.text(
-          width/2,
-          height/2 - (180 * uiScale),
-          isReadOnly ? "YOUR REFLECTIONS" : "STORY QUIZ",
-          {
-              fontSize: `${32 * uiScale}px`,
-              color: '#c4973a',
-              fontFamily: '"Cinzel Decorative", serif',
-              fontWeight: 'bold',
-              shadow: { offsetX: 0, offsetY: 2, color: '#000', blur: 4, fill: true }
-          }
-      )
-      .setOrigin(0.5)
-      .setScrollFactor(0);
-      this.quizContainer.add(titleTxt);
-
-      // 8) 子标题（书名）
+      // Book subtitle
       const bookData = ReadingState.globalBooks?.find(b => b.id === ReadingState.mapSelectedBook?.[mapKey]);
       const bookTitle = bookData ? bookData.title : "The Classic Story";
-      const bookLabel = this.add.text(
-          width/2,
-          height/2 - (135 * uiScale),
-          `Book: ${bookTitle}`,
-          {
-              fontSize: `${18 * uiScale}px`,
-              color: '#fdf6e3',
-              fontFamily: 'Nunito',
-              fontStyle: 'italic'
-          }
-      )
-      .setOrigin(0.5)
-      .setScrollFactor(0);
-      this.quizContainer.add(bookLabel);
+      const bookLabel = this.add.text(width / 2, height / 2 - (135 * s), `Kirja: ${bookTitle}`, {
+          fontSize: `${18 * s}px`, color: CSS_COLORS.PARCHMENT,
+          fontFamily: FONTS.BODY, fontStyle: 'italic'
+      }).setOrigin(0.5).setScrollFactor(0);
+      container.add(bookLabel);
 
-      // 9) 问题文本
+      // Questions in Finnish
       const questions = [
-          "What is the plot of this story?",
-          "Who are the main characters?",
-          "What are your thoughts or feelings about this story?"
+          "Mikä on tarinan juoni?",
+          "Ketkä ovat tarinan päähenkilöt?",
+          "Mitä ajatuksia tai tunteita tarina herätti sinussa?"
       ];
-      const qText = this.add.text(
-          width/2,
-          height/2 - (80 * uiScale),
-          questions[currentStep],
-          {
-              fontSize: `${20 * uiScale}px`,
-              color: '#ffffff',
-              fontFamily: 'Nunito',
-              align: 'center',
-              wordWrap: { width: width * 0.75 }
-          }
-      )
-      .setOrigin(0.5)
-      .setScrollFactor(0);
-      this.quizContainer.add(qText);
 
-      // 10) DOM TextArea
+      const qText = this.add.text(width / 2, height / 2 - (80 * s), questions[currentStep], {
+          fontSize: `${20 * s}px`, color: CSS_COLORS.WHITE,
+          fontFamily: FONTS.BODY, align: 'center', wordWrap: { width: width * 0.75 }
+      }).setOrigin(0.5).setScrollFactor(0);
+      container.add(qText);
+
+      // DOM textarea
       const textarea = document.createElement('textarea');
       textarea.style.width           = `${width * 0.65}px`;
-      textarea.style.height          = `${140 * uiScale}px`;
-      textarea.style.fontSize        = `${16 * uiScale}px`;
+      textarea.style.height          = `${140 * s}px`;
+      textarea.style.fontSize        = `${16 * s}px`;
       textarea.style.padding         = '12px';
       textarea.style.fontFamily      = 'Nunito, sans-serif';
       textarea.style.border          = '2px solid #c4973a';
       textarea.style.borderRadius    = '4px';
       textarea.style.backgroundColor = isReadOnly ? '#dcd7ca' : '#fdf6e3';
-      textarea.style.color           = "#1e3a5f";
-      textarea.placeholder           = "Write your reflections here...";
+      textarea.style.color           = '#1e3a5f';
+      textarea.placeholder           = 'Kirjoita pohdintasi tähän...';
       if (isReadOnly) {
-          textarea.value    = this.tempAnswers[currentStep];
+          textarea.value = this.tempAnswers[currentStep];
           textarea.readOnly = true;
           textarea.style.opacity = '0.8';
       }
-      const domInput = this.add.dom(
-          width/2,
-          height/2 + (40 * uiScale),
-          textarea
-      )
-      .setScrollFactor(0);
-      this.quizContainer.add(domInput);
+      const domInput = this.add.dom(width / 2, height / 2 + (40 * s), textarea).setScrollFactor(0);
+      container.add(domInput);
 
-      // 11) 下一步/提交 按钮
+      // Next / Submit button
       const isLast = (currentStep === questions.length - 1);
-      const btnText = isReadOnly
-          ? (isLast ? "CLOSE" : "CLOSE")
-          : (isLast ? "SUBMIT" : "NEXT");
-      const nextBtn = this.add.text(
-          width/2,
-          height/2 + (190 * uiScale),
-          btnText,
-          {
-              fontSize: `${22 * uiScale}px`,
-              color: '#ffffff',
-              backgroundColor: '#c4973a',
-              padding: { x: 40, y: 12 },
-              fontFamily: 'Nunito',
-              fontWeight: 'bold'
-          }
-      )
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0);
+      const btnText = isReadOnly ? "SULJE" : (isLast ? "LÄHETÄ" : "SEURAAVA");
+      const nextBtn = this.add.text(width / 2, height / 2 + (190 * s), btnText, {
+          fontSize: `${22 * s}px`, color: CSS_COLORS.WHITE,
+          backgroundColor: '#c4973a', padding: { x: 40, y: 12 },
+          fontFamily: FONTS.BODY, fontWeight: 'bold'
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScrollFactor(0);
 
       nextBtn.on('pointerover', () => nextBtn.setBackgroundColor('#d4a74a'));
       nextBtn.on('pointerout',  () => nextBtn.setBackgroundColor('#c4973a'));
       nextBtn.on('pointerdown', () => {
-          // 非只读状态下，先存当前答案
-          if (!isReadOnly) {
-              this.tempAnswers[currentStep] = textarea.value;
-          }
-          // 准备下一步
+          if (!isReadOnly) this.tempAnswers[currentStep] = textarea.value;
           this._quizStep++;
           if (this._quizStep < questions.length) {
-              // 还没到最后一题，更新问题与清空/填充输入框
               qText.setText(questions[this._quizStep]);
-              if (isReadOnly) {
-                  textarea.value = this.tempAnswers[this._quizStep];
-              } else {
-                  textarea.value = '';
-              }
-              // 如果到最后一题，改按钮文案
+              textarea.value = isReadOnly ? this.tempAnswers[this._quizStep] : '';
               if (this._quizStep === questions.length - 1) {
-                  nextBtn.setText(isReadOnly ? "CLOSE" : "SUBMIT");
+                  nextBtn.setText(isReadOnly ? "SULJE" : "LÄHETÄ");
               }
           } else {
-              // 全部答完，存储并关闭
-              if (!isReadOnly) {
-                  ReadingState.quizAnswers[mapKey] = this.tempAnswers;
-              }
-              this.quizContainer.destroy(true);
+              if (!isReadOnly) ReadingState.quizAnswers[mapKey] = this.tempAnswers;
+              if (this._quizModal) { this._quizModal.destroy(); this._quizModal = null; }
               this.isDoingQuiz = false;
               if (!isReadOnly) this.showFinalCelebration();
           }
       });
-      this.quizContainer.add(nextBtn);
+      container.add(nextBtn);
 
-      // 12) 注册 resize：销毁旧弹窗并重新 build
-      this._quizResizeHandler = () => {
-          if (this.quizContainer) {
-              this.quizContainer.destroy(true);
+      modal.enableAutoResize(() => {
+          if (this._quizModal) {
+              this._quizModal.destroy();
+              this._quizModal = null;
+              this.showStoryQuiz();
           }
-          this.showStoryQuiz();
-      };
-      this.scale.on('resize', this._quizResizeHandler, this);
+      });
   }
     showFinalCelebration() {
         const mapKey = this.scene.key;
-        // 1) 更新完成状态
-        if (!ReadingState._continentCompletedFlags) {
-            ReadingState._continentCompletedFlags = {};
-        }
+        if (!ReadingState._continentCompletedFlags) ReadingState._continentCompletedFlags = {};
         ReadingState._continentCompletedFlags[mapKey] = true;
 
-        // 2) 如果已有旧弹窗，先销毁并卸载监听（防止 Resize 时叠加）
-        if (this.celebrationUI) {
-            this.celebrationUI.destroy(true);
-            if (this._resizeCelebrationHandler) {
-                this.scale.off('resize', this._resizeCelebrationHandler, this);
-                this._resizeCelebrationHandler = null;
-            }
-        }
+        // Cleanup previous
+        if (this._celebrationModal) this._celebrationModal.destroy();
 
-        // 3) 计算布局参数
-        const { width, height } = this.scale;
-        const uiScale = Phaser.Math.Clamp(width / 1200, 0.8, 1.2);
+        const modal = new ModalBuilder(this);
+        this._celebrationModal = modal;
 
-        // 4) 创建总容器
-        this.celebrationUI = this.add.container(0, 0)
-            .setDepth(100000)
-            .setScrollFactor(0);
-
-        // 容器被销毁时自动移除 resize 监听
-        this.celebrationUI.once('destroy', () => {
-            if (this._resizeCelebrationHandler) {
-                this.scale.off('resize', this._resizeCelebrationHandler, this);
-                this._resizeCelebrationHandler = null;
-            }
-            this.celebrationUI = null;
+        const { container, box, width, height, uiScale: s } = modal.createFrame({
+            title: '🎉 ONNISTUKSIA!',
+            maxWidth: 500,
+            boxHeight: 300,
+            depth: 100000
         });
 
-        // 5) 半透明遮罩 (与 VideoPopup 一致)
-        const overlay = this.add.rectangle(0, 0, width, height, 0x0a192f, 0.85)
-            .setOrigin(0)
-            .setInteractive()
-            .setScrollFactor(0);
-        this.celebrationUI.add(overlay);
-
-        // 6) 弹窗背景框 (自适应宽度，固定高度比例)
-        const boxW = Math.min(width * 0.85, 500 * uiScale);
-        const boxH = 300 * uiScale;
-        const box = this.add.rectangle(width / 2, height / 2, boxW, boxH, 0x1e3a5f)
-            .setStrokeStyle(4, 0xc4973a)
-            .setScrollFactor(0);
-        this.celebrationUI.add(box);
-
-        // 7) 祝贺标题 (使用 Cinzel Decorative 字体)
-        const titleMsg = this.add.text(width / 2, height / 2 - (60 * uiScale), "🎉 ONNISTUKSIA!", {
-            fontSize: `${32 * uiScale}px`,
-            color: '#c4973a',
-            fontFamily: '"Cinzel Decorative", serif',
-            fontWeight: 'bold',
-            shadow: { offsetX: 0, offsetY: 2, color: '#000', blur: 4, fill: true }
+        // Subtitle
+        const subMsg = this.add.text(width / 2, height / 2 + (15 * s),
+            "Olet suorittanut tutkimusmatkan loppuun!", {
+            fontSize: `${20 * s}px`, color: CSS_COLORS.WHITE,
+            fontFamily: FONTS.BODY, align: 'center', wordWrap: { width: width * 0.7 }
         }).setOrigin(0.5).setScrollFactor(0);
-        this.celebrationUI.add(titleMsg);
+        container.add(subMsg);
 
-        // 8) 描述正文
-        const subMsg = this.add.text(width / 2, height / 2 + (15 * uiScale), "Olet suorittanut tutkimusmatkan loppuun!", {
-            fontSize: `${20 * uiScale}px`,
-            color: '#ffffff',
-            fontFamily: 'Nunito, sans-serif',
-            align: 'center',
-            wordWrap: { width: boxW - 40 }
-        }).setOrigin(0.5).setScrollFactor(0);
-        this.celebrationUI.add(subMsg);
-
-        // 9) 确认按钮 (与 Quiz 按钮风格一致)
-        const okBtn = this.add.text(width / 2, height / 2 + (90 * uiScale), " SELVÄ ", {
-            fontSize: `${22 * uiScale}px`,
-            color: '#ffffff',
-            backgroundColor: '#c4973a',
-            padding: { x: 40, y: 12 },
-            fontFamily: 'Nunito',
-            fontWeight: 'bold'
-        })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true })
-        .setScrollFactor(0);
+        // OK button
+        const okBtn = this.add.text(width / 2, height / 2 + (90 * s), " SELVÄ ", {
+            fontSize: `${22 * s}px`, color: CSS_COLORS.WHITE,
+            backgroundColor: '#c4973a', padding: { x: 40, y: 12 },
+            fontFamily: FONTS.BODY, fontWeight: 'bold'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setScrollFactor(0);
 
         okBtn.on('pointerover', () => okBtn.setBackgroundColor('#d4a74a'));
-        okBtn.on('pointerout', () => okBtn.setBackgroundColor('#c4973a'));
-        okBtn.on('pointerdown', () => this.celebrationUI.destroy(true));
-        this.celebrationUI.add(okBtn);
+        okBtn.on('pointerout',  () => okBtn.setBackgroundColor('#c4973a'));
+        okBtn.on('pointerdown', () => {
+            if (this._celebrationModal) { this._celebrationModal.destroy(); this._celebrationModal = null; }
+        });
+        container.add(okBtn);
 
-        // 10) 注册 Resize 处理器：销毁旧弹窗并重绘
-        this._resizeCelebrationHandler = () => {
-            if (this.celebrationUI) {
-                this.showFinalCelebration();
-            }
-        };
-        this.scale.on('resize', this._resizeCelebrationHandler, this);
+        modal.enableAutoResize(() => {
+            if (this._celebrationModal) this.showFinalCelebration();
+        });
 
-        // 入场小动画
+        // Entry animation
         box.setScale(0.5);
         this.tweens.add({
-            targets: [box, titleMsg, subMsg, okBtn],
-            scaleX: 1,
-            scaleY: 1,
-            duration: 400,
-            ease: 'Back.easeOut'
+            targets: [box, subMsg, okBtn],
+            scaleX: 1, scaleY: 1,
+            duration: 400, ease: 'Back.easeOut'
         });
+
+        // Confetti celebration particles
+        const confettiEmojis = ['🎉', '⭐', '🌟', '✨', '🎊', '💫', '🏆'];
+        for (let i = 0; i < 12; i++) {
+            const emoji = confettiEmojis[i % confettiEmojis.length];
+            const startX = width / 2 + (Math.random() - 0.5) * width * 0.6;
+            const startY = height / 2 - 50;
+            const confetti = this.add.text(startX, startY, emoji, {
+                fontSize: `${16 + Math.random() * 14}px`
+            }).setOrigin(0.5).setScrollFactor(0).setAlpha(0);
+            container.add(confetti);
+
+            this.tweens.add({
+                targets: confetti,
+                x: startX + (Math.random() - 0.5) * 120,
+                y: startY + 100 + Math.random() * 150,
+                alpha: { from: 1, to: 0 },
+                angle: (Math.random() - 0.5) * 360,
+                duration: 1500 + Math.random() * 1000,
+                delay: 200 + i * 80,
+                ease: 'Cubic.easeOut'
+            });
+        }
     }
 }
 
