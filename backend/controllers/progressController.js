@@ -43,7 +43,7 @@ progressRouter.get('/get-entry/:level', middleware.requireAuthentication(true), 
 
 progressRouter.get('/current-level', middleware.requireAuthentication(true), async(request, response, next) => {
     try{
-        console.log(request.user.id)
+        //console.log(request.user.id)
         const progress = await ProgressService.getCurrentLevel(request.user.id)
         response.status(200).json(progress)
     } catch(error){
@@ -61,8 +61,8 @@ progressRouter.post('/add-entry', middleware.requireAuthentication(true), middle
             user,
             book
         }
-        await ProgressService.addNewProgress(newEntry)
-        response.status(201).json(newEntry)
+        const progressEntry = await ProgressService.addNewProgress(newEntry)
+        response.status(201).json(progressEntry)
     } catch(error){
         next(error)
     }

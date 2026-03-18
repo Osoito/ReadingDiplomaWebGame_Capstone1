@@ -9,6 +9,7 @@ import { resetDB } from '../testConfig/cleanTestDB.js'
 
 const booksRouter = (await import('../../controllers/books.js')).default
 const rewardsRouter = (await import('../../controllers/rewards.js')).default
+const progressRouter = (await import('../../controllers/progressController.js')).default
 
 const app = express()
 app.use(express.json())
@@ -30,6 +31,7 @@ app.use(middleware.errorHandler)
 
 app.use('/api/books', booksRouter)
 app.use('/api/rewards', rewardsRouter)
+app.use('/api/progress', progressRouter)
 
 const api = supertest(app)
 
@@ -273,6 +275,210 @@ describe('Reward integration tests', () => {
 
         const response = await api
             .get('/api/rewards/')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+})
+
+describe('Progress integration tests', () => {
+    beforeEach(async() => {
+        await resetDB()
+    })
+
+    test('Add progress entry', async() => {
+        const input = {
+            level: 1,
+            user: 1,
+        }
+
+        const expectedOutcome = [{
+            id: 1,
+            level: 1,
+            user: 1,
+            book: null,
+            current_progress: 0,
+            level_status: 'incomplete'
+        }]
+
+        const response = await api
+            .post('/api/progress/add-entry')
+            .send(input)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Get progress entries for current user', async () => {
+        const progress1 = {
+            level: 1,
+            user: 1,
+        }
+        const progress2 = {
+            level: 2,
+            user: 1,
+        }
+        const progress3 = {
+            level: 1,
+            user: 2,
+        }
+
+        await api.post('/api/progress/add-entry').send(progress1)
+        await api.post('/api/progress/add-entry').send(progress2)
+        await api.post('/api/progress/add-entry').send(progress3)
+
+        const expectedOutcome = [
+            {
+                level: 1,
+                user: 1,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            },
+            {
+                level: 2,
+                user: 1,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            }
+        ]
+
+        const response = await api
+            .get('/api/progress/')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Get a specific entry', async () => {
+        const progress1 = {
+            level: 1,
+            user: 1,
+        }
+        const progress2 = {
+            level: 2,
+            user: 1,
+        }
+        const progress3 = {
+            level: 1,
+            user: 2,
+        }
+
+        await api.post('/api/progress/add-entry').send(progress1)
+        await api.post('/api/progress/add-entry').send(progress2)
+        await api.post('/api/progress/add-entry').send(progress3)
+
+        const expectedOutcome = {
+            level: 1,
+            user: 1,
+            book: null,
+            current_progress: 0,
+            level_status: 'incomplete'
+        }
+
+        const response = await api
+            .get('/api/progress/get-entry/1')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Complete a level', async () => {
+        const progress1 = {
+            level: 1,
+            user: 1,
+        }
+        const input = {
+            user:1
+        }
+
+        await api.post('/api/progress/add-entry').send(progress1)
+
+        const expectedOutcome = 'Level marked as completed successfully!'
+
+        const response = await api
+            .put('/api/progress/1/completed')
+            .send(input)
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Get current level', async () => {
+        const progress1 = {
+            level: 1,
+            user: 1,
+        }
+        const progress2 = {
+            level: 2,
+            user: 1,
+        }
+        const progress3 = {
+            level: 3,
+            user: 1,
+        }
+        const progress4 = {
+            level: 4,
+            user: 1,
+        }
+
+
+        await api.post('/api/progress/add-entry').send(progress1)
+        await api.post('/api/progress/add-entry').send(progress2)
+        await api.post('/api/progress/add-entry').send(progress3)
+        await api.post('/api/progress/add-entry').send(progress4)
+        await api.put('/api/progress/1/completed').send({ user: 1 })
+        await api.put('/api/progress/2/completed').send({ user: 1 })
+
+        const expectedOutcome = {
+            id: 3,
+            level: 3,
+            user: 1,
+            book: null,
+            current_progress: 0,
+            level_status: 'incomplete'
+        }
+
+        const response = await api
+            .get('/api/progress/current-level')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Change book in progress entry', async() => {
+        const progress1 = {
+            level: 1,
+            user: 1,
+        }
+
+        const book1 = {
+            title: 'Test Book1',
+            author: 'Test Author1',
+            coverimage: 'coverimage.jpg',
+            booktype: 'e-book',
+            content: 'test/testPath'
+        }
+
+        await api.post('/api/progress/add-entry').send(progress1)
+        await api.post('/api/books').send(book1)
+
+        const input = {
+            book: 1
+        }
+
+        const expectedOutcome = 'Book added to entry successfully!'
+
+        const response = await api
+            .put('/api/progress/1/add-book')
+            .send(input)
             .expect(200)
             .expect('Content-Type', /application\/json/)
 
