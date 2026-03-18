@@ -302,6 +302,10 @@ The backend has unit and integration tests.
 
 To run tests in the backend use: **npm test**, which runs all tests.
 
+To run only unit tests use: **npm run unit**
+
+To run only integration tests use: **npm run integration**
+
 Unit and integration tests are run in different environments to avoid conflicts.
 
 ---
