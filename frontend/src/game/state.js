@@ -8,6 +8,15 @@ import {
     bookOceania
 } from './data/index.js';
 
+import {
+    fetchProgress,
+    fetchBooks,
+    completeLevel,
+    addBookToLevel,
+    submitQuiz,
+    addReward
+} from '../services/api.js';
+
 const ReadingState = {
     // Current reading progress (used internally by ReadingScene)
     progress: 0,
@@ -102,18 +111,138 @@ const ReadingState = {
     },
 
     /**
-     * Return the mapKey of the first unlocked-but-not-completed continent,
-     * i.e. where the player should be right now.
+     * Return the mapKey of the first unlocked-but-not-completed continent.
      */
     getCurrentContinent() {
         for (const mapKey of this.mapOrder) {
             if (!this.mapUnlock[mapKey]) continue;
             if (!this._continentCompletedFlags?.[mapKey]) return mapKey;
         }
-        // All completed — return the last one
         return this.mapOrder[this.mapOrder.length - 1];
+    },
+
+    // ── Backend sync methods ──
+
+    /**
+     * Load progress and books from backend. Called once before Phaser starts.
+     * On failure: console.warn, keep default client-side values (graceful degradation).
+     */
+    async loadFromBackend() {
+        try {
+            const [progressData, booksData] = await Promise.allSettled([
+                fetchProgress(),
+                fetchBooks()
+            ]);
+
+            // Populate from progress API
+            if (progressData.status === 'fulfilled' && Array.isArray(progressData.value)) {
+                const entries = progressData.value;
+                for (const entry of entries) {
+                    const level = entry.level;
+                    const mapKey = this.mapOrder[level - 1];
+                    if (!mapKey) continue;
+
+                    // Unlock this level
+                    this.mapUnlock[mapKey] = true;
+
+                    // Map completion
+                    if (entry.completed) {
+                        if (!this._continentCompletedFlags) this._continentCompletedFlags = {};
+                        this._continentCompletedFlags[mapKey] = true;
+                        this.booksRead = Math.max(this.booksRead, level);
+                    }
+
+                    // Book assignment
+                    if (entry.book) {
+                        this.mapSelectedBook[mapKey] = String(entry.book);
+                    }
+
+                    // Progress percentage
+                    if (entry.current_progress != null) {
+                        const cfg = this.mapConfig[mapKey];
+                        if (cfg) {
+                            this[cfg.storage] = entry.current_progress;
+                        }
+                        if (entry.book) {
+                            this.bookProgress[String(entry.book)] = entry.current_progress;
+                        }
+                    }
+                }
+            }
+
+            // Populate from books API
+            if (booksData.status === 'fulfilled' && Array.isArray(booksData.value) && booksData.value.length > 0) {
+                this.globalBooks = booksData.value.map(b => ({
+                    title: b.title,
+                    author: b.author,
+                    id: String(b.id),
+                    dbId: b.id
+                }));
+            }
+
+        } catch (err) {
+            console.warn('Failed to load from backend, using client defaults:', err);
+        }
+    },
+
+    /**
+     * Save book selection to backend (optimistic update).
+     */
+    async saveBookSelection(mapKey, bookId) {
+        const level = this.mapOrder.indexOf(mapKey) + 1;
+        if (level < 1) return;
+        this.mapSelectedBook[mapKey] = bookId;
+        try {
+            await addBookToLevel(level, bookId);
+        } catch (err) {
+            console.warn('Failed to save book selection:', err);
+        }
+    },
+
+    /**
+     * Mark level as complete in backend (optimistic update).
+     */
+    async saveLevelComplete(mapKey, userId) {
+        const level = this.mapOrder.indexOf(mapKey) + 1;
+        if (level < 1) return;
+        if (!this._continentCompletedFlags) this._continentCompletedFlags = {};
+        this._continentCompletedFlags[mapKey] = true;
+        // Unlock next level
+        if (level < this.mapOrder.length) {
+            this.mapUnlock[this.mapOrder[level]] = true;
+        }
+        try {
+            await completeLevel(level, userId);
+        } catch (err) {
+            console.warn('Failed to save level completion:', err);
+        }
+    },
+
+    /**
+     * Submit quiz answers to backend.
+     */
+    async submitQuizAnswers(mapKey, questions, answers) {
+        try {
+            await submitQuiz({
+                question1: questions[0], answer1: answers[0],
+                question2: questions[1], answer2: answers[1],
+                question3: questions[2], answer3: answers[2]
+            });
+        } catch (err) {
+            console.warn('Failed to submit quiz:', err);
+        }
+    },
+
+    /**
+     * Add completion reward to backend.
+     */
+    async addCompletionReward(userId, rewardType, reward) {
+        try {
+            await addReward(userId, rewardType, reward);
+        } catch (err) {
+            console.warn('Failed to add reward:', err);
+        }
     }
 };
 
 export default ReadingState;
-

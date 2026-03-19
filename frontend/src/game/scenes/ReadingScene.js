@@ -205,6 +205,10 @@ class ReadingScene extends Phaser.Scene {
             const nextMap = order[idx + 1];
             if (ReadingState.mapUnlock && nextMap) ReadingState.mapUnlock[nextMap] = true;
         }
+
+        // Save level completion to backend (fire-and-forget)
+        const userId = this.game.registry.get('userId');
+        ReadingState.saveLevelComplete(this.sourceMap, userId);
     }
 
     exitScene() {

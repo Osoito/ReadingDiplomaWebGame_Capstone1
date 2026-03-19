@@ -25,9 +25,12 @@ export default function ReactQuiz({ mapKey, onClose }) {
             if (!isReadOnly) {
                 if (!ReadingState.quizAnswers) ReadingState.quizAnswers = {};
                 ReadingState.quizAnswers[mapKey] = answers;
-                
+
                 if (!ReadingState._continentCompletedFlags) ReadingState._continentCompletedFlags = {};
                 ReadingState._continentCompletedFlags[mapKey] = true;
+
+                // Submit quiz answers to backend (fire-and-forget)
+                ReadingState.submitQuizAnswers(mapKey, questions, answers);
             }
             onClose();
         }

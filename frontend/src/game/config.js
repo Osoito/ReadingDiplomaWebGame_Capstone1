@@ -1,46 +1,35 @@
-// Route：game/config.js
+// game/config.js
 
 import Phaser from 'phaser';
 import WorldMapScene from './scenes/WorldMapScene.js';
-import EuropeMapScene from './scenes/EuropeMapScene.js';
-import AsiaMapScene from './scenes/AsiaMapScene.js';
-import AfricaMapScene from './scenes/AfricaMapScene.js';
-import AntarcticaMapScene from './scenes/AntarcticaMapScene.js';
-import ArcticMapScene from './scenes/ArcticMapScene.js';
-import NorthAmericaMapScene from './scenes/NorthAmericaMapScene.js';
-import SouthAmericaMapScene from './scenes/SouthAmericaMapScene.js';
-import OceaniaMapScene from './scenes/OceaniaMapScene.js';
 import ReadingScene from './scenes/ReadingScene.js';
+import continentRegistry from './scenes/continentRegistry.js';
+import createContinentScene from './scenes/createContinentScene.js';
+
+// Generate all 8 continent scenes from registry
+const continentScenes = continentRegistry.map(config => createContinentScene(config));
 
 export default function createGameConfig(parent, width, height) {
   return {
-    type: Phaser.AUTO, 
+    type: Phaser.AUTO,
     parent,
     dom: {
       createContainer: true
     },
     render: {
       antialias: true,
-      roundPixels: true 
+      roundPixels: true
     },
     scale: {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
       width,
       height,
-      // ⭐ Adapted for high-resolution mobile screens, preventing physical pixel-level flickering.
-      resolution: window.devicePixelRatio || 1 
+      resolution: window.devicePixelRatio || 1
     },
     scene: [
       WorldMapScene,
-      EuropeMapScene,
-      AsiaMapScene,
-      AfricaMapScene,
-      AntarcticaMapScene,
-      ArcticMapScene,
-      NorthAmericaMapScene,
-      SouthAmericaMapScene,
-      OceaniaMapScene,
+      ...continentScenes,
       ReadingScene
     ]
   };
