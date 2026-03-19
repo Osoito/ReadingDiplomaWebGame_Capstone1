@@ -1,5 +1,5 @@
 import BaseMapScene from './BaseMapScene.js';
-import { tokenImg } from './continentRegistry.js';
+import { buddyIdleImg, buddyIdleJson } from './continentRegistry.js';
 
 export default function createContinentScene(config) {
     class ContinentScene extends BaseMapScene {
@@ -11,7 +11,9 @@ export default function createContinentScene(config) {
 
         preload() {
             this.load.image(config.assetKey, config.assetPath);
-            this.load.image('token', tokenImg);
+            if (!this.textures.exists('buddyIdle')) {
+                this.load.atlas('buddyIdle', buddyIdleImg, buddyIdleJson);
+            }
         }
     }
 

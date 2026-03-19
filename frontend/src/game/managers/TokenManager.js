@@ -4,14 +4,26 @@ import ReadingState from '../state.js';
 export default class TokenManager {
     constructor() {
         this.token = null;
-        this.baseTokenScale = 0.12;
+        this.baseTokenScale = 0.25;
     }
 
     create(scene, savedIndex) {
-        this.token = scene.add.image(0, 0, 'token');
+        // Create animation from atlas frames (once globally)
+        if (!scene.anims.exists('buddy_idle')) {
+            const frames = scene.anims.generateFrameNames('buddyIdle');
+            scene.anims.create({
+                key: 'buddy_idle',
+                frames: frames,
+                frameRate: 3,
+                repeat: -1
+            });
+        }
+
+        this.token = scene.add.sprite(0, 0, 'buddyIdle');
         this.token.setScale(this.baseTokenScale);
         this.token.setDepth(DEPTHS.TOKEN);
         this.token.lastPointIndex = savedIndex;
+        this.token.play('buddy_idle');
         return this.token;
     }
 

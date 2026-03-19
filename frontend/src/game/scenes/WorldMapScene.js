@@ -1,20 +1,24 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
-import worldmapImg from '../../assets/worldmap.png'; 
-import worldmapSimpleImg from '../../assets/worldmap_simple.png'; 
+import worldmapImg from '../../assets/worldmap.png';
+import worldmapSimpleImg from '../../assets/worldmap_simple.png';
+import pandaWorldImg from '../../assets/buddyAvatar/panda/panda_world.png';
 
 class WorldMapScene extends Phaser.Scene {
     constructor() {
         super('WorldMap');
         this.isMinimapMaximized = false;
-        this.ORIGINAL_MAP_WIDTH = 1280; 
+        this.ORIGINAL_MAP_WIDTH = 1280;
         // Declare in the constructor first
         this.pointGroup = null;
+        this.pandaBuddy = null;
+        this.pandaFloatTween = null;
     }
 
     preload() {
         this.load.image('worldMap', worldmapImg);
         this.load.image('worldMapSimple', worldmapSimpleImg);
+        this.load.image('pandaWorld', pandaWorldImg);
     }
 
     create() {
@@ -50,26 +54,66 @@ class WorldMapScene extends Phaser.Scene {
         // ⭐ Modification: Change to a class attribute to ensure it is always accessible throughout the class's lifetime.
         this.pointGroup = this.add.group();
         
+        // Find the latest unlocked continent (highest index in mapOrder)
+        const getLatestUnlockedMapKey = () => {
+            let latest = null;
+            for (const mapKey of ReadingState.mapOrder) {
+                if (ReadingState.mapUnlock[mapKey]) latest = mapKey;
+            }
+            return latest;
+        };
+
         const renderPoints = () => {
             // ⭐ Added multiple defense checks
             if (!this.pointGroup || !this.pointGroup.scene || !this.pointGroup.active) return;
 
             this.pointGroup.clear(true, true);
+
+            // Destroy old panda buddy
+            if (this.pandaBuddy) { this.pandaBuddy.destroy(); this.pandaBuddy = null; }
+            if (this.pandaFloatTween) { this.pandaFloatTween.remove(); this.pandaFloatTween = null; }
+
+            const latestMapKey = getLatestUnlockedMapKey();
+
             Object.entries(continentPositions).forEach(([key, pos]) => {
                 const finalX = pos.x * currentZoomScale;
                 const finalY = pos.y * currentZoomScale;
                 const unlocked = ReadingState.mapUnlock[pos.mapKey] === true;
-                
-                const btn = this.add.circle(finalX, finalY, 40 * currentZoomScale, unlocked ? 0x00ff00 : 0x555555, 0.4);
-                if (unlocked) btn.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.scene.start(pos.mapKey));
-                
+                const isCurrent = pos.mapKey === latestMapKey;
+
+                // Don't draw a circle dot for the current continent — panda replaces it
+                if (!isCurrent) {
+                    const btn = this.add.circle(finalX, finalY, 40 * currentZoomScale, unlocked ? 0x00ff00 : 0x555555, 0.4);
+                    if (unlocked) btn.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.scene.start(pos.mapKey));
+                    this.pointGroup.add(btn);
+                }
+
                 const txt = this.add.text(finalX, finalY + (55 * currentZoomScale), pos.name, {
                     fontFamily: '"Cinzel", serif', fontSize: `${Math.round(16 * currentZoomScale)}px`,
                     color: unlocked ? '#ffffff' : '#bbbbbb', fontStyle: 'bold', stroke: '#000000', strokeThickness: 4
                 }).setOrigin(0.5);
-                
-                this.pointGroup.add(btn);
+
                 this.pointGroup.add(txt);
+
+                // Place panda buddy on the latest unlocked continent
+                if (isCurrent) {
+                    const pandaScale = currentZoomScale * 0.12;
+                    this.pandaBuddy = this.add.image(finalX, finalY, 'pandaWorld')
+                        .setScale(pandaScale).setDepth(10);
+                    this.pandaBuddy.setInteractive({ useHandCursor: true })
+                        .on('pointerdown', () => this.scene.start(pos.mapKey));
+                    this.pointGroup.add(this.pandaBuddy);
+
+                    // Floating bob animation
+                    this.pandaFloatTween = this.tweens.add({
+                        targets: this.pandaBuddy,
+                        y: finalY - 12 * currentZoomScale,
+                        duration: 1200,
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'Sine.easeInOut'
+                    });
+                }
             });
         };
         renderPoints();

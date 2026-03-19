@@ -6,7 +6,8 @@ import southamericaImg from '../../assets/southamerica.png';
 import africaImg from '../../assets/africa.png';
 import oceaniaImg from '../../assets/oceania.png';
 import antarcticaImg from '../../assets/antarctica.png';
-import tokenImg from '../../assets/redtoken.png';
+import buddyIdleImg from '../../assets/buddyAvatar/panda/panda_idle.png';
+import buddyIdleJson from '../../assets/buddyAvatar/panda/panda_idle.json';
 
 const continentRegistry = [
     {
@@ -115,5 +116,5 @@ const continentRegistry = [
     }
 ];
 
-export { tokenImg };
+export { buddyIdleImg, buddyIdleJson };
 export default continentRegistry;
