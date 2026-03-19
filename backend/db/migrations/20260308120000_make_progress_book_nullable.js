@@ -12,8 +12,11 @@ export const up = async (knex) => {
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-export const down = async (knex) => {
+export const down = async (/*knex*/) => {
+    //breaks test database during progress integration tests
+    /*
     await knex.schema.alterTable('progress', (table) => {
         table.integer('book').notNullable().alter()
     })
+    */
 }

@@ -18,7 +18,13 @@
     "lint": "eslint .",
     "db:create": "node scripts/createDatabase.js",
     "db:make": "npx knex migrate:make --stub migration.stub --",
-    "db:seed": "npx knex seed:make --stub seed.stub --"
+    "db:seed": "npx knex seed:make --stub seed.stub --",
+    "unit": "npm run test:unit",
+    "preunit": "cross-env NODE_ENV=test node scripts/createDatabase.js",
+    "postunit": "cross-env NODE_ENV=test node scripts/removeTestDB.js",
+    "integration": "npm run test:integration",
+    "preintegration": "cross-env NODE_ENV=test node scripts/createDatabase.js",
+    "postintegration": "cross-env NODE_ENV=test node scripts/removeTestDB.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

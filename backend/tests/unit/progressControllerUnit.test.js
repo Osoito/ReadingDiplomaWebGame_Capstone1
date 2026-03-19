@@ -74,7 +74,7 @@ describe('Progress controller related unit tests', () => {
             .expect(201)
             .expect('Content-Type', /application\/json/)
 
-        expect(response.body).toEqual(input)
+        expect(response.body).toEqual(mockoutput)
 
         expect(progressService.addNewProgress).toHaveBeenCalledTimes(1)
         expect(progressService.addNewProgress).toHaveBeenCalledWith(input)

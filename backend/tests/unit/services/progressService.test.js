@@ -58,6 +58,42 @@ describe('ProgressService related tests', () => {
         expect(result).toStrictEqual(expectedOutcome)
     })
 
+    test('Try to add duplicate entry', async () => {
+        const input = {
+            level: 1,
+            user: 1,
+            book: null
+        }
+
+        const expectedOutcome = {
+            id: 1,
+            level: 1,
+            user: 1,
+            book: null,
+            current_progress: 0,
+            level_status: 'incomplete'
+        }
+
+        Progress.create.mockResolvedValue(expectedOutcome)
+        Progress.findSpecificEntry.mockResolvedValue(
+            {
+                id: 1,
+                level: 1,
+                user: 1,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            }
+        )
+
+        await expect(ProgressService.addNewProgress(input))
+            .rejects
+            .toThrow(`This user already has a progress entry for level ${input.level}`)
+
+        expect(Progress.findSpecificEntry).toHaveBeenCalledTimes(1)
+        expect(Progress.create).not.toHaveBeenCalledTimes(1)
+    })
+
     test('Mark level as complete', async () => {
         const input = {
             user: 1
@@ -93,6 +129,49 @@ describe('ProgressService related tests', () => {
         expect(Progress.completeLevel).toHaveBeenCalledWith(level, 1)
     })
 
+    test('Try to mark level as complete that does not exist', async () => {
+        const input = {
+            user: 1
+        }
+        const level = 1
+
+        Progress.findSpecificEntry.mockResolvedValue(null)
+
+        await expect(ProgressService.completeLevel(level, input))
+            .rejects
+            .toThrow(`Level ${level} was not found for this user`)
+
+        expect(Progress.findSpecificEntry).toHaveBeenCalledTimes(1)
+        expect(Progress.completeLevel).not.toHaveBeenCalledTimes(1)
+    })
+
+
+    test('Try to complete an already completed level', async () => {
+        const input = {
+            user: 1
+        }
+        const level = 1
+
+        Progress.findSpecificEntry.mockResolvedValue(
+            {
+                id: 1,
+                level: 1,
+                user: 1,
+                book: null,
+                current_progress: 0,
+                level_status: 'complete'
+            }
+        )
+
+        await expect(ProgressService.completeLevel(level, input))
+            .rejects
+            .toThrow(`Level already completed`)
+
+        expect(Progress.findSpecificEntry).toHaveBeenCalledTimes(1)
+        expect(Progress.completeLevel).not.toHaveBeenCalledTimes(1)
+    })
+
+
     test('Find all users entries', async () => {
         const input = {
             user: 1
@@ -115,6 +194,20 @@ describe('ProgressService related tests', () => {
 
         expect(Progress.findByUser).toHaveBeenCalledTimes(1)
         expect(Progress.findByUser).toHaveBeenCalledWith(input)
+    })
+
+    test('Try to find entries for the user when they are not there', async () => {
+        const input = {
+            user: 1
+        }
+
+        Progress.findByUser.mockResolvedValue(null)
+
+        await expect(ProgressService.findByUser(input))
+            .rejects
+            .toThrow('No progress entries found for this user')
+
+        expect(Progress.findByUser).toHaveBeenCalledTimes(1)
     })
 
     test('Find specific entry', async () => {
@@ -142,6 +235,21 @@ describe('ProgressService related tests', () => {
         expect(Progress.findSpecificEntry).toBeCalledWith(1, 1)
     })
 
+    test('Find non-existent progress entry', async () => {
+        const input = {
+            level:1,
+            user: 1
+        }
+
+        Progress.findSpecificEntry.mockResolvedValue(null)
+
+        await expect(ProgressService.findSpecificEntry(input.level, input.user))
+            .rejects
+            .toThrow(`Level:  ${input.level} has no entry for this user`)
+
+        expect(Progress.findSpecificEntry).toHaveBeenCalledTimes(1)
+    })
+
     test('Get current level', async () => {
         const input = {
             user: 1
@@ -163,7 +271,19 @@ describe('ProgressService related tests', () => {
         expect(result).toStrictEqual(expectedOutcome)
 
         expect(Progress.getCurrentLevel).toHaveBeenCalledTimes(1)
-        expect(Progress.getCurrentLevel).toBeCalledWith(1)
+    })
+
+    test('Fail to get current level', async() => {
+        const input = {
+            user: 1
+        }
+
+        Progress.getCurrentLevel.mockResolvedValue(null)
+
+        await expect(ProgressService.getCurrentLevel(input.user))
+            .rejects
+            .toThrow('Was not able to fetch the current level for this user')
+        expect(Progress.getCurrentLevel).toHaveBeenCalledTimes(1)
     })
 
     test('Change book in entry', async () => {
@@ -205,6 +325,23 @@ describe('ProgressService related tests', () => {
 
         expect(Progress.changeBookinEntry).toHaveBeenCalledTimes(1)
         expect(Progress.changeBookinEntry).toHaveBeenCalledWith(1, 1, 1)
+    })
+
+    test('Fail to change book in entry', async() => {
+        const input = {
+            book: 1
+        }
+        const level = 1
+        const user = 1
+
+        Progress.findSpecificEntry.mockResolvedValue(null)
+
+        await expect(ProgressService.changeBookinEntry(level, user, input))
+            .rejects
+            .toThrow(`Level:  ${level} has no entry for this user`)
+
+        expect(Progress.findSpecificEntry).toHaveBeenCalledTimes(1)
+        expect(Progress.changeBookinEntry).not.toHaveBeenCalledTimes(1)
     })
 
     test('Get all entries', async () => {

@@ -234,6 +234,8 @@ backend/
 │   ├── books.js
 │   ├── progressController.js
 │   ├── users.js
+│   ├── submissions.js
+│   ├── rewards.js
 │   └── README.md
 ├── db/
 │   ├── db.js                           # Creates and exports the knex database connection
@@ -247,7 +249,9 @@ backend/
 ├── models/                             # Models are used to make SQL requests to the database (called by services)
 │   ├── book.js                         
 │   ├── progress.js                     
-│   ├── user.js                         
+│   ├── user.js   
+│   ├── submission.js
+│   ├── reward.js                 
 │   └── README.md
 ├── scripts/                            # Various scripts, used to automate actions (also used in testing)
 │   ├── createDatabase.js               # Creates the postgres database for development and testing
@@ -255,7 +259,9 @@ backend/
 ├── services/                           # Services are used by controllers to clean data, handle errors etc.
 │   ├── bookService.js                  
 │   ├── progressService.js              
-│   ├── userService.js                  
+│   ├── userService.js
+│   ├── submissionService.js
+│   ├── rewardService.js                  
 │   └── README.md
 ├── tests/
 │   ├── integration/                    # Integration tests
@@ -264,13 +270,16 @@ backend/
 │   │   ├── models/                     # Tests for database interaction
 │   │   │   ├── userModel.test.js
 │   │   │   ├── bookModel.test.js
-│   │   │   └── rewardModel.test.js
+│   │   │   ├── rewardModel.test.js
+│   │   │   └── progressModel.test.js
 │   │   ├── services/                   # Unit tests for service functions
 │   │   │   ├── userService.test.js
 │   │   │   ├── bookService.test.js
-│   │   │   └── rewardService.test.js
+│   │   │   ├── rewardService.test.js
+│   │   │   └── progressService.test.js
 │   │   ├── bookControllerUnit.test.js
 │   │   ├── rewardControllerUnit.test.js
+│   │   ├── progressControllerUnit.test.js
 │   │   └── user_api.test.js            # variety of tests for user functions
 │   └── testConfig/                     # Test configuration files
 │        ├── cleanTestDB.js             # Currently in use script to clean the database between tests, may be deleted at some point
@@ -287,6 +296,17 @@ backend/
     ├── middleware.js                   # Contains middleware related to e.g. user authentication, error handling.
     └── passport.js                     # Passport for local- and google authentication
 ```
+
+### Backend Testing Instructions
+The backend has unit and integration tests.
+
+To run tests in the backend use: **npm test**, which runs all tests.
+
+To run only unit tests use: **npm run unit**
+
+To run only integration tests use: **npm run integration**
+
+Unit and integration tests are run in different environments to avoid conflicts.
 
 ---
 ### psql from VSCode terminal (**optional**)
