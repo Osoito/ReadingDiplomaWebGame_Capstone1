@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 
 function BookManager() {
+    const { getCsrfToken } = useAuth()
     const [books, setBooks] = useState([])
     const [title, setTitle] = useState('')
     const [author, setAuthor] = useState('')
@@ -27,9 +29,14 @@ function BookManager() {
         e.preventDefault()
         setError('')
         try {
+            const csrfToken = getCsrfToken()
             const res = await fetch('/api/books', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
                 body: JSON.stringify({ title, author, coverimage, booktype })
             })
             if (!res.ok) {

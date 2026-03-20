@@ -35,6 +35,7 @@
     "express-rate-limit": "^8.2.1",
     "express-session": "^1.19.0",
     "knex": "^3.1.0",
+    "lusca": "^1.7.0",
     "memorystore": "^1.6.7",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
@@ -83,12 +84,13 @@
       "express-rate-limit": "Used to limit log-in attempts from IP addresses",
       "express-session": "For storing session data server-side (https://expressjs.com/en/resources/middleware/session.html)",
       "knex": "SQL query builder for Node.js",
+      "lusca": "Used for creating and comparing CSRF tokens",
       "memorystore": "Used to prevent memory leaks caused by express-session (https://www.npmjs.com/package/memorystore)",
       "passport": "Used for authentication (https://www.npmjs.com/package/passport)",
       "passport-google-oauth20": "Passport plugin for Google OAuth 2.0",
       "passport-local": "Plugins that the passport uses as strategies (https://github.com/jaredhanson/passport-local)",
       "pg": "PostgreSQL client for Node.js",
-      "zod": "Used in error handling (input validation). More documentation (https://zod.dev/)"      
+      "zod": "Used in error handling (input validation). More documentation (https://zod.dev/)"
     },
     "devDependencies": {
       "devDependencies": "packages used only during testing and development",

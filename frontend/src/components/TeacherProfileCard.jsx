@@ -4,7 +4,7 @@ import './TeacherProfileCard.css'
 
 /* ── TeacherProfileCard ────────────────────────────────────── */
 function TeacherProfileCard() {
-    const { user } = useAuth()
+    const { user, getCsrfToken } = useAuth()
     const [editing, setEditing] = useState(false)
     const [name, setName] = useState(user?.name || '')
     const [saving, setSaving] = useState(false)
@@ -29,9 +29,14 @@ function TeacherProfileCard() {
 
         setSaving(true)
         try {
+            const csrfToken = getCsrfToken()
             const res = await fetch(`/api/users/profile/${user.id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
                 body: JSON.stringify(body),
             })
             if (!res.ok) {

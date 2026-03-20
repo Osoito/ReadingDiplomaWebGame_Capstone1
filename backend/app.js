@@ -10,9 +10,12 @@ import progressRouter from './controllers/progressController.js'
 import rewardsRouter from './controllers/rewards.js'
 import submissionsRouter from './controllers/submissions.js'
 import session from 'express-session'
+// Memorystore ∨∨∨ is good for single instance apps (dev/small app), Redis might be better for scaling,
+// because it provides multi-instance rate limit counters. Whomever it may consern: Consider this before scaling.
 import memorystore from 'memorystore'
 import passport from './utils/passport.js'
-
+import lusca from 'lusca'
+import { rateLimit, ipKeyGenerator } from 'express-rate-limit'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -22,17 +25,28 @@ logger.info('Connecting')
 
 // Check environment mode development/production/test
 const environmentMode = process.env.NODE_ENV || 'development'
+const domainUrl = (process.env.PUBLIC_URL || '').replace(/\/$/, '') // Also removes trailing slash
+const IS_HTTPS = domainUrl.startsWith('https://')
+
+if (environmentMode === 'production' && !domainUrl.startsWith('http://') && !domainUrl.startsWith('https://')) {
+    logger.error(`Invalid PUBLIC_URL ${process.env.PUBLIC_URL}. Needs to begin with http:// or https://`)
+    process.exit(1)
+}
+
+const frontendOrigin = environmentMode === 'production'
+    // In production the PUBLIC_URL should be set to the public domain
+    ? domainUrl
+    // Assumes frontend is running on 'http://localhost:5173' in non production environments
+    : 'http://localhost:5173'
 
 // Allows JavaScript from only this specific origin to read responses
 const CORS_OPTIONS = {
-    // In production the PUBLIC_URL is the public domain
-    origin: [environmentMode === 'production' ? process.env.PUBLIC_URL : 'http://localhost:5173'],
-    credentials: true
+    origin: frontendOrigin,
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'X-CSRF-TOKEN']
 }
 
 app.use(cors(CORS_OPTIONS))
-app.use(express.json())
-
 const MemoryStore = memorystore(session)
 
 // Express session middleware
@@ -42,28 +56,123 @@ app.use(session({
         checkPeriod: 43200000 // prune expired entries every 12h, to avoid memory leaks
     }),
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+        //httpOnly: true, // <--- careful with this one!
+        secure: IS_HTTPS,
+        sameSite: 'strict'
+    }
 }))
+
+app.use(express.json())
 
 // Passport middleware
 app.use(passport.initialize())
 app.use(passport.session())
+
+/* ∨∨∨ Set the X-CSRF-TOKEN header in the frontend like this ∨∨∨
+import { useAuth } from '../contexts/AuthContext'
+const { getCsrfToken } = useAuth()
+
+// ∨∨ this fetch('/auth/csrf-token') is required only in the login route, because the logout route clears cookies
+// ∨∨ and no requests are made between logout and login, so the CSRF-token wont be set.
+await fetch('/auth/csrf-token')  // <-- Leave this Line out for other than auth/login requests
+
+const csrfToken = getCsrfToken()
+const res = await fetch('/endpoint', {
+    method: '', // POST/PUT/PATCH/DELETE
+    credentials: 'include',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken
+    },
+    // body...
+})*/
+
+// Every method besides get requires the X-CSRF-TOKEN header!!!
+app.use(lusca({
+    // Cookie ∨∨∨ option here generates a new X-CSRF-TOKEN
+    // and header option and sends it to the client on every request
+    csrf: { cookie: 'X-CSRF-TOKEN', header: 'X-CSRF-TOKEN' },
+    nosniff: true,
+    // ∨∨∨ Restricts embedding the website in an iframe element to only within this application
+    //xframe: 'SAMEORIGIN',
+
+    // ∨∨∨ Determines where the browser is allowed to load content from
+    // Left this out for now, since it might affect the book API fetching
+    // and otherwise silently break some client-side features
+    /*csp: {
+        policy: {
+            'default-src': '\'self\'',
+            'script-src': '\'self\'',
+            'style-src': '\'self\'',
+            'img-src': '\'self\''
+        }
+    }*/
+}))
 
 // prints all requests in the console (not required during production)
 if (environmentMode !== 'production') {
     app.use(middleware.requestLogger)
 }
 
-if (environmentMode === 'production' && process.env.PUBLIC_URL === 'https://lukudiplomi.onrender.com/') {
+if (environmentMode === 'production' && domainUrl === 'https://lukudiplomi.onrender.com/') {
     app.set('trust proxy', ['74.220.51.0/24', '74.220.59.0/24'])
 }
 
-app.use('/auth', authRouter)
-app.use('/api/users', usersRouter)
-app.use('/api/books', booksRouter)
-app.use('/api/progress', progressRouter)
-app.use('/api/rewards', rewardsRouter)
-app.use('/api/submissions', submissionsRouter)
+// ∨∨∨ Rate limiting for all requests to prevent denial of service attacks
+// Helper for creating limiters
+const makeLimiter = ({ windowMs, max, message }) => {
+    const baseLimiterOptions = {
+        windowMs,
+        max,
+        standardHeaders: true,
+        legacyHeaders: false,
+        handler: (req, res) => {
+            const retryAfter = req.rateLimit?.resetTime
+                ? Math.ceil((req.rateLimit.resetTime.getTime() - Date.now()) / 1000)
+                : Math.ceil(windowMs / 1000)
+
+            return res.status(429).json({
+                error: message || `Liian monta pyyntöä. Yritä uudelleen ${retryAfter} sekunnin kuluttua.`
+            })
+        }
+    }
+    if (process.env.NODE_ENV === 'production' && process.env.PUBLIC_URL === 'https://lukudiplomi.onrender.com/') {
+        return rateLimit({
+            ...baseLimiterOptions,
+            keyGenerator: (req) => {
+                const realIP = req.headers['true-client-ip'] || req.headers['true-client-ip'.toLowerCase()]
+                return realIP || ipKeyGenerator(req.ip)
+            },
+        })
+    } else {
+        return rateLimit(baseLimiterOptions)
+    }
+}
+
+// ∨∨∨ Adjust these if needed
+const authLimiter = makeLimiter({
+    windowMs: 60 * 1000, // 1 minute
+    max: 20, // 20 requests per windowMs
+})
+
+const userLimiter = makeLimiter({
+    windowMs: 60 * 1000, // 1 minute
+    max: 100, // 100 requests per windowMs
+})
+
+const apiLimiter = makeLimiter({
+    windowMs: 60 * 1000, // 1 minute
+    max: 200, // 200 requests per windowMs
+})
+
+app.use('/auth', authLimiter, authRouter)
+app.use('/api/users', userLimiter, usersRouter)
+app.use('/api/books', apiLimiter, booksRouter)
+app.use('/api/progress', apiLimiter, progressRouter)
+app.use('/api/rewards', apiLimiter, rewardsRouter)
+app.use('/api/submissions', apiLimiter, submissionsRouter)
 
 if (environmentMode === 'production') {
     // derive __filename and __dirname in ESM
@@ -71,9 +180,6 @@ if (environmentMode === 'production') {
     const __dirname = path.dirname(__filename)
 
     const distPath = path.resolve(__dirname, '../frontend/dist')
-
-    // ∨∨∨ for debugging production build (dist/) path
-    // logger.info(`serving frontend from ${distPath}`)
 
     // Servers the frontend statically from the dist build folder
     app.use(express.static(distPath))

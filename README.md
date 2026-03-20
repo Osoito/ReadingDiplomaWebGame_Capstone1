@@ -216,6 +216,7 @@ frontend/
 | POST   | `/api/rewards/add-reward`            | Add a reward (avatar?) for user                               |
 | GET    | `/api/rewards/:id`                   | Fetches all of user's rewards (requires teacher role)         |
 | GET    | `/api/rewards/`                      | Fetches all of current user's rewards                         |
+---
 
 ### Backend Project Structure
 ```
@@ -293,9 +294,10 @@ backend/
 └── utils/
     ├── config.js                       # Loads .env environmental variables
     ├── logger.js                       # Logs events and errors into the console
-    ├── middleware.js                   # Contains middleware related to e.g. user authentication, error handling.
+    ├── middleware.js                   # Contains middleware related to e.g. authorization, error handling.
     └── passport.js                     # Passport for local- and google authentication
 ```
+---
 
 ### Backend Testing Instructions
 The backend has unit and integration tests.
@@ -365,6 +367,16 @@ Or directly log in through the login page by typing in the student credentials y
 
 ## Troubleshooting
 
+### Development phase
+
+**Error: 'Invalid CSRF token' on request**
+- post, put, patch or delete fetch request is likely missing X-CSRF-TOKEN header. Add the header according to the instructions at [backend/app.js](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1/blob/main/backend/app.js) (At the part that says 'Set the X-CSRF-TOKEN header in the frontend like this').
+
+**Error: 'Liian monta pyyntöä. Yritä uudelleen X sekunnin kuluttua.' on request**
+- This happens due to request rate limiting applied in [backend/app.js](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1/blob/main/backend/app.js). Adjust the requests / time window (max/windowMs) accordingly if this error happens during regular application use.
+
+### Running the application
+
 **Login page redirects straight to `/teacher/dashboard` or `/game`**
 - Your browser still holds a session cookie from a previous login. The app correctly treats you as logged in and redirects you.
 - **Option A (easiest):** Click the logout button in the Teacher Dashboard or Student game view to clear the session properly.
@@ -392,15 +404,3 @@ Or directly log in through the login page by typing in the student credentials y
 - On Windows: open services, find postgresql, ensure it says running.
 - Ensure you have a .env file in the backend root, which contains the values mentioned above ([Installation](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#installation)).
 - PostgreSQL might not always be running on port:5432 (e.g. if it's already in use). Check which port PostgreSQL is running on. With psql ([psql from VSCode terminal](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1?tab=readme-ov-file#psql-from-VSCode-terminal-optional)) run:  `psql -h localhost -U postgres`, then run: `SHOW port;` Then update the shown port number to your .env file DB_PORT.
-
-[ Not sure if this is needed anymore
-fetch('/auth/update-profile/9', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: 'Bartholomew', avatar: 'path/avatar1.jpg', grade: 1 })
-}) ]: #
-
-[ To log a student out, until logout button is implemented
-fetch('/auth/logout', {
-    method: 'POST',
-}) ]: #

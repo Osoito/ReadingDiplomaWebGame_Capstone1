@@ -17,7 +17,7 @@ const LEVELS = [
 ]
 
 function StudentDashboard() {
-    const { user, logout, checkAuth } = useAuth()
+    const { user, logout, checkAuth, getCsrfToken } = useAuth()
     const navigate = useNavigate()
     const [progress, setProgress] = useState([])
     const [rewards, setRewards] = useState([])
@@ -52,9 +52,14 @@ function StudentDashboard() {
         setBuddySaving(true)
         setBuddyError('')
         try {
+            const csrfToken = getCsrfToken()
             const res = await fetch(`/api/users/profile/${user.id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
                 body: JSON.stringify({ avatar: selectedBuddy }),
             })
             if (!res.ok) {

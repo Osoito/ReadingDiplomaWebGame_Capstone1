@@ -1,6 +1,6 @@
+import config from './utils/config.js'
 import app from './app.js'
 import logger from './utils/logger.js'
-import config from './utils/config.js'
 
 app.listen(config.PORT, () => {
     if (process.env.NODE_ENV === 'production') {

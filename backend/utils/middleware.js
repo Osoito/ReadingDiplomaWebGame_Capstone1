@@ -82,6 +82,9 @@ const errorHandler = (error, request, response, _next) => {
         return response.status(error.status).json({
             error: error.userDetails
         })
+    } else if (error.message.includes('CSRF')) {
+        // For errors about CSRF tokens, caused by the lusca library
+        return response.status(403).json({ error: 'Invalid CSRF token' })
     } else if (!error.status || error.status === 500) {
         // For unhandled errors
         // Doesn't reveal specific internal server errors to client (e.g. Cannot read properties of undefined (reading 'role'))

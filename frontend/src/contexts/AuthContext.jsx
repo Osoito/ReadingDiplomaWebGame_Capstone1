@@ -6,6 +6,11 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
 
+    const getCsrfToken = () => {
+        const match = document.cookie.match(new RegExp('(^| )' + 'X-CSRF-TOKEN' + '=([^;]+)'))
+        return match ? decodeURIComponent(match[2]) : null
+    }
+
     const checkAuth = async () => {
         try {
             const res = await fetch('/auth/me')
@@ -27,12 +32,20 @@ export function AuthProvider({ children }) {
     }, [])
 
     const logout = async () => {
-        await fetch('/auth/logout', { method: 'POST' })
+        const csrfToken = getCsrfToken()
+        await fetch('/auth/logout', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
         setUser(null)
     }
 
     return (
-        <AuthContext.Provider value={{ user, loading, logout, checkAuth }}>
+        <AuthContext.Provider value={{ user, loading, logout, checkAuth, getCsrfToken }}>
             {children}
         </AuthContext.Provider>
     )

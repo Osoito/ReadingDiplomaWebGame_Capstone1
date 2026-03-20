@@ -6,7 +6,7 @@ import homeBG from '../assets/HomeBG1.jpg'
 
 function StudentLoginPage() {
     const navigate = useNavigate()
-    const { checkAuth } = useAuth()
+    const { checkAuth, getCsrfToken } = useAuth()
     const [teacherName, setTeacherName] = useState('')
     const [studentName, setStudentName] = useState('')
     const [password, setPassword] = useState('')
@@ -19,9 +19,17 @@ function StudentLoginPage() {
         setSubmitting(true)
 
         try {
+            // ∨∨ this fetch('/auth/csrf-token') is required only in the login route, because the logout route clears cookies
+            // ∨∨ and no requests are made between logout and login, so the CSRF-token wont be set.
+            await fetch('/auth/csrf-token')
+            const csrfToken = getCsrfToken()
             const res = await fetch('/auth/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
                 body: JSON.stringify({
                     identifier: studentName,
                     password,

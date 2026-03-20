@@ -6,9 +6,44 @@ import middleware from '../utils/middleware.js'
 
 const authRouter = express.Router()
 
-const loginTimeout = 2 * 60 * 1000 // 2 minutes
-const baseLimiterOptions = {
-    windowMs: loginTimeout,
+// Helper for creating limiters for the /login and /me routes that differ from the general limiters defined in app.js
+const makeLimiter = ({ windowMs, max, handler }) => {
+    const baseLimiterOptions = {
+        windowMs,
+        max,
+        standardHeaders: true,
+        legacyHeaders: false,
+        handler
+    }
+    if (process.env.NODE_ENV === 'production' && process.env.PUBLIC_URL === 'https://lukudiplomi.onrender.com/') {
+        return rateLimit({
+            ...baseLimiterOptions,
+            keyGenerator: (req) => {
+                const realIP = req.headers['true-client-ip'] || req.headers['true-client-ip'.toLowerCase()]
+                return realIP || ipKeyGenerator(req.ip)
+            },
+        })
+    } else {
+        return rateLimit(baseLimiterOptions)
+    }
+}
+
+const meLimiter = makeLimiter({
+    windowMs: 60 * 1000, // 1 minute
+    max: 40, // 40 requests per minute
+    handler: (req, res) => {
+        const retryAfter = req.rateLimit?.resetTime
+            ? Math.ceil((req.rateLimit.resetTime.getTime() - Date.now()) / 1000)
+            : Math.ceil(60 * 1000 / 1000)
+
+        return res.status(429).json({
+            error: `Liian monta pyyntöä. Yritä uudelleen ${retryAfter} sekunnin kuluttua.`
+        })
+    }
+})
+
+const loginLimiter = makeLimiter({
+    windowMs: 2 * 60 * 1000, // 2 minutes,
     max: 5,
     handler: (req, res) => {
         // Gives the remaining time for retrying login in response.error
@@ -20,19 +55,10 @@ const baseLimiterOptions = {
 
         return res.status(429).json({ error: `Liian monta kirjautumisyritystä. Yritä uudelleen ${Math.ceil(secondsLeft / 60)} minuutin kuluttua.` })
     }
-}
-const loginLimiter = process.env.NODE_ENV === 'production' && process.env.PUBLIC_URL === 'https://lukudiplomi.onrender.com/'
-    ? rateLimit({
-        ...baseLimiterOptions,
-        keyGenerator: (req) => {
-            const realIP = req.headers['true-client-ip'] || req.headers['true-client-ip'.toLowerCase()]
-            return realIP || ipKeyGenerator(req.ip)
-        },
-    })
-    : rateLimit(baseLimiterOptions)
+})
 
 // Returns the current user session for the frontend auth check
-authRouter.get('/me', (request, response) => {
+authRouter.get('/me', meLimiter, (request, response) => {
     if (request.isAuthenticated()) {
         return response.json({
             id: request.user.id,
@@ -46,18 +72,25 @@ authRouter.get('/me', (request, response) => {
     return response.status(401).json({ error: 'Not authenticated' })
 })
 
+// Sets the X-CSRF-TOKEN cookie for the client
+// Currently required before basic login, since logout clears cookies and no requests are made between logout and login
+authRouter.get('/csrf-token', async (req, res) => {
+    if (typeof req.csrfToken === 'function') {
+        const token = req.csrfToken()
+        return res.json({ csrf: token })
+    }
+    res.status(204).end()
+})
+
 // Basic authentication without google
 authRouter.post('/login', loginLimiter, middleware.requireAuthentication(false), async (request, response, next) => {
-    passport.authenticate('local', (error, user, info) => {
-        if (error) return next(error)
-
-        if (!user) {
-            return response.status(401).json({ error: info?.message || 'Väärä nimi tai salasana' })
-        }
+    passport.authenticate('local', (err, user, info) => {
+        if (err) return next(err)
+        if (!user) return response.status(401).json({ error: info?.message || 'Väärä nimi tai salasana' })
 
         // Creates the session
-        request.logIn(user, (error) => {
-            if (error) return next(error)
+        request.logIn(user, (err) => {
+            if (err) return next(err)
 
             return response.status(200).json({
                 id: user.id,
@@ -71,11 +104,14 @@ authRouter.post('/login', loginLimiter, middleware.requireAuthentication(false),
 
 // vvv Changed this to post, since no data is being fetched here, it can be changed back if this is too bothersome
 authRouter.post('/logout', middleware.requireAuthentication(true), (request, response, next) => {
-    response.clearCookie('connect.sid')
-    request.logout((error) => {
-        if (error) return next(error)
-        request.session.destroy()
-        return response.status(204).end()
+    request.logout((err) => {
+        if (err) return next(err)
+        request.session.destroy((err) => {
+            if (err) return next(err)
+            response.clearCookie('connect.sid')
+            response.clearCookie('X-CSRF-TOKEN')
+            return response.status(204).end()
+        })
     })
 })
 

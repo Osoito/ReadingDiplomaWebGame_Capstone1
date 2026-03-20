@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+
 function StudentManager() {
+    const { getCsrfToken } = useAuth()
     const [students, setStudents] = useState([])
     const [name, setName] = useState('')
     const [password, setPassword] = useState('')
@@ -36,11 +39,16 @@ function StudentManager() {
         e.preventDefault()
         setError('')
         try {
+            const csrfToken = getCsrfToken()
             const body = { name, password }
             if (email.trim()) body.email = email.trim()
             const res = await fetch('/api/users/students', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
                 body: JSON.stringify(body)
             })
             if (!res.ok) {
@@ -60,9 +68,14 @@ function StudentManager() {
     const handleEditSave = async (id) => {
         if (!editName.trim()) return
         try {
+            const csrfToken = getCsrfToken()
             const res = await fetch(`/api/users/profile/${id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
                 body: JSON.stringify({ name: editName.trim() }),
             })
             if (res.ok) {
@@ -84,9 +97,14 @@ function StudentManager() {
         }
         setResetPwdError('')
         try {
+            const csrfToken = getCsrfToken()
             const res = await fetch(`/api/users/students/${id}/password`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
                 body: JSON.stringify({ password: resetPwd }),
             })
             if (res.ok) {
@@ -104,9 +122,14 @@ function StudentManager() {
     const handleEmailSave = async (id) => {
         setEditEmailError('')
         try {
+            const csrfToken = getCsrfToken()
             const res = await fetch(`/api/users/profile/${id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
                 body: JSON.stringify({ email: editEmail.trim() }),
             })
             if (res.ok) {
@@ -124,7 +147,15 @@ function StudentManager() {
     const handleDelete = async (id, studentName) => {
         if (!window.confirm(`Haluatko varmasti poistaa oppilaan "${studentName}"?`)) return
         try {
-            const res = await fetch(`/api/users/students/${id}`, { method: 'DELETE' })
+            const csrfToken = getCsrfToken()
+            const res = await fetch(`/api/users/students/${id}`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
             if (res.ok) {
                 fetchStudents()
             } else {
