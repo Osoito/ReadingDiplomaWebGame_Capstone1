@@ -71,8 +71,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 /* ∨∨∨ Set the X-CSRF-TOKEN header in the frontend like this ∨∨∨
-import { useAuth } from '../contexts/AuthContext'
-const { getCsrfToken } = useAuth()
+import { getCsrfToken } from '../services/api'
 
 // ∨∨ this fetch('/auth/csrf-token') is required only in the login route, because the logout route clears cookies
 // ∨∨ and no requests are made between logout and login, so the CSRF-token wont be set.
