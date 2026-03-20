@@ -26,7 +26,6 @@ logger.info('Connecting')
 // Check environment mode development/production/test
 const environmentMode = process.env.NODE_ENV || 'development'
 const domainUrl = (process.env.PUBLIC_URL || '').replace(/\/$/, '') // Also removes trailing slash
-const IS_HTTPS = domainUrl.startsWith('https://')
 
 if (environmentMode === 'production' && !domainUrl.startsWith('http://') && !domainUrl.startsWith('https://')) {
     logger.error(`Invalid PUBLIC_URL ${process.env.PUBLIC_URL}. Needs to begin with http:// or https://`)
@@ -58,8 +57,6 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        //httpOnly: true, // <--- careful with this one!
-        secure: IS_HTTPS,
         sameSite: 'strict'
     }
 }))
@@ -94,20 +91,6 @@ app.use(lusca({
     // and header option and sends it to the client on every request
     csrf: { cookie: 'X-CSRF-TOKEN', header: 'X-CSRF-TOKEN' },
     nosniff: true,
-    // ∨∨∨ Restricts embedding the website in an iframe element to only within this application
-    //xframe: 'SAMEORIGIN',
-
-    // ∨∨∨ Determines where the browser is allowed to load content from
-    // Left this out for now, since it might affect the book API fetching
-    // and otherwise silently break some client-side features
-    /*csp: {
-        policy: {
-            'default-src': '\'self\'',
-            'script-src': '\'self\'',
-            'style-src': '\'self\'',
-            'img-src': '\'self\''
-        }
-    }*/
 }))
 
 // prints all requests in the console (not required during production)
