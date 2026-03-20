@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import './TeacherProfileCard.css'
+import { getCsrfToken } from '../services/api'
 
 /* ── TeacherProfileCard ────────────────────────────────────── */
 function TeacherProfileCard() {
-    const { user, getCsrfToken } = useAuth()
+    const { user } = useAuth()
     const [editing, setEditing] = useState(false)
     const [name, setName] = useState(user?.name || '')
     const [saving, setSaving] = useState(false)

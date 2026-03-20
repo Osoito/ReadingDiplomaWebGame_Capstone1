@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { BUDDIES, BuddySprite, BuddyIcon } from '../components/BuddyAvatar'
 import homeBG from '../assets/HomeBG1.jpg'
 import './StudentDashboard.css'
+import { getCsrfToken } from '../services/api'
 
 const LEVELS = [
     { level: 1, name: 'Arktis' },
@@ -17,7 +18,7 @@ const LEVELS = [
 ]
 
 function StudentDashboard() {
-    const { user, logout, checkAuth, getCsrfToken } = useAuth()
+    const { user, logout, checkAuth } = useAuth()
     const navigate = useNavigate()
     const [progress, setProgress] = useState([])
     const [rewards, setRewards] = useState([])

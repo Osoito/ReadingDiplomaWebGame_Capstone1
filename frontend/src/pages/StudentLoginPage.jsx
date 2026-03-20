@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './StudentLoginPage.css'
 import homeBG from '../assets/HomeBG1.jpg'
+import { getCsrfToken } from '../services/api'
 
 function StudentLoginPage() {
     const navigate = useNavigate()
-    const { checkAuth, getCsrfToken } = useAuth()
+    const { checkAuth } = useAuth()
     const [teacherName, setTeacherName] = useState('')
     const [studentName, setStudentName] = useState('')
     const [password, setPassword] = useState('')

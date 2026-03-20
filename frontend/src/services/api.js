@@ -5,10 +5,20 @@ class ApiError extends Error {
     }
 }
 
+export const getCsrfToken = () => {
+    const match = document.cookie.match(new RegExp('(^| )' + 'X-CSRF-TOKEN' + '=([^;]+)'))
+    return match ? decodeURIComponent(match[2]) : null
+}
+
 async function request(path, options = {}) {
+    const csrfToken = getCsrfToken()
+    console.log('csrfToken', csrfToken)
     const res = await fetch(path, {
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
         ...options,
     });
     if (!res.ok) {

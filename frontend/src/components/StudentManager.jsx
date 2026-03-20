@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { getCsrfToken } from '../services/api'
 
 function StudentManager() {
-    const { getCsrfToken } = useAuth()
     const [students, setStudents] = useState([])
     const [name, setName] = useState('')
     const [password, setPassword] = useState('')

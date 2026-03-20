@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { getCsrfToken } from '../services/api'
 
 function BookManager() {
-    const { getCsrfToken } = useAuth()
     const [books, setBooks] = useState([])
     const [title, setTitle] = useState('')
     const [author, setAuthor] = useState('')
