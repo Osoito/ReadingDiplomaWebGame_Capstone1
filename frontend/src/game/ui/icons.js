@@ -15,6 +15,7 @@ export const ICON_KEYS = {
     PARTY:       'icon-party',
     LIGHTBULB:   'icon-lightbulb',
     BOOK:        'icon-book',
+    DOOR_EXIT:   'icon-door-exit',
 };
 
 const SVGS = {
@@ -35,6 +36,8 @@ const SVGS = {
     [ICON_KEYS.LIGHTBULB]: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 36 36"><path fill="#ffd983" d="M29 11.06c0 6.439-5 7.439-5 13.44c0 3.098-3.123 3.359-5.5 3.359c-2.053 0-6.586-.779-6.586-3.361C11.914 18.5 7 17.5 7 11.06C7 5.029 12.285.14 18.083.14C23.883.14 29 5.029 29 11.06"/><path fill="#ccd6dd" d="M22.167 32.5c0 .828-2.234 2.5-4.167 2.5s-4.167-1.672-4.167-2.5S16.066 32 18 32s4.167-.328 4.167.5"/><path fill="#ffcc4d" d="M22.707 10.293a1 1 0 0 0-1.414 0L18 13.586l-3.293-3.293a.999.999 0 1 0-1.414 1.414L17 15.414V26a1 1 0 1 0 2 0V15.414l3.707-3.707a1 1 0 0 0 0-1.414"/><path fill="#99aab5" d="M24 31a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-6h12z"/><path fill="#ccd6dd" d="M11.999 32a1 1 0 0 1-.163-1.986l12-2a.994.994 0 0 1 1.15.822a1 1 0 0 1-.822 1.15l-12 2a1 1 0 0 1-.165.014m0-4a1 1 0 0 1-.163-1.986l12-2a.995.995 0 0 1 1.15.822a1 1 0 0 1-.822 1.15l-12 2a1 1 0 0 1-.165.014"/></svg>`,
 
     [ICON_KEYS.BOOK]: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 36 36"><path fill="#269" d="M32 7H4a4 4 0 0 0-4 4v15a4 4 0 0 0 4 4h11.416c.52.596 1.477 1 2.584 1s2.065-.404 2.584-1H32a4 4 0 0 0 4-4V11a4 4 0 0 0-4-4"/><path fill="#292f33" d="M20 27a2 2 0 0 1-4 0V9a2 2 0 0 1 4 0z"/><path fill="#99aab5" d="M18 26a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path fill="#e1e8ed" d="M18 26c-.999-1.998-3.657-2-4-2c-2 0-5 2-8 2c-1 0-2-.896-2-2V8c0-1.104 1-2 2-2c3.255 0 6-2 8-2c3 0 4 1.896 4 3z"/><path fill="#99aab5" d="M34 26a2 2 0 0 1-2 2H20a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path fill="#ccd6dd" d="M18 26c.999-1.998 3.657-2 4-2c2 0 5 2 8 2c1 0 2-.896 2-2V8c0-1.104-1-2-2-2c-3.256 0-6-2-8-2c-3 0-4 1.896-4 3z"/></svg>`,
+
+    [ICON_KEYS.DOOR_EXIT]: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 36 36"><rect x="4" y="3" width="18" height="30" rx="2" fill="#8899a6"/><rect x="6" y="5" width="14" height="26" rx="1" fill="#e1e8ed"/><rect x="6" y="5" width="8" height="26" rx="1" fill="#ccd6dd"/><circle cx="17" cy="18" r="1.5" fill="#ffac33"/><path d="M24 13l6 5-6 5" fill="none" stroke="#dd2e44" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="18" x2="30" y2="18" fill="none" stroke="#dd2e44" stroke-width="2.5" stroke-linecap="round"/></svg>`,
 };
 
 // Inline SVG strings for use in HTML DOM elements

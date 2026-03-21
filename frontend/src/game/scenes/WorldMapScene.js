@@ -91,12 +91,23 @@ class WorldMapScene extends Phaser.Scene {
                     this.pointGroup.add(btn);
                 }
 
-                const txt = this.add.text(finalX, finalY + (55 * currentZoomScale), pos.name, {
-                    fontFamily: '"Cinzel", serif', fontSize: `${Math.round(16 * currentZoomScale)}px`,
-                    color: unlocked ? '#ffffff' : '#bbbbbb', fontStyle: 'bold', stroke: '#000000', strokeThickness: 4
+                const labelFontSize = Math.round(16 * currentZoomScale);
+                const txt = this.add.text(0, 0, pos.name, {
+                    fontFamily: '"Cinzel", serif', fontSize: `${labelFontSize}px`,
+                    color: unlocked ? '#ffffff' : '#bbbbbb', fontStyle: 'bold',
                 }).setOrigin(0.5);
 
-                this.pointGroup.add(txt);
+                // Background behind label
+                const pillPadH = 4 * currentZoomScale;
+                const pillPadV = 2 * currentZoomScale;
+                const pillW = txt.width + pillPadH * 2;
+                const pillH = txt.height + pillPadV * 2;
+                const pillBg = this.add.graphics();
+                pillBg.fillStyle(0x000000, unlocked ? 0.55 : 0.4).fillRect(-pillW / 2, -pillH / 2, pillW, pillH);
+
+                const labelContainer = this.add.container(finalX, finalY + (55 * currentZoomScale), [pillBg, txt])
+                    .setDepth(5);
+                this.pointGroup.add(labelContainer);
 
                 // Place panda buddy on the latest unlocked continent
                 if (isCurrent) {
@@ -106,6 +117,20 @@ class WorldMapScene extends Phaser.Scene {
                     this.pandaBuddy.setInteractive({ useHandCursor: true })
                         .on('pointerdown', () => this.scene.start(pos.mapKey));
                     this.pointGroup.add(this.pandaBuddy);
+
+                    // Tooltip above panda
+                    const ttFontSize = Math.round(13 * currentZoomScale);
+                    const ttLabel = this.add.text(0, 0, 'Klikkaa tutkiaksesi!', {
+                        fontFamily: FONTS.BODY, fontSize: `${ttFontSize}px`, color: '#ffffff', fontStyle: 'bold'
+                    }).setOrigin(0.5);
+                    const ttPadH = 8 * currentZoomScale, ttPadV = 4 * currentZoomScale;
+                    const ttW = ttLabel.width + ttPadH * 2, ttH = ttLabel.height + ttPadV * 2;
+                    const ttBg = this.add.graphics();
+                    ttBg.fillStyle(COLORS.NAVY, 0.8).fillRoundedRect(-ttW / 2, -ttH / 2, ttW, ttH, 6 * currentZoomScale);
+                    ttBg.lineStyle(1, COLORS.GOLD, 0.6).strokeRoundedRect(-ttW / 2, -ttH / 2, ttW, ttH, 6 * currentZoomScale);
+                    const pandaTooltip = this.add.container(finalX, finalY - 65 * currentZoomScale, [ttBg, ttLabel]).setDepth(11).setAlpha(0);
+                    this.pointGroup.add(pandaTooltip);
+                    this.tweens.add({ targets: pandaTooltip, alpha: 1, duration: 600, delay: 400 });
 
                     // Floating bob animation
                     this.pandaFloatTween = this.tweens.add({
@@ -153,11 +178,11 @@ class WorldMapScene extends Phaser.Scene {
             return { container, label };
         };
 
-        const kirjat = makeBadge(margin, margin, `KIRJAT: ${ReadingState.booksRead}/8`, ICON_KEYS.BOOK, COLORS.NAVY, 0);
+        const kirjat = makeBadge(margin, margin, `Luetut kirjat: ${ReadingState.booksRead}/8`, ICON_KEYS.BOOK, COLORS.NAVY, 0);
         this.bookCountText = kirjat.container;
         this.bookCountLabel = kirjat.label;
 
-        const poistu = makeBadge(initW - margin, margin, 'POISTU', ICON_KEYS.CROSS, COLORS.BACK_FILL, 1);
+        const poistu = makeBadge(initW - margin, margin, 'POISTU', ICON_KEYS.DOOR_EXIT, COLORS.BACK_FILL, 1);
         this.backBtn = poistu.container;
         this.backBtn.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.backBtn._badgeWidth, badgePadV * 2 + badgeIconSize), Phaser.Geom.Rectangle.Contains);
         this.backBtn.on('pointerdown', () => { this.backBtn.setScale(0.9); });
@@ -227,26 +252,29 @@ class WorldMapScene extends Phaser.Scene {
         // Keep legacy reference for ignore list
         this.toggleBtn = this.toggleBtnContainer;
 
-        const tipIconSize = 20;
-        const tipPadH = 10;
-        const tipPadV = 8;
-        const tipLabel = this.add.text(0, 0, 'Klikkaa maanosaa tutkiaksesi!', {
-            fontFamily: FONTS.BODY, fontSize: '14px', color: '#ffffff', fontStyle: 'bold'
-        });
-        const tipW = tipPadH + tipIconSize + 6 + tipLabel.width + tipPadH;
-        const tipH = tipPadV + Math.max(tipLabel.height, tipIconSize) + tipPadV;
-        const tipBg = this.add.graphics();
-        tipBg.fillStyle(COLORS.NAVY, 0.85).fillRoundedRect(0, 0, tipW, tipH, 8);
-        tipBg.lineStyle(1, COLORS.GOLD, 0.6).strokeRoundedRect(0, 0, tipW, tipH, 8);
-        const tipIcon = this.add.image(tipPadH + tipIconSize / 2, tipH / 2, ICON_KEYS.HAND_POINT)
-            .setDisplaySize(tipIconSize, tipIconSize);
-        tipLabel.setPosition(tipPadH + tipIconSize + 6, tipH / 2).setOrigin(0, 0.5);
+        // Minimap tip banner (disabled for now)
+        // const tipIconSize = 20;
+        // const tipPadH = 10;
+        // const tipPadV = 8;
+        // const tipLabel = this.add.text(0, 0, 'Klikkaa maanosaa tutkiaksesi!', {
+        //     fontFamily: FONTS.BODY, fontSize: '14px', color: '#ffffff', fontStyle: 'bold'
+        // });
+        // const tipW = tipPadH + tipIconSize + 6 + tipLabel.width + tipPadH;
+        // const tipH = tipPadV + Math.max(tipLabel.height, tipIconSize) + tipPadV;
+        // const tipBg = this.add.graphics();
+        // tipBg.fillStyle(COLORS.NAVY, 0.85).fillRoundedRect(0, 0, tipW, tipH, 8);
+        // tipBg.lineStyle(1, COLORS.GOLD, 0.6).strokeRoundedRect(0, 0, tipW, tipH, 8);
+        // const tipIcon = this.add.image(tipPadH + tipIconSize / 2, tipH / 2, ICON_KEYS.HAND_POINT)
+        //     .setDisplaySize(tipIconSize, tipIconSize);
+        // tipLabel.setPosition(tipPadH + tipIconSize + 6, tipH / 2).setOrigin(0, 0.5);
+        // this.tipContainer = this.add.container(
+        //     initial.x - tipW - 10, initial.y - tipH - 8,
+        //     [tipBg, tipIcon, tipLabel]
+        // ).setScrollFactor(0).setDepth(5000);
+        // this.tipText = this.tipContainer;
+        this.tipText = null;
 
-        this.tipContainer = this.add.container(initial.x - tipW - 10, initial.y + initial.h / 2 - tipH / 2, [tipBg, tipIcon, tipLabel])
-            .setScrollFactor(0).setDepth(5000);
-        this.tipText = this.tipContainer;
-
-        this.minimapCamera.ignore([this.bookCountText, this.backBtn, this.miniFrame, this.interactiveRegion, this.toggleBtn, this.viewRectGraphics, this.tipText]);
+        this.minimapCamera.ignore([this.bookCountText, this.backBtn, this.miniFrame, this.interactiveRegion, this.toggleBtn, this.viewRectGraphics]);
 
         const syncUI = () => {
             if (!this.scene.isActive() || !this.minimapCamera || !this.minimapCamera.scene || !bg || !bg.active) return;
@@ -255,14 +283,22 @@ class WorldMapScene extends Phaser.Scene {
             this.minimapCamera.setZoom(ratio);
             this.minimapCamera.centerOn(bg.displayWidth / 2, bg.displayHeight / 2);
             
-            this.miniFrame.clear().lineStyle(4, 0x1A237E, 1).strokeRect(this.minimapCamera.x, this.minimapCamera.y, this.minimapCamera.width, this.minimapCamera.height);
+            this.miniFrame.clear();
+            // Shadow
+            this.miniFrame.fillStyle(0x000000, 0.3).fillRoundedRect(this.minimapCamera.x + 3, this.minimapCamera.y + 3, this.minimapCamera.width, this.minimapCamera.height, 6);
+            // Border
+            this.miniFrame.lineStyle(3, COLORS.GOLD, 0.9).strokeRoundedRect(this.minimapCamera.x, this.minimapCamera.y, this.minimapCamera.width, this.minimapCamera.height, 6);
+            this.miniFrame.lineStyle(1, 0x1A237E, 1).strokeRoundedRect(this.minimapCamera.x - 1, this.minimapCamera.y - 1, this.minimapCamera.width + 2, this.minimapCamera.height + 2, 7);
             this.interactiveRegion.setPosition(this.minimapCamera.x, this.minimapCamera.y).setDisplaySize(this.minimapCamera.width, this.minimapCamera.height);
             this.toggleBtn.setPosition(this.minimapCamera.x, this.minimapCamera.y - this.toggleBtn.height - 8);
             
             if (this.tipText && this.tipText.active) {
                 const tipW = this.tipText.width || 200;
                 const tipH = this.tipText.height || 30;
-                this.tipText.setPosition(this.minimapCamera.x - tipW - 10, this.minimapCamera.y + this.minimapCamera.height / 2 - tipH / 2);
+                this.tipText.setPosition(
+                    this.minimapCamera.x - tipW - 10,
+                    this.minimapCamera.y - tipH - 8
+                );
                 this.tipText.setVisible(!this.isMinimapMaximized);
             }
 
@@ -342,21 +378,21 @@ class WorldMapScene extends Phaser.Scene {
             }
         });
 
-        // Drag hint
+        // Drag hint — centered, larger, semi-transparent
         const dragLabel = this.add.text(0, 0, 'Vedä karttaa tutkiaksesi', {
-            fontFamily: FONTS.BODY, fontSize: '14px', color: '#ffffff', fontStyle: 'bold'
+            fontFamily: FONTS.BODY, fontSize: '22px', color: '#ffffff', fontStyle: 'bold'
         });
-        const dragIconSize = 20;
-        const dPadH = 10, dPadV = 8;
-        const dragW = dPadH + dragIconSize + 6 + dragLabel.width + dPadH;
+        const dragIconSize = 28;
+        const dPadH = 16, dPadV = 12;
+        const dragW = dPadH + dragIconSize + 8 + dragLabel.width + dPadH;
         const dragH = dPadV + Math.max(dragLabel.height, dragIconSize) + dPadV;
         const dragBg = this.add.graphics();
-        dragBg.fillStyle(COLORS.NAVY, 0.85).fillRoundedRect(0, 0, dragW, dragH, 8);
-        dragBg.lineStyle(1, COLORS.GOLD, 0.6).strokeRoundedRect(0, 0, dragW, dragH, 8);
+        dragBg.fillStyle(COLORS.NAVY, 0.45).fillRoundedRect(0, 0, dragW, dragH, 12);
+        dragBg.lineStyle(1, COLORS.GOLD, 0.4).strokeRoundedRect(0, 0, dragW, dragH, 12);
         const dragIcon = this.add.image(dPadH + dragIconSize / 2, dragH / 2, ICON_KEYS.HAND_POINT)
             .setDisplaySize(dragIconSize, dragIconSize);
-        dragLabel.setPosition(dPadH + dragIconSize + 6, dragH / 2).setOrigin(0, 0.5);
-        this.dragHint = this.add.container(initW / 2 - dragW / 2, this.scale.height - 80, [dragBg, dragIcon, dragLabel])
+        dragLabel.setPosition(dPadH + dragIconSize + 8, dragH / 2).setOrigin(0, 0.5);
+        this.dragHint = this.add.container(initW / 2 - dragW / 2, this.scale.height / 2 - dragH / 2, [dragBg, dragIcon, dragLabel])
             .setScrollFactor(0).setDepth(2000);
         this.minimapCamera.ignore(this.dragHint);
 

@@ -1,4 +1,4 @@
-import { DEPTHS } from '../ui/constants.js';
+import { DEPTHS, COLORS } from '../ui/constants.js';
 import { ICON_KEYS } from '../ui/icons.js';
 
 export default class WaypointRenderer {
@@ -13,16 +13,17 @@ export default class WaypointRenderer {
 
         pointPositions.forEach((pos, index) => {
             const isVideo = !!videoCheckpoints[index];
-            const dotColor = isVideo ? 0xffcc00 : (themeColor || 0xffffff);
-            const dotRadius = 18 * baseScale;
+            const dotColor = isVideo ? COLORS.VIDEO_BLUE : (themeColor || 0xffffff);
+            const dotRadius = (isVideo ? 26 : 18) * baseScale;
             const dot = this.scene.add.circle(pos.x, pos.y, dotRadius, dotColor, 1)
-                .setStrokeStyle(2, 0xffffff)
+                .setStrokeStyle(isVideo ? 3 : 2, 0xffffff)
                 .setDepth(DEPTHS.WAYPOINT);
             this.dotObjects.push(dot);
 
             if (isVideo) {
-                const iconSize = 20 * baseScale;
-                const img = this.scene.add.image(pos.x, pos.y, ICON_KEYS.PLAY)
+                const iconSize = 32 * baseScale;
+                // Offset play icon slightly right (+8%) to visually center the triangle
+                const img = this.scene.add.image(pos.x + dotRadius * 0.08, pos.y, ICON_KEYS.PLAY)
                     .setDisplaySize(iconSize, iconSize).setDepth(DEPTHS.WAYPOINT_TEXT);
                 this.dotTexts.push(img);
 

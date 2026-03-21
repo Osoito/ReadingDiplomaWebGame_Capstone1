@@ -13,6 +13,7 @@ export const COLORS = {
     BOOK_PAGE:     0xfff5e1,
     BACK_FILL:     0x6d7a7a,
     BACK_STROKE:   0x2c3e50,
+    VIDEO_BLUE:    0x3b88c3,
 };
 
 export const CSS_COLORS = {

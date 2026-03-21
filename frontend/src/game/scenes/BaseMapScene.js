@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
-import { COLORS, DEPTHS, uiScale as calcUiScale } from '../ui/constants.js';
+import { COLORS, DEPTHS, FONTS, uiScale as calcUiScale } from '../ui/constants.js';
 import { preloadIcons, ICON_KEYS } from '../ui/icons.js';
 import WaypointRenderer from '../managers/WaypointRenderer.js';
 import PathRenderer from '../managers/PathRenderer.js';
@@ -95,12 +95,32 @@ class BaseMapScene extends Phaser.Scene {
         const savedIndex = ReadingState.tokenPositions?.[this.scene.key] ?? 0;
         this.tokenManager.create(this, savedIndex);
 
+        // Drag hint — centered, larger, semi-transparent
+        const dLabel = this.add.text(0, 0, 'Vedä karttaa tutkiaksesi', {
+            fontFamily: FONTS.BODY, fontSize: '22px', color: '#ffffff', fontStyle: 'bold'
+        });
+        const dIconSize = 28, dPadH = 16, dPadV = 12;
+        const dW = dPadH + dIconSize + 8 + dLabel.width + dPadH;
+        const dH = dPadV + Math.max(dLabel.height, dIconSize) + dPadV;
+        const dBg = this.add.graphics();
+        dBg.fillStyle(COLORS.NAVY, 0.45).fillRoundedRect(0, 0, dW, dH, 12);
+        dBg.lineStyle(1, COLORS.GOLD, 0.4).strokeRoundedRect(0, 0, dW, dH, 12);
+        const dIcon = this.add.image(dPadH + dIconSize / 2, dH / 2, ICON_KEYS.HAND_POINT)
+            .setDisplaySize(dIconSize, dIconSize);
+        dLabel.setPosition(dPadH + dIconSize + 8, dH / 2).setOrigin(0, 0.5);
+        this.dragHint = this.add.container(width / 2 - dW / 2, height / 2 - dH / 2, [dBg, dIcon, dLabel])
+            .setScrollFactor(0).setDepth(DEPTHS.UI);
+
         // Camera drag
         this.input.on('pointermove', (pointer) => {
             if (pointer.isDown) {
                 this.cameras.main.stopFollow();
                 this.cameras.main.scrollX -= (pointer.x - pointer.prevPosition.x) / this.cameras.main.zoom;
                 this.cameras.main.scrollY -= (pointer.y - pointer.prevPosition.y) / this.cameras.main.zoom;
+                if (this.dragHint && this.dragHint.active) {
+                    this.tweens.add({ targets: this.dragHint, alpha: 0, duration: 500, onComplete: () => { if (this.dragHint) this.dragHint.destroy(); } });
+                    this.dragHint = null;
+                }
             }
         });
 
@@ -167,7 +187,7 @@ class BaseMapScene extends Phaser.Scene {
 
         // UI text sizes
         this.titleText.setFontSize(32 * uiS);
-        const radius = Math.round(35 * uiS);
+        const radius = Math.round(45 * uiS);
 
         // Hide text buttons, use icon containers
         this.bookBtn.setVisible(false);
@@ -177,20 +197,17 @@ class BaseMapScene extends Phaser.Scene {
         if (this.bookIconContainer) this.bookIconContainer.destroy();
         this.bookIconContainer = this.add.container(0, 0);
 
+        const bookGlow = this.add.circle(0, 0, radius + 5, 0xffffff, 0.12);
+        this.bookIconContainer.add(bookGlow);
         const bookBg = this.add.graphics();
         bookBg.lineStyle(5, COLORS.BROWN_DARK, 1).fillStyle(COLORS.GOLD_HOVER, 1);
         bookBg.fillCircle(0, 0, radius).strokeCircle(0, 0, radius);
         bookBg.lineStyle(2, 0xffffff, 0.5).strokeCircle(0, 0, radius * 0.88);
         this.bookIconContainer.add(bookBg);
 
-        const bookG = this.add.graphics();
-        bookG.name = 'bookGraphic';
-        const bw = radius * 1.0, bh = radius * 0.75;
-        bookG.fillStyle(COLORS.BROWN_LIGHT, 1).fillRoundedRect(-bw / 2 + 2, -bh / 2 + 2, bw, bh, 4);
-        bookG.fillStyle(COLORS.BOOK_RED, 1).fillRoundedRect(-bw / 2, -bh / 2, bw, bh, 4);
-        bookG.fillStyle(COLORS.BOOK_PAGE, 1).fillRect(-bw * 0.42, -bh * 0.4, bw * 0.84, bh * 0.8);
-        bookG.lineStyle(1.5, COLORS.BROWN_DARK, 0.3).lineBetween(0, -bh * 0.4, 0, bh * 0.4);
-        this.bookIconContainer.add(bookG);
+        const bookImg = this.add.image(0, 0, ICON_KEYS.BOOK)
+            .setDisplaySize(radius * 1.3, radius * 1.3).setOrigin(0.5);
+        this.bookIconContainer.add(bookImg);
 
         const loadingIcon = this.add.image(0, 0, ICON_KEYS.HOURGLASS)
             .setDisplaySize(radius * 1.2, radius * 1.2).setOrigin(0.5).setVisible(false);
@@ -200,8 +217,10 @@ class BaseMapScene extends Phaser.Scene {
         // Back icon button
         if (this.backIconContainer) this.backIconContainer.destroy();
         this.backIconContainer = this.add.container(0, 0);
+        const backGlow = this.add.circle(0, 0, radius + 5, 0xffffff, 0.12);
+        this.backIconContainer.add(backGlow);
         const backBg = this.add.graphics();
-        backBg.lineStyle(5, COLORS.BACK_STROKE, 1).fillStyle(COLORS.BACK_FILL, 1);
+        backBg.lineStyle(5, COLORS.BACK_STROKE, 1).fillStyle(COLORS.NAVY, 1);
         backBg.fillCircle(0, 0, radius).strokeCircle(0, 0, radius);
         backBg.lineStyle(2, 0xffffff, 0.4).strokeCircle(0, 0, radius * 0.88);
         this.backIconContainer.add(backBg);
@@ -224,6 +243,7 @@ class BaseMapScene extends Phaser.Scene {
         // Button interaction
         const setupBtn = (container, callback) => {
             container.setInteractive(new Phaser.Geom.Circle(0, 0, radius), Phaser.Geom.Circle.Contains);
+            container.on('pointerover', () => container.setScale(1.1));
             container.on('pointerdown', () => container.setScale(0.85));
             container.on('pointerup', () => { container.setScale(1); callback(); });
             container.on('pointerout', () => container.setScale(1));
