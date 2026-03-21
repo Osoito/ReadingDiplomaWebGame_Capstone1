@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
 import { preloadIcons, ICON_KEYS } from '../ui/icons.js';
+import { COLORS, FONTS, uiScale as calcUiScale } from '../ui/constants.js';
 import worldmapImg from '../../assets/worldmap.png';
 import worldmapSimpleImg from '../../assets/worldmap_simple.png';
 import pandaWorldImg from '../../assets/buddyAvatar/panda/panda_world.png';
@@ -120,23 +121,55 @@ class WorldMapScene extends Phaser.Scene {
         };
         renderPoints();
 
-        // --- 3. UI Elements ---
-        const uiStyle = { 
-            fontFamily: '"Cinzel", serif', fontSize: '24px', fill: '#1A237E', 
-            stroke: '#ffffff', strokeThickness: 5, fontStyle: 'bold',
-            shadow: { offsetX: 2, offsetY: 2, color: '#1A237E80', blur: 3, fill: true }
+        // --- 3. UI Elements (badge style) ---
+        const { width: initW } = this.scale;
+        const uiS = calcUiScale(initW);
+        const badgeFontSize = Math.round(20 * uiS);
+        const badgePadH = Math.round(14 * uiS);
+        const badgePadV = Math.round(10 * uiS);
+        const badgeIconSize = Math.round(22 * uiS);
+        const badgeRadius = 12;
+        const margin = 15;
+
+        // Helper: create a badge container with bg + icon + text
+        const makeBadge = (x, y, text, iconKey, bgColor, originX) => {
+            const label = this.add.text(0, 0, text, {
+                fontFamily: FONTS.BODY, fontSize: badgeFontSize + 'px', color: '#ffffff', fontStyle: 'bold'
+            });
+            const totalW = badgePadH + badgeIconSize + 8 + label.width + badgePadH;
+            const totalH = badgePadV + Math.max(label.height, badgeIconSize) + badgePadV;
+
+            const bg = this.add.graphics();
+            bg.fillStyle(bgColor, 0.85).fillRoundedRect(0, 0, totalW, totalH, badgeRadius);
+            bg.lineStyle(2, COLORS.GOLD, 1).strokeRoundedRect(0, 0, totalW, totalH, badgeRadius);
+
+            const icon = this.add.image(badgePadH + badgeIconSize / 2, totalH / 2, iconKey)
+                .setDisplaySize(badgeIconSize, badgeIconSize);
+            label.setPosition(badgePadH + badgeIconSize + 8, totalH / 2).setOrigin(0, 0.5);
+
+            const container = this.add.container(x, y, [bg, icon, label]).setScrollFactor(0).setDepth(2000);
+            if (originX === 1) container.setX(x - totalW);
+            container._badgeWidth = totalW;
+            return { container, label };
         };
 
-        this.bookCountText = this.add.text(20, 20, `KIRJAT: ${ReadingState.booksRead}/8`, uiStyle).setScrollFactor(0).setDepth(2000);
-        this.backBtn = this.add.text(this.scale.width - 20, 20, 'POISTU', uiStyle).setOrigin(1, 0).setScrollFactor(0).setDepth(2000).setInteractive({ useHandCursor: true });
-        this.backBtn.on('pointerdown', () => { if (this.game.handleBackNavigation) this.game.handleBackNavigation(); });
+        const kirjat = makeBadge(margin, margin, `KIRJAT: ${ReadingState.booksRead}/8`, ICON_KEYS.BOOK, COLORS.NAVY, 0);
+        this.bookCountText = kirjat.container;
+        this.bookCountLabel = kirjat.label;
+
+        const poistu = makeBadge(initW - margin, margin, 'POISTU', ICON_KEYS.CROSS, COLORS.BACK_FILL, 1);
+        this.backBtn = poistu.container;
+        this.backBtn.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.backBtn._badgeWidth, badgePadV * 2 + badgeIconSize), Phaser.Geom.Rectangle.Contains);
+        this.backBtn.on('pointerdown', () => { this.backBtn.setScale(0.9); });
+        this.backBtn.on('pointerup', () => { this.backBtn.setScale(1); if (this.game.handleBackNavigation) this.game.handleBackNavigation(); });
+        this.backBtn.on('pointerout', () => { this.backBtn.setScale(1); });
 
         // --- 4. Minimap Configuration ---
         const getLayoutConfig = (isMaximized) => {
             const { width: currentW, height: currentH } = this.scale;
             if (!bg || !bg.active) return { x:0, y:0, w:100, h:100 };
             const mapRatio = bg.width / bg.height;
-            const safePaddingBottom = currentH * 0.15; 
+            const safePaddingBottom = 25;
             const sidePadding = 20;
             let targetW, targetH, targetX, targetY;
             if (isMaximized) {
@@ -169,31 +202,49 @@ class WorldMapScene extends Phaser.Scene {
         this.miniFrame = this.add.graphics().setScrollFactor(0).setDepth(1001);
         this.interactiveRegion = this.add.rectangle(initial.x, initial.y, initial.w, initial.h, 0, 0).setOrigin(0).setScrollFactor(0).setDepth(1002).setInteractive({ useHandCursor: true });
         
-        this.toggleBtnContainer = this.add.container(initial.x, initial.y - 35).setScrollFactor(0).setDepth(1003);
-        this.toggleIcon = this.add.image(0, 10, ICON_KEYS.SEARCH).setDisplaySize(22, 22);
-        this.toggleLabel = this.add.text(16, 0, 'SUURENNA', {
-            fontFamily: '"Cinzel", serif', fontSize: '18px', fill: '#1A237E', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 4, padding: 5
+        const toggleIconSize = 28;
+        const togglePadH = 10;
+        const togglePadV = 6;
+        this.toggleLabel = this.add.text(0, 0, 'SUURENNA', {
+            fontFamily: FONTS.BODY, fontSize: '17px', color: '#ffffff', fontStyle: 'bold'
         });
-        this.toggleBtnContainer.add([this.toggleIcon, this.toggleLabel]);
-        this.toggleBtnContainer.setSize(this.toggleLabel.width + 26, this.toggleLabel.height + 10);
-        this.toggleBtnContainer.setInteractive({ useHandCursor: true });
+        const toggleW = togglePadH + toggleIconSize + 6 + this.toggleLabel.width + togglePadH;
+        const toggleH = togglePadV + Math.max(this.toggleLabel.height, toggleIconSize) + togglePadV;
+
+        this.toggleBg = this.add.graphics();
+        this.toggleBg.fillStyle(COLORS.NAVY, 0.75).fillRoundedRect(0, 0, toggleW, toggleH, 10);
+        this.toggleBg.lineStyle(1, COLORS.GOLD, 0.8).strokeRoundedRect(0, 0, toggleW, toggleH, 10);
+
+        this.toggleIcon = this.add.image(togglePadH + toggleIconSize / 2, toggleH / 2, ICON_KEYS.SEARCH)
+            .setDisplaySize(toggleIconSize, toggleIconSize);
+        this.toggleLabel.setPosition(togglePadH + toggleIconSize + 6, toggleH / 2).setOrigin(0, 0.5);
+
+        this.toggleBtnContainer = this.add.container(initial.x, initial.y - toggleH - 8, [this.toggleBg, this.toggleIcon, this.toggleLabel])
+            .setScrollFactor(0).setDepth(1003);
+        this.toggleBtnContainer.setSize(toggleW, toggleH);
+        this.toggleBtnContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, toggleW, toggleH), Phaser.Geom.Rectangle.Contains);
+        this.toggleBtnContainer.input.cursor = 'pointer';
         // Keep legacy reference for ignore list
         this.toggleBtn = this.toggleBtnContainer;
 
-        this.tipContainer = this.add.container(initial.x - 20, initial.y + initial.h / 2).setScrollFactor(0).setDepth(5000);
-        const tipLabel = this.add.text(0, 0, 'NAPAUTA ', {
-            fontFamily: '"Cinzel", serif', fontSize: '32px', color: '#ff0000', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 5,
-            shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 4, fill: true }
-        }).setOrigin(1, 0.5);
-        const tipIcon = this.add.image(8, 0, ICON_KEYS.HAND_POINT).setDisplaySize(36, 36);
-        this.tipContainer.add([tipLabel, tipIcon]);
-        this.tipText = this.tipContainer;
-
-        this.tweens.add({
-            targets: this.tipText,
-            alpha: { from: 1, to: 0.5 },
-            x: initial.x - 40, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'      
+        const tipIconSize = 20;
+        const tipPadH = 10;
+        const tipPadV = 8;
+        const tipLabel = this.add.text(0, 0, 'Klikkaa maanosaa tutkiaksesi!', {
+            fontFamily: FONTS.BODY, fontSize: '14px', color: '#ffffff', fontStyle: 'bold'
         });
+        const tipW = tipPadH + tipIconSize + 6 + tipLabel.width + tipPadH;
+        const tipH = tipPadV + Math.max(tipLabel.height, tipIconSize) + tipPadV;
+        const tipBg = this.add.graphics();
+        tipBg.fillStyle(COLORS.NAVY, 0.85).fillRoundedRect(0, 0, tipW, tipH, 8);
+        tipBg.lineStyle(1, COLORS.GOLD, 0.6).strokeRoundedRect(0, 0, tipW, tipH, 8);
+        const tipIcon = this.add.image(tipPadH + tipIconSize / 2, tipH / 2, ICON_KEYS.HAND_POINT)
+            .setDisplaySize(tipIconSize, tipIconSize);
+        tipLabel.setPosition(tipPadH + tipIconSize + 6, tipH / 2).setOrigin(0, 0.5);
+
+        this.tipContainer = this.add.container(initial.x - tipW - 10, initial.y + initial.h / 2 - tipH / 2, [tipBg, tipIcon, tipLabel])
+            .setScrollFactor(0).setDepth(5000);
+        this.tipText = this.tipContainer;
 
         this.minimapCamera.ignore([this.bookCountText, this.backBtn, this.miniFrame, this.interactiveRegion, this.toggleBtn, this.viewRectGraphics, this.tipText]);
 
@@ -206,10 +257,12 @@ class WorldMapScene extends Phaser.Scene {
             
             this.miniFrame.clear().lineStyle(4, 0x1A237E, 1).strokeRect(this.minimapCamera.x, this.minimapCamera.y, this.minimapCamera.width, this.minimapCamera.height);
             this.interactiveRegion.setPosition(this.minimapCamera.x, this.minimapCamera.y).setDisplaySize(this.minimapCamera.width, this.minimapCamera.height);
-            this.toggleBtn.setPosition(this.minimapCamera.x, this.minimapCamera.y - 35);
+            this.toggleBtn.setPosition(this.minimapCamera.x, this.minimapCamera.y - this.toggleBtn.height - 8);
             
             if (this.tipText && this.tipText.active) {
-                this.tipText.setPosition(this.minimapCamera.x - 10, this.minimapCamera.y + this.minimapCamera.height / 2);
+                const tipW = this.tipText.width || 200;
+                const tipH = this.tipText.height || 30;
+                this.tipText.setPosition(this.minimapCamera.x - tipW - 10, this.minimapCamera.y + this.minimapCamera.height / 2 - tipH / 2);
                 this.tipText.setVisible(!this.isMinimapMaximized);
             }
 
@@ -236,7 +289,7 @@ class WorldMapScene extends Phaser.Scene {
             const layout = getLayoutConfig(this.isMinimapMaximized);
             
             if (this.backBtn && this.backBtn.active) {
-                this.backBtn.setX(this.scale.width - 20);
+                this.backBtn.setX(this.scale.width - margin - this.backBtn._badgeWidth);
             }
 
             if (this.minimapCamera && this.minimapCamera.scene) {
@@ -289,10 +342,32 @@ class WorldMapScene extends Phaser.Scene {
             }
         });
 
+        // Drag hint
+        const dragLabel = this.add.text(0, 0, 'Vedä karttaa tutkiaksesi', {
+            fontFamily: FONTS.BODY, fontSize: '14px', color: '#ffffff', fontStyle: 'bold'
+        });
+        const dragIconSize = 20;
+        const dPadH = 10, dPadV = 8;
+        const dragW = dPadH + dragIconSize + 6 + dragLabel.width + dPadH;
+        const dragH = dPadV + Math.max(dragLabel.height, dragIconSize) + dPadV;
+        const dragBg = this.add.graphics();
+        dragBg.fillStyle(COLORS.NAVY, 0.85).fillRoundedRect(0, 0, dragW, dragH, 8);
+        dragBg.lineStyle(1, COLORS.GOLD, 0.6).strokeRoundedRect(0, 0, dragW, dragH, 8);
+        const dragIcon = this.add.image(dPadH + dragIconSize / 2, dragH / 2, ICON_KEYS.HAND_POINT)
+            .setDisplaySize(dragIconSize, dragIconSize);
+        dragLabel.setPosition(dPadH + dragIconSize + 6, dragH / 2).setOrigin(0, 0.5);
+        this.dragHint = this.add.container(initW / 2 - dragW / 2, this.scale.height - 80, [dragBg, dragIcon, dragLabel])
+            .setScrollFactor(0).setDepth(2000);
+        this.minimapCamera.ignore(this.dragHint);
+
         this.input.on('pointermove', (pointer) => {
             if (pointer.isDown && !this.isMinimapMaximized) {
                 this.cameras.main.scrollX -= (pointer.x - pointer.prevPosition.x);
                 this.cameras.main.scrollY -= (pointer.y - pointer.prevPosition.y);
+                if (this.dragHint && this.dragHint.active) {
+                    this.tweens.add({ targets: this.dragHint, alpha: 0, duration: 500, onComplete: () => { if (this.dragHint) this.dragHint.destroy(); } });
+                    this.dragHint = null;
+                }
             }
         });
 
