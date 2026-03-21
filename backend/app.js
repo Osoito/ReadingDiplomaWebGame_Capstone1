@@ -56,9 +56,7 @@ app.use(session({
     }),
     resave: false,
     saveUninitialized: false,
-    cookie: {
-        sameSite: 'strict'
-    }
+    cookie: { sameSite: 'lax' } // Google OAuth doesn't work in production if this is 'strict'
 }))
 
 app.use(express.json())
@@ -89,7 +87,10 @@ const res = await fetch('/endpoint', {
 app.use(lusca({
     // Cookie ∨∨∨ option here generates a new X-CSRF-TOKEN
     // and header option and sends it to the client on every request
-    csrf: { cookie: 'X-CSRF-TOKEN', header: 'X-CSRF-TOKEN' },
+    csrf: {
+        cookie: 'X-CSRF-TOKEN',
+        header: 'X-CSRF-TOKEN',
+    },
     nosniff: true,
 }))
 
@@ -149,6 +150,11 @@ const apiLimiter = makeLimiter({
     max: 200, // 200 requests per windowMs
 })
 
+const indexLimiter = makeLimiter({
+    windowMs: 60 * 1000, // 1 minute
+    max: 250, // 250 requests per minute
+})
+
 app.use('/auth', authLimiter, authRouter)
 app.use('/api/users', userLimiter, usersRouter)
 app.use('/api/books', apiLimiter, booksRouter)
@@ -168,7 +174,7 @@ if (environmentMode === 'production') {
 
     // SPA fallback for client-side routing
     // Without this, non API routes e.g., /student/dashboard will produce a 404 error
-    app.get('*', (req, res) => {
+    app.get('*', indexLimiter, (req, res) => {
         res.sendFile(path.resolve(distPath, 'index.html'))
     })
 }
