@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
 import { DEPTHS, CSS_COLORS, FONTS } from '../ui/constants.js';
+import { ICON_KEYS } from '../ui/icons.js';
 
 export default class BookListModal {
     constructor(scene) {
@@ -101,15 +102,22 @@ export default class BookListModal {
             }).setOrigin(0, 0.5).setScrollFactor(0);
 
             const pct = ReadingState.bookProgress[book.id] || 0;
+            const statusItems = [];
+            if (book.isCompleted) {
+                const checkSize = 18 * uiScale;
+                const checkIcon = this.scene.add.image(width * 0.85 - (50 * uiScale), y + itemH / 2, ICON_KEYS.CHECK)
+                    .setDisplaySize(checkSize, checkSize).setScrollFactor(0);
+                statusItems.push(checkIcon);
+            }
             const pctText = this.scene.add.text(width * 0.85, y + itemH / 2,
-                book.isCompleted ? "✔ DONE" : `${pct}%`, {
+                book.isCompleted ? "DONE" : `${pct}%`, {
                     fontSize: `${20 * uiScale}px`,
                     color: book.isCompleted ? '#00ff88' : CSS_COLORS.GOLD,
                     fontFamily: FONTS.BODY,
                     fontWeight: 'bold'
                 }).setOrigin(1, 0.5).setScrollFactor(0);
 
-            scrollContainer.add([btnBg, text, pctText]);
+            scrollContainer.add([btnBg, text, ...statusItems, pctText]);
         });
 
         // Scroll logic

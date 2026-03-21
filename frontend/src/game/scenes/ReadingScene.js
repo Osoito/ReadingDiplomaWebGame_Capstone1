@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
+import { INLINE_SVGS } from '../ui/icons.js';
 
 class ReadingScene extends Phaser.Scene {
     constructor() {
@@ -125,7 +126,7 @@ class ReadingScene extends Phaser.Scene {
                     justify-content: center;
                     z-index: 10001;
                     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-                ">✕</button>
+                ">${INLINE_SVGS.CROSS}</button>
 
                 <div id="phaser-book-content" style="
                     width: ${paperWidth - horizontalPadding}px;

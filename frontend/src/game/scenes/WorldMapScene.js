@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
+import { preloadIcons, ICON_KEYS } from '../ui/icons.js';
 import worldmapImg from '../../assets/worldmap.png';
 import worldmapSimpleImg from '../../assets/worldmap_simple.png';
 import pandaWorldImg from '../../assets/buddyAvatar/panda/panda_world.png';
@@ -19,6 +20,7 @@ class WorldMapScene extends Phaser.Scene {
         this.load.image('worldMap', worldmapImg);
         this.load.image('worldMapSimple', worldmapSimpleImg);
         this.load.image('pandaWorld', pandaWorldImg);
+        preloadIcons(this);
     }
 
     create() {
@@ -167,14 +169,25 @@ class WorldMapScene extends Phaser.Scene {
         this.miniFrame = this.add.graphics().setScrollFactor(0).setDepth(1001);
         this.interactiveRegion = this.add.rectangle(initial.x, initial.y, initial.w, initial.h, 0, 0).setOrigin(0).setScrollFactor(0).setDepth(1002).setInteractive({ useHandCursor: true });
         
-        this.toggleBtn = this.add.text(initial.x, initial.y - 35, '🔍 SUURENNA', { 
-            fontFamily: '"Cinzel", serif', fontSize: '18px', fill: '#1A237E', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 4, padding: 5 
-        }).setScrollFactor(0).setDepth(1003).setInteractive({ useHandCursor: true });
+        this.toggleBtnContainer = this.add.container(initial.x, initial.y - 35).setScrollFactor(0).setDepth(1003);
+        this.toggleIcon = this.add.image(0, 10, ICON_KEYS.SEARCH).setDisplaySize(22, 22);
+        this.toggleLabel = this.add.text(16, 0, 'SUURENNA', {
+            fontFamily: '"Cinzel", serif', fontSize: '18px', fill: '#1A237E', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 4, padding: 5
+        });
+        this.toggleBtnContainer.add([this.toggleIcon, this.toggleLabel]);
+        this.toggleBtnContainer.setSize(this.toggleLabel.width + 26, this.toggleLabel.height + 10);
+        this.toggleBtnContainer.setInteractive({ useHandCursor: true });
+        // Keep legacy reference for ignore list
+        this.toggleBtn = this.toggleBtnContainer;
 
-        this.tipText = this.add.text(initial.x - 20, initial.y + initial.h / 2, 'NAPAUTA 👉', {
+        this.tipContainer = this.add.container(initial.x - 20, initial.y + initial.h / 2).setScrollFactor(0).setDepth(5000);
+        const tipLabel = this.add.text(0, 0, 'NAPAUTA ', {
             fontFamily: '"Cinzel", serif', fontSize: '32px', color: '#ff0000', fontStyle: 'bold', stroke: '#ffffff', strokeThickness: 5,
             shadow: { offsetX: 2, offsetY: 2, color: '#000', blur: 4, fill: true }
-        }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(5000);
+        }).setOrigin(1, 0.5);
+        const tipIcon = this.add.image(8, 0, ICON_KEYS.HAND_POINT).setDisplaySize(36, 36);
+        this.tipContainer.add([tipLabel, tipIcon]);
+        this.tipText = this.tipContainer;
 
         this.tweens.add({
             targets: this.tipText,
@@ -249,7 +262,8 @@ class WorldMapScene extends Phaser.Scene {
                 x: target.x, y: target.y, width: target.w, height: target.h,
                 duration: 450, ease: 'Cubic.easeInOut'
             });
-            this.toggleBtn.setText(this.isMinimapMaximized ? '✖ SULJE' : '🔍 SUURENNA');
+            this.toggleIcon.setTexture(this.isMinimapMaximized ? ICON_KEYS.CROSS : ICON_KEYS.SEARCH);
+            this.toggleLabel.setText(this.isMinimapMaximized ? 'SULJE' : 'SUURENNA');
         };
 
         this.toggleBtn.on('pointerdown', (p) => { p.event.stopPropagation(); toggleMinimap(); });

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
 import { DEPTHS, CSS_COLORS, FONTS } from '../ui/constants.js';
+import { ICON_KEYS } from '../ui/icons.js';
 
 export default class CelebrationModal {
     constructor(scene) {
@@ -40,7 +41,11 @@ export default class CelebrationModal {
             .setStrokeStyle(4, 0xc4973a).setScrollFactor(0);
         this.celebrationUI.add(box);
 
-        const titleMsg = this.scene.add.text(width / 2, height / 2 - (60 * s), '🎉 ONNISTUKSIA!', {
+        const partyIcon = this.scene.add.image(width / 2 - (110 * s), height / 2 - (60 * s), ICON_KEYS.PARTY)
+            .setDisplaySize(36 * s, 36 * s).setScrollFactor(0);
+        this.celebrationUI.add(partyIcon);
+
+        const titleMsg = this.scene.add.text(width / 2 + (10 * s), height / 2 - (60 * s), 'ONNISTUKSIA!', {
             fontSize: `${32 * s}px`,
             color: CSS_COLORS.GOLD,
             fontFamily: FONTS.HEADING,

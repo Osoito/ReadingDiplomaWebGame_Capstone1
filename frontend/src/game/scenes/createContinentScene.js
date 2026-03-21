@@ -1,5 +1,6 @@
 import BaseMapScene from './BaseMapScene.js';
 import { buddyIdleImg, buddyIdleJson } from './continentRegistry.js';
+import { preloadIcons } from '../ui/icons.js';
 
 export default function createContinentScene(config) {
     class ContinentScene extends BaseMapScene {
@@ -14,6 +15,7 @@ export default function createContinentScene(config) {
             if (!this.textures.exists('buddyIdle')) {
                 this.load.atlas('buddyIdle', buddyIdleImg, buddyIdleJson);
             }
+            preloadIcons(this);
         }
     }
 

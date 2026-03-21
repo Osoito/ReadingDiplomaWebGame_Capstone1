@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import ReadingState from '../state.js';
 import { COLORS, DEPTHS, uiScale as calcUiScale } from '../ui/constants.js';
+import { preloadIcons, ICON_KEYS } from '../ui/icons.js';
 import WaypointRenderer from '../managers/WaypointRenderer.js';
 import PathRenderer from '../managers/PathRenderer.js';
 import TokenManager from '../managers/TokenManager.js';
@@ -191,9 +192,8 @@ class BaseMapScene extends Phaser.Scene {
         bookG.lineStyle(1.5, COLORS.BROWN_DARK, 0.3).lineBetween(0, -bh * 0.4, 0, bh * 0.4);
         this.bookIconContainer.add(bookG);
 
-        const loadingIcon = this.add.text(0, 0, '⏳', {
-            fontSize: (radius * 1.2) + 'px'
-        }).setOrigin(0.5).setVisible(false);
+        const loadingIcon = this.add.image(0, 0, ICON_KEYS.HOURGLASS)
+            .setDisplaySize(radius * 1.2, radius * 1.2).setOrigin(0.5).setVisible(false);
         loadingIcon.name = 'loadingIcon';
         this.bookIconContainer.add(loadingIcon);
 

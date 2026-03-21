@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { DEPTHS, CSS_COLORS, FONTS } from '../ui/constants.js';
+import { ICON_KEYS, INLINE_SVGS } from '../ui/icons.js';
 
 export default class VideoPopupModal {
     constructor(scene) {
@@ -32,8 +33,12 @@ export default class VideoPopupModal {
             .setStrokeStyle(4, 0xc4973a).setScrollFactor(0).setDepth(depthBase + 1);
         this.popupUI.add(box);
 
-        // Title
-        const title = this.scene.add.text(width / 2, height / 2 - (100 * s), '💡 LUKUVINKKI AVATTU', {
+        // Title with lightbulb icon
+        const bulbIcon = this.scene.add.image(width / 2 - (130 * s), height / 2 - (100 * s), ICON_KEYS.LIGHTBULB)
+            .setDisplaySize(30 * s, 30 * s).setScrollFactor(0).setDepth(depthBase + 2);
+        this.popupUI.add(bulbIcon);
+
+        const title = this.scene.add.text(width / 2 + (10 * s), height / 2 - (100 * s), 'LUKUVINKKI AVATTU', {
             fontFamily: FONTS.HEADING,
             fontSize: (26 * s) + 'px',
             color: CSS_COLORS.GOLD,
@@ -107,7 +112,7 @@ export default class VideoPopupModal {
                         font-weight: bold; cursor: pointer;
                         border-radius: 4px; font-size: 16px;
                         font-family: sans-serif;
-                    ">✕ SULJE </button>
+                    ">${INLINE_SVGS.CROSS} SULJE </button>
                     <div style="
                         width: 100%;
                         aspect-ratio: 16/9;

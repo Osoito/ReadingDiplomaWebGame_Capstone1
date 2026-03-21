@@ -1,4 +1,5 @@
 import { DEPTHS } from '../ui/constants.js';
+import { ICON_KEYS } from '../ui/icons.js';
 
 export default class WaypointRenderer {
     constructor(scene) {
@@ -20,11 +21,10 @@ export default class WaypointRenderer {
             this.dotObjects.push(dot);
 
             if (isVideo) {
-                const iconSize = (14 * baseScale) + 'px';
-                const txt = this.scene.add.text(pos.x, pos.y, '▶', {
-                    fontSize: iconSize, color: '#000'
-                }).setOrigin(0.5).setDepth(DEPTHS.WAYPOINT_TEXT);
-                this.dotTexts.push(txt);
+                const iconSize = 20 * baseScale;
+                const img = this.scene.add.image(pos.x, pos.y, ICON_KEYS.PLAY)
+                    .setDisplaySize(iconSize, iconSize).setDepth(DEPTHS.WAYPOINT_TEXT);
+                this.dotTexts.push(img);
 
                 dot.setInteractive({ useHandCursor: true });
                 dot.on('pointerdown', () => {
