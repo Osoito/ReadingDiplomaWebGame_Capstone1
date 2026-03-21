@@ -137,19 +137,35 @@ const ReadingState = {
             // Populate from progress API
             if (progressData.status === 'fulfilled' && Array.isArray(progressData.value)) {
                 const entries = progressData.value;
-                for (const entry of entries) {
-                    const level = entry.level;
-                    const mapKey = this.mapOrder[level - 1];
-                    if (!mapKey) continue;
 
-                    // Unlock this level
-                    this.mapUnlock[mapKey] = true;
+                // Index entries by level for ordered unlock logic
+                const byLevel = {};
+                for (const entry of entries) {
+                    byLevel[entry.level] = entry;
+                }
+
+                // Reset unlocks — only first is unlocked by default
+                for (const key of this.mapOrder) {
+                    this.mapUnlock[key] = false;
+                }
+                this.mapUnlock[this.mapOrder[0]] = true;
+
+                // Walk in order: unlock next only if previous is completed
+                for (let i = 0; i < this.mapOrder.length; i++) {
+                    const level = i + 1;
+                    const mapKey = this.mapOrder[i];
+                    const entry = byLevel[level];
+                    if (!entry) continue;
 
                     // Map completion
                     if (entry.completed) {
                         if (!this._continentCompletedFlags) this._continentCompletedFlags = {};
                         this._continentCompletedFlags[mapKey] = true;
                         this.booksRead = Math.max(this.booksRead, level);
+                        // Unlock next continent
+                        if (i + 1 < this.mapOrder.length) {
+                            this.mapUnlock[this.mapOrder[i + 1]] = true;
+                        }
                     }
 
                     // Book assignment
