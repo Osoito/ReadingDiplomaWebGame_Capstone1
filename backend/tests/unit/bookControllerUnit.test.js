@@ -20,7 +20,7 @@ vi.doMock('../../services/bookService.js', async (importOriginal) => {
 })
 
 const booksRouter = (await import('../../controllers/books.js')).default
-const bookService = (await import('../../services/bookService.js')).default
+const BookService = (await import('../../services/bookService.js')).default
 
 const app = express()
 app.use(express.json())
@@ -59,7 +59,7 @@ describe('Book controller unit tests', () => {
             content: 'test/testPath'
         }
 
-        bookService.addBook.mockResolvedValue(input)
+        BookService.addBook.mockResolvedValue(input)
 
         const response = await api
             .post('/api/books/')
@@ -69,8 +69,8 @@ describe('Book controller unit tests', () => {
 
         expect(response.body).toEqual(input)
 
-        expect(bookService.addBook).toHaveBeenCalledTimes(1)
-        expect(bookService.addBook).toHaveBeenCalledWith(input)
+        expect(BookService.addBook).toHaveBeenCalledTimes(1)
+        expect(BookService.addBook).toHaveBeenCalledWith(input)
     })
 
     test('Get all books', async() => {
@@ -98,7 +98,7 @@ describe('Book controller unit tests', () => {
             }
         ]
 
-        bookService.getAllBooks.mockResolvedValue(mockBooks)
+        BookService.getAllBooks.mockResolvedValue(mockBooks)
 
         const response = await api
             .get('/api/books/')
@@ -106,7 +106,7 @@ describe('Book controller unit tests', () => {
             .expect('Content-Type', /application\/json/)
 
         expect(response.body).toEqual(mockBooks)
-        expect(bookService.getAllBooks).toHaveBeenCalledTimes(1)
+        expect(BookService.getAllBooks).toHaveBeenCalledTimes(1)
     })
 
     test('Get a specific book', async() => {
@@ -120,7 +120,7 @@ describe('Book controller unit tests', () => {
             }
         ]
 
-        bookService.findBookById.mockResolvedValue(mockBook)
+        BookService.findBookById.mockResolvedValue(mockBook)
 
         const response = await api
             .get('/api/books/3')
@@ -128,11 +128,11 @@ describe('Book controller unit tests', () => {
             .expect('Content-Type', /application\/json/)
 
         expect(response.body).toEqual(mockBook)
-        expect(bookService.findBookById).toHaveBeenCalledTimes(1)
+        expect(BookService.findBookById).toHaveBeenCalledTimes(1)
     })
 
     test('Remove a book', async() => {
-        bookService.deleteBook.mockResolvedValue(undefined)
+        BookService.deleteBook.mockResolvedValue(undefined)
 
         const response = await api
             .delete('/api/books/delete-book/1')

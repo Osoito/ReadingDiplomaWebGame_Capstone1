@@ -23,7 +23,7 @@ vi.doMock('../../services/progressService.js', async (importOriginal) => {
 })
 
 const progressRouter = (await import('../../controllers/progressController.js')).default
-const progressService = (await import('../../services/progressService.js')).default
+const ProgressService = (await import('../../services/progressService.js')).default
 
 const app = express()
 app.use(express.json())
@@ -66,7 +66,7 @@ describe('Progress controller related unit tests', () => {
             level_status: 'incomplete'
         }
 
-        progressService.addNewProgress.mockResolvedValue(mockoutput)
+        ProgressService.addNewProgress.mockResolvedValue(mockoutput)
 
         const response = await api
             .post('/api/progress/add-entry')
@@ -76,8 +76,8 @@ describe('Progress controller related unit tests', () => {
 
         expect(response.body).toEqual(mockoutput)
 
-        expect(progressService.addNewProgress).toHaveBeenCalledTimes(1)
-        expect(progressService.addNewProgress).toHaveBeenCalledWith(input)
+        expect(ProgressService.addNewProgress).toHaveBeenCalledTimes(1)
+        expect(ProgressService.addNewProgress).toHaveBeenCalledWith(input)
     })
 
     test('Find all current users entries', async() => {
@@ -107,7 +107,7 @@ describe('Progress controller related unit tests', () => {
                 level_status: 'incomplete'
             }
         ]
-        progressService.findByUser.mockResolvedValue(mockoutput)
+        ProgressService.findByUser.mockResolvedValue(mockoutput)
 
         const response = await api
             .get('/api/progress/')
@@ -116,7 +116,7 @@ describe('Progress controller related unit tests', () => {
 
         expect(response.body).toEqual(mockoutput)
 
-        expect(progressService.findByUser).toHaveBeenCalledTimes(1)
+        expect(ProgressService.findByUser).toHaveBeenCalledTimes(1)
     })
 
     test('Get specific entry from current user', async() => {
@@ -129,7 +129,7 @@ describe('Progress controller related unit tests', () => {
             level_status: 'incomplete'
         }
 
-        progressService.findSpecificEntry.mockResolvedValue(mockoutput)
+        ProgressService.findSpecificEntry.mockResolvedValue(mockoutput)
 
         const response = await api
             .get('/api/progress/get-entry/1')
@@ -138,8 +138,8 @@ describe('Progress controller related unit tests', () => {
 
         expect(response.body).toEqual(mockoutput)
 
-        expect(progressService.findSpecificEntry).toHaveBeenCalledTimes(1)
-        expect(progressService.findSpecificEntry).toHaveBeenCalledWith('1', 1)
+        expect(ProgressService.findSpecificEntry).toHaveBeenCalledTimes(1)
+        expect(ProgressService.findSpecificEntry).toHaveBeenCalledWith('1', 1)
     })
 
     test('Get current level for current user', async() => {
@@ -152,7 +152,7 @@ describe('Progress controller related unit tests', () => {
             level_status: 'incomplete'
         }
 
-        progressService.getCurrentLevel.mockResolvedValue(mockoutput)
+        ProgressService.getCurrentLevel.mockResolvedValue(mockoutput)
 
         const response = await api
             .get('/api/progress/current-level')
@@ -161,8 +161,8 @@ describe('Progress controller related unit tests', () => {
 
         expect(response.body).toEqual(mockoutput)
 
-        expect(progressService.getCurrentLevel).toHaveBeenCalledTimes(1)
-        expect(progressService.getCurrentLevel).toHaveBeenCalledWith(1)
+        expect(ProgressService.getCurrentLevel).toHaveBeenCalledTimes(1)
+        expect(ProgressService.getCurrentLevel).toHaveBeenCalledWith(1)
     })
 
     test('Mark entry as completed', async() => {
@@ -179,7 +179,7 @@ describe('Progress controller related unit tests', () => {
             user: 1
         }
 
-        progressService.completeLevel.mockResolvedValue(mockoutput)
+        ProgressService.completeLevel.mockResolvedValue(mockoutput)
 
         const response = await api
             .put('/api/progress/1/completed')
@@ -189,8 +189,8 @@ describe('Progress controller related unit tests', () => {
 
         expect(response.body).toEqual('Level marked as completed successfully!')
 
-        expect(progressService.completeLevel).toHaveBeenCalledTimes(1)
-        expect(progressService.completeLevel).toHaveBeenCalledWith('1', { user: 1 })
+        expect(ProgressService.completeLevel).toHaveBeenCalledTimes(1)
+        expect(ProgressService.completeLevel).toHaveBeenCalledWith('1', { user: 1 })
     })
 
     test('Updating book in entry', async() => {
@@ -207,7 +207,7 @@ describe('Progress controller related unit tests', () => {
             book: 1
         }
 
-        progressService.changeBookinEntry.mockResolvedValue(mockoutput)
+        ProgressService.changeBookinEntry.mockResolvedValue(mockoutput)
 
         const response = await api
             .put('/api/progress/1/add-book')
@@ -217,7 +217,7 @@ describe('Progress controller related unit tests', () => {
 
         expect(response.body).toEqual('Book added to entry successfully!')
 
-        expect(progressService.changeBookinEntry).toHaveBeenCalledTimes(1)
-        expect(progressService.changeBookinEntry).toHaveBeenCalledWith('1', 1, { book: 1 })
+        expect(ProgressService.changeBookinEntry).toHaveBeenCalledTimes(1)
+        expect(ProgressService.changeBookinEntry).toHaveBeenCalledWith('1', 1, { book: 1 })
     })
 })
