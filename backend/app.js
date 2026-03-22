@@ -51,6 +51,8 @@ const MemoryStore = memorystore(session)
 // Express session middleware
 app.use(session({
     secret: process.env.SESSION_SECRET,
+    name: 'sessionId',
+    secure: true,
     store: new MemoryStore({
         checkPeriod: 43200000 // prune expired entries every 12h, to avoid memory leaks
     }),
