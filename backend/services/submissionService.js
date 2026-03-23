@@ -20,6 +20,7 @@ const SubmissionService = {
         })
     },
 
+    //apparently not used anywhere yet
     async getSpecificUser(user){
         const submissions = await Submission.getAllBasedOnUser(user)
         if(!submissions){
@@ -30,8 +31,8 @@ const SubmissionService = {
         return submissions
     },
 
-    async getById(id){
-        const submission = await Submission.getById(id)
+    async getById(id, teacher_id){
+        const submission = await Submission.getById(id, teacher_id)
         if(!submission){
             const err = new Error('Submission not found')
             err.status = 404
@@ -40,8 +41,8 @@ const SubmissionService = {
         return submission
     },
 
-    async deleteSubmission(id){
-        const submission = await Submission.getById(id)
+    async deleteSubmission(id, teacher_id){
+        const submission = await Submission.getById(id, teacher_id)
         if(!submission){
             const err = new Error('Submission not found')
             err.status = 404

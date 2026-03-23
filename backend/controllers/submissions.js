@@ -39,9 +39,9 @@ submissionsRouter.post('/add-submission', middleware.requireAuthentication(true)
 
 submissionsRouter.get('/my-students/:id', middleware.requireTeacherRole, async (request, response, next) => {
     const id = request.params.id
-
+    const teacher_id = request.user.id
     try {
-        const submission = await SubmissionService.getById(id)
+        const submission = await SubmissionService.getById(id, teacher_id)
         response.status(200).json(submission)
     } catch (error) {
         next(error)
@@ -50,9 +50,9 @@ submissionsRouter.get('/my-students/:id', middleware.requireTeacherRole, async (
 
 submissionsRouter.delete('/:id', middleware.requireTeacherRole, async (request, response, next) => {
     const id = request.params.id
-
+    const teacher_id = request.user.id
     try {
-        await SubmissionService.deleteSubmission(id)
+        await SubmissionService.deleteSubmission(id, teacher_id)
         response.status(200).json('Submission deleted successfully')
     } catch (error) {
         next(error)
