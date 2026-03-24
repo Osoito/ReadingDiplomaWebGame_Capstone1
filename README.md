@@ -369,11 +369,16 @@ Or directly log in through the login page by typing in the student credentials y
 
 ### Development phase
 
-**Error: 'Invalid CSRF token' on request**
+**Can't test endpoints using REST client**
+- Error: 'Invalid CSRF token': comment out app.use(lusca({...})) for the duration of testing (It creates the csrf token requirement. Applies to all REST clients).
+- If using **Thunder client**, after commenting out the lusca part, Error: 'Unauthorized' on every other endpoint except auth/**: reason for this is still unknown, but this problem doesn't appear when using Postman, so consider using that, or another REST client instead.
+- **FYI**: The reason for the 'Invalid CSRF token' error is that the X-CSRF-TOKEN header needs to be set on every request, but the value required for it also changes every request and changing it after every request is very tedious, so it's easier to just disable it for the duration of testing. In the frontend the header gets fetched from a cookie or the auth/csrf-token endpoint, before any request.
+
+**Error: 'Invalid CSRF token' on request via frontend/UI**
 - post, put, patch or delete fetch request is likely missing X-CSRF-TOKEN header. Add the header according to the instructions at [backend/app.js](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1/blob/main/backend/app.js) (At the part that says 'Set the X-CSRF-TOKEN header in the frontend like this').
 
 **Error: 'Liian monta pyyntöä. Yritä uudelleen X sekunnin kuluttua.' on request**
-- This happens due to request rate limiting applied in [backend/app.js](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1/blob/main/backend/app.js). Adjust the requests / time window (max/windowMs) accordingly if this error happens during regular application use.
+- This happens due to request rate limiting applied in [backend/app.js](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1/blob/main/backend/app.js). Adjust the requests / time window (max/windowMs) accordingly if this error happens during regular application use. This is used to fend off Denial-of-Service attacks.
 
 ### Running the application
 
