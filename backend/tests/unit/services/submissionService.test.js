@@ -12,7 +12,9 @@ vi.mock('../../../models/submission.js', async (importOriginal) => {
             getSpecific: vi.fn(),
             create: vi.fn(),
             getAllBasedOnUser: vi.fn(),
-            getById: vi.fn()
+            getById: vi.fn(),
+            remove: vi.fn(),
+            getSubmissionsForTeacher: vi.fn()
         }
     }
 })
@@ -170,5 +172,95 @@ describe('SubmissionService unit tests', () => {
 
         expect(Submission.getById).toHaveBeenCalledTimes(1)
         expect(Submission.getById).toHaveBeenCalledWith(id, teacher_id)
+    })
+
+    test('Delete a submission', async() => {
+        const id = 2
+        const teacher_id = 1
+
+        const mockSubmission = {
+            id: 1,
+            user: 1,
+            question1: 'Test question 1',
+            answer1: 'Test answer 1',
+            completedLevel: 1,
+            question2: 'Test question 2',
+            answer2: 'Test answer 2',
+            question3: 'Test question 3',
+            answer3: 'Test answer 3'
+        }
+
+        Submission.getById.mockResolvedValue(mockSubmission)
+
+        await SubmissionService.deleteSubmission(id, teacher_id)
+
+        expect(Submission.getById).toHaveBeenCalledTimes(1)
+        expect(Submission.getById).toHaveBeenCalledWith(id, teacher_id)
+        expect(Submission.remove).toHaveBeenCalledTimes(1)
+        expect(Submission.remove).toHaveBeenCalledWith(id)
+    })
+
+    test('Fail to delete a submission', async () => {
+        const id = 2
+        const teacher_id = 1
+
+        Submission.getById.mockResolvedValue(null)
+
+        await expect(SubmissionService.deleteSubmission(id, teacher_id))
+            .rejects
+            .toThrow('Submission not found')
+
+        expect(Submission.getById).toHaveBeenCalledTimes(1)
+        expect(Submission.getById).toHaveBeenCalledWith(id, teacher_id)
+        expect(Submission.remove).not.toHaveBeenCalledTimes(1)
+    })
+
+    test('Get submissions for teacher', async() => {
+        const id = 1
+
+        const expectedOutcome = [
+            {
+                user: 1,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: 1,
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test answer 3'
+            },
+            {
+                user: 1,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: 2,
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test answer 3'
+            }
+        ]
+
+        Submission.getSubmissionsForTeacher.mockResolvedValue(expectedOutcome)
+
+        const result = await SubmissionService.getSubmissionsForTeacher(id)
+
+        expect(result).toStrictEqual(expectedOutcome)
+
+        expect(Submission.getSubmissionsForTeacher).toHaveBeenCalledTimes(1)
+        expect(Submission.getSubmissionsForTeacher).toHaveBeenCalledWith(id)
+    })
+
+    test('Fail to get submissions for teacher', async() => {
+        const id = 1
+
+        Submission.getSubmissionsForTeacher.mockResolvedValue(null)
+
+        await expect(SubmissionService.getSubmissionsForTeacher(id))
+            .rejects
+            .toThrow('No submissions for this teacher')
+
+        expect(Submission.getSubmissionsForTeacher).toHaveBeenCalledTimes(1)
+        expect(Submission.getSubmissionsForTeacher).toHaveBeenCalledWith(id)
     })
 })
