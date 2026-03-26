@@ -637,7 +637,9 @@ describe('Submission model tests', () => {
 
         expect(result[0].user).toBe(input[0].user)
         expect(result[0].completedLevel).toBe(input[0].completedLevel)
+        expect(result[0].name).toBe(studentsInDB[0].name)
         expect(result[1].user).toBe(input[1].user)
         expect(result[1].completedLevel).toBe(input[1].completedLevel)
+        expect(result[1].name).toBe(studentsInDB[0].name)
     })
 })
