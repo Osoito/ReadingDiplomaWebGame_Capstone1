@@ -2,11 +2,11 @@ import { vi, test, expect, describe, beforeEach } from 'vitest'
 import supertest from 'supertest'
 import express from 'express'
 import session from 'express-session'
-import passport from '../testConfig/passport-mock.js'
-import middleware from '../../utils/middleware.js'
+import passport from '../../testConfig/passport-mock.js'
+import middleware from '../../../utils/middleware.js'
 
 // Mock the addReward and getUserRewads from the rewardService
-vi.doMock('../../services/submissionService.js', async (importOriginal) => {
+vi.doMock('../../../services/submissionService.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
         default: {
@@ -19,7 +19,7 @@ vi.doMock('../../services/submissionService.js', async (importOriginal) => {
     }
 })
 
-vi.doMock('../../services/progressService.js', async (importOriginal) => {
+vi.doMock('../../../services/progressService.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
         default: {
@@ -29,9 +29,9 @@ vi.doMock('../../services/progressService.js', async (importOriginal) => {
     }
 })
 
-const submissionsRouter = (await import('../../controllers/submissions.js')).default
-const SubmissionService = (await import('../../services/submissionService.js')).default
-const ProgressService = (await import('../../services/progressService.js')).default
+const submissionsRouter = (await import('../../../controllers/submissions.js')).default
+const SubmissionService = (await import('../../../services/submissionService.js')).default
+const ProgressService = (await import('../../../services/progressService.js')).default
 
 const app = express()
 app.use(express.json())

@@ -2,12 +2,12 @@ import { vi, test, expect, describe, beforeEach } from 'vitest'
 import supertest from 'supertest'
 import express from 'express'
 import session from 'express-session'
-import passport from '../testConfig/passport-mock.js'
-import middleware from '../../utils/middleware.js'
+import passport from '../../testConfig/passport-mock.js'
+import middleware from '../../../utils/middleware.js'
 
 
 // Mock progressService functions
-vi.doMock('../../services/progressService.js', async (importOriginal) => {
+vi.doMock('../../../services/progressService.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
         default: {
@@ -22,8 +22,8 @@ vi.doMock('../../services/progressService.js', async (importOriginal) => {
     }
 })
 
-const progressRouter = (await import('../../controllers/progressController.js')).default
-const ProgressService = (await import('../../services/progressService.js')).default
+const progressRouter = (await import('../../../controllers/progressController.js')).default
+const ProgressService = (await import('../../../services/progressService.js')).default
 
 const app = express()
 app.use(express.json())

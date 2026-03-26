@@ -693,7 +693,6 @@ describe('Submission integration tests', () => {
             .get('/api/submissions/my-students')
             .expect(200)
             .expect('Content-Type', /application\/json/)
-        console.log(response.body)
         expect(response.body).toStrictEqual(expectedOutcome)
     })
 })
