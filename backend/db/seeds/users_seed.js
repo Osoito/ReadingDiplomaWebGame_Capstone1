@@ -13,7 +13,9 @@ export async function seed(knex) {
                 name: 'John',
                 password_hash:'Password-1',
                 avatar: 'avatars/avatar1.jpg',
-                grade: 1
+                grade: 1,
+                role: 'teacher',
+                teacher_id: null
             }
             const password_hash = await bcrypt.hash(newUser.password_hash, 12)
             newUser.password_hash = password_hash
@@ -28,7 +30,9 @@ export async function seed(knex) {
                 name: 'Alice',
                 password_hash:'password112',
                 avatar: 'avatars/avatar2.jpg',
-                grade: 2
+                grade: 2,
+                role: 'student',
+                teacher_id: 1
             }
             const password_hash = await bcrypt.hash(newUser.password_hash, 12)
             newUser.password_hash = password_hash
@@ -37,7 +41,20 @@ export async function seed(knex) {
             const newUser = {
                 name: 'Kalle',
                 password_hash:'password',
-                avatar: 'avatars/avatar3.jpg'
+                avatar: 'avatars/avatar3.jpg',
+                role: 'student',
+                teacher_id: 1
+            }
+            const password_hash = await bcrypt.hash(newUser.password_hash, 12)
+            newUser.password_hash = password_hash
+            return await knex('users').insert(newUser)
+        }).then(async () => {
+            const newUser = {
+                name: 'Pekka',
+                password_hash:'password',
+                avatar: 'avatars/avatar3.jpg',
+                role: 'student',
+                teacher_id: null
             }
             const password_hash = await bcrypt.hash(newUser.password_hash, 12)
             newUser.password_hash = password_hash

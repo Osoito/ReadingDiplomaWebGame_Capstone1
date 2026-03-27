@@ -10,6 +10,8 @@ import { resetDB } from '../testConfig/cleanTestDB.js'
 const booksRouter = (await import('../../controllers/books.js')).default
 const rewardsRouter = (await import('../../controllers/rewards.js')).default
 const progressRouter = (await import('../../controllers/progressController.js')).default
+const submissionsRouter = (await import('../../controllers/submissions.js')).default
+
 
 const app = express()
 app.use(express.json())
@@ -32,6 +34,7 @@ app.use(middleware.errorHandler)
 app.use('/api/books', booksRouter)
 app.use('/api/rewards', rewardsRouter)
 app.use('/api/progress', progressRouter)
+app.use('/api/submissions', submissionsRouter)
 
 const api = supertest(app)
 
@@ -482,6 +485,214 @@ describe('Progress integration tests', () => {
             .expect(200)
             .expect('Content-Type', /application\/json/)
 
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+})
+
+describe('Submission integration tests', () => {
+    beforeEach(async() => {
+        await resetDB()
+    })
+
+    test('Adding a submission', async() => {
+        const progress1 = {
+            level: 1,
+            user: 1,
+        }
+
+        await api.post('/api/progress/add-entry').send(progress1)
+
+        const input = {
+            question1: 'Test question 1',
+            answer1: 'Test answer 1',
+            question2: 'Test question 2',
+            answer2: 'Test answer 2',
+            question3: 'Test question 3',
+            answer3: 'Test answer 3'
+        }
+
+        const expectedOutcome = {
+            user: 1,
+            question1: 'Test question 1',
+            answer1: 'Test answer 1',
+            completedLevel: 1,
+            question2: 'Test question 2',
+            answer2: 'Test answer 2',
+            question3: 'Test question 3',
+            answer3: 'Test answer 3'
+        }
+
+        const response = await api
+            .post('/api/submissions/add-submission')
+            .send(input)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Get specific submission from a student', async() => {
+        const progress1 = {
+            level: 1,
+            user: 2,
+        }
+
+        await api.post('/api/progress/add-entry').send(progress1)
+
+        const submission1 = {
+            question1: 'Test question 1',
+            answer1: 'Test answer 1',
+            question2: 'Test question 2',
+            answer2: 'Test answer 2',
+            question3: 'Test question 3',
+            answer3: 'Test answer 3'
+        }
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id:2, role: 'student' }))
+            .send(submission1)
+
+        const expectedOutcome = {
+            user: 2,
+            question1: 'Test question 1',
+            answer1: 'Test answer 1',
+            completedLevel: 1,
+            question2: 'Test question 2',
+            answer2: 'Test answer 2',
+            question3: 'Test question 3',
+            answer3: 'Test answer 3'
+        }
+
+        const response = await api
+            .get('/api/submissions/my-students/1')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Delete a submission', async() => {
+        const progress1 = {
+            level: 1,
+            user: 2,
+        }
+
+        await api.post('/api/progress/add-entry').send(progress1)
+
+        const submission1 = {
+            question1: 'Test question 1',
+            answer1: 'Test answer 1',
+            question2: 'Test question 2',
+            answer2: 'Test answer 2',
+            question3: 'Test question 3',
+            answer3: 'Test answer 3'
+        }
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id:2, role: 'student' }))
+            .send(submission1)
+
+        const expectedOutcome = 'Submission deleted successfully'
+
+        const response = await api
+            .del('/api/submissions/1')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Get student submission entries for teacher', async() => {
+        const progress1 = {
+            level: 1,
+            user: 2,
+        }
+        const progress2 = {
+            level: 2,
+            user: 2,
+        }
+        const progress3 = {
+            level: 1,
+            user: 3
+        }
+        const progress4 = {
+            level: 1,
+            user: 4
+        }
+        await api.post('/api/progress/add-entry').send(progress1)
+        await api.post('/api/progress/add-entry').send(progress2)
+        await api.post('/api/progress/add-entry').send(progress3)
+        await api.post('/api/progress/add-entry').send(progress4)
+
+
+        const submission = {
+            question1: 'Test question 1',
+            answer1: 'Test answer 1',
+            question2: 'Test question 2',
+            answer2: 'Test answer 2',
+            question3: 'Test question 3',
+            answer3: 'Test answer 3'
+        }
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id:2, role: 'student' }))
+            .send(submission)
+
+        await api.put('/api/progress/1/completed').send({ user: 2 })
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id:2, role: 'student' }))
+            .send(submission)
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id:3, role: 'student' }))
+            .send(submission)
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id:4, role: 'student' }))
+            .send(submission)
+
+
+        const expectedOutcome = [
+            {
+                user: 2,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: 1,
+                name: 'Alice',
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test answer 3'
+            },
+            {
+                user: 2,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: 2,
+                name: 'Alice',
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test answer 3'
+            },
+            {
+                user: 3,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: 3,
+                name: 'Kalle',
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test answer 3'
+            }
+        ]
+
+        const response = await api
+            .get('/api/submissions/my-students')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
         expect(response.body).toStrictEqual(expectedOutcome)
     })
 })

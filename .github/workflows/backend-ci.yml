@@ -5,6 +5,10 @@
 # To disable emails sent by GitHub actions: https://github.com/settings/notifications and see System section for Actions
 
 name:  Backend CI # Node.js CI
+permissions:
+  contents: read
+  actions: read
+  packages: read
 
 on:
   push:

@@ -52,4 +52,19 @@ passport.deserializeUser(async (id, done) => {
     }
 })
 
+passport.use('test-user', new TestStrategy(null))
+
+passport.initialize = function () {
+    return (request, response, next) => {
+        // Replaces real initialization with a fake one that allows the request header to be set, good for testing
+        if (process.env.NODE_ENV === 'test' && request.headers['x-test-user']) {
+            request.user = JSON.parse(request.headers['x-test-user'])
+            return next()
+        }
+
+        // Otherwise use normal initialization
+        return next()
+    }
+}
+
 export default passport

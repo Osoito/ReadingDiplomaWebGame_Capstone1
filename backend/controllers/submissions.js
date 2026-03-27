@@ -15,16 +15,16 @@ const submissionAddSchema = z.object({
 }).strict()
 
 
-submissionsRouter.post('/add-submission', middleware.requireAuthentication(true), middleware.zValidate(submissionAddSchema), async(request, response, next) => {
+submissionsRouter.post('/add-submission', middleware.requireAuthentication(true), middleware.zValidate(submissionAddSchema), async (request, response, next) => {
     const { question1, answer1, question2, answer2, question3, answer3 } = request.validated
     const currentLevel = await ProgressService.getCurrentLevel(request.user.id)
-    const completedLevel = currentLevel.level
-    try{
+    const completedLevel = currentLevel.id
+    try {
         const newSubmission = {
             user: request.user.id,
             question1,
             answer1,
-            completedLevel:completedLevel,
+            completedLevel: completedLevel,
             question2,
             answer2,
             question3,
@@ -32,38 +32,38 @@ submissionsRouter.post('/add-submission', middleware.requireAuthentication(true)
         }
         await SubmissionService.createSubmission(newSubmission)
         response.status(201).json(newSubmission)
-    } catch(error){
+    } catch (error) {
         next(error)
     }
 })
 
-submissionsRouter.get('/my-students/:id', middleware.requireTeacherRole, async(request, response, next) => {
+submissionsRouter.get('/my-students/:id', middleware.requireTeacherRole, async (request, response, next) => {
     const id = request.params.id
-
-    try{
-        const submission = await SubmissionService.getById(id)
+    const teacher_id = request.user.id
+    try {
+        const submission = await SubmissionService.getById(id, teacher_id)
         response.status(200).json(submission)
-    } catch(error){
+    } catch (error) {
         next(error)
     }
 })
 
-submissionsRouter.delete('/:id', middleware.requireTeacherRole, async(request, response, next) => {
+submissionsRouter.delete('/:id', middleware.requireTeacherRole, async (request, response, next) => {
     const id = request.params.id
-
-    try{
-        await SubmissionService.deleteSubmission(id)
+    const teacher_id = request.user.id
+    try {
+        await SubmissionService.deleteSubmission(id, teacher_id)
         response.status(200).json('Submission deleted successfully')
-    } catch(error){
+    } catch (error) {
         next(error)
     }
 })
 
-submissionsRouter.get('/my-students', middleware.requireTeacherRole, async(request, response, next) => {
-    try{
+submissionsRouter.get('/my-students', middleware.requireTeacherRole, async (request, response, next) => {
+    try {
         const submissions = await SubmissionService.getSubmissionsForTeacher(request.user.id)
         response.status(200).json(submissions)
-    } catch(error){
+    } catch (error) {
         next(error)
     }
 })

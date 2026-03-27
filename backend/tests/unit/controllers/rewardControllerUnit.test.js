@@ -2,11 +2,11 @@ import { vi, test, expect, describe, beforeEach } from 'vitest'
 import supertest from 'supertest'
 import express from 'express'
 import session from 'express-session'
-import passport from '../testConfig/passport-mock.js'
-import middleware from '../../utils/middleware.js'
+import passport from '../../testConfig/passport-mock.js'
+import middleware from '../../../utils/middleware.js'
 
 // Mock the addReward and getUserRewads from the rewardService
-vi.doMock('../../services/rewardService.js', async (importOriginal) => {
+vi.doMock('../../../services/rewardService.js', async (importOriginal) => {
     const actual = await importOriginal()
     return {
         default: {
@@ -17,8 +17,8 @@ vi.doMock('../../services/rewardService.js', async (importOriginal) => {
     }
 })
 
-const rewardsRouter = (await import('../../controllers/rewards.js')).default
-const rewardService = (await import('../../services/rewardService.js')).default
+const rewardsRouter = (await import('../../../controllers/rewards.js')).default
+const RewardService = (await import('../../../services/rewardService.js')).default
 
 const app = express()
 app.use(express.json())
@@ -54,7 +54,7 @@ describe('reward controller related unit tests', () => {
             reward: 'avatar.jpg'
         }
 
-        rewardService.addReward.mockResolvedValue(input)
+        RewardService.addReward.mockResolvedValue(input)
 
         const response = await api
             .post('/api/rewards/add-reward')
@@ -64,8 +64,8 @@ describe('reward controller related unit tests', () => {
 
         expect(response.body).toEqual(input)
 
-        expect(rewardService.addReward).toHaveBeenCalledTimes(1)
-        expect(rewardService.addReward).toHaveBeenCalledWith(input)
+        expect(RewardService.addReward).toHaveBeenCalledTimes(1)
+        expect(RewardService.addReward).toHaveBeenCalledWith(input)
 
     })
 
@@ -83,7 +83,7 @@ describe('reward controller related unit tests', () => {
             }
         ]
 
-        rewardService.getUserRewards.mockResolvedValue(expectedOutcome)
+        RewardService.getUserRewards.mockResolvedValue(expectedOutcome)
 
         const response = await api
             .get('/api/rewards/1')
@@ -91,7 +91,7 @@ describe('reward controller related unit tests', () => {
             .expect('Content-Type', /application\/json/)
 
         expect(response.body).toEqual(expectedOutcome)
-        expect(rewardService.getUserRewards).toHaveBeenCalledTimes(1)
+        expect(RewardService.getUserRewards).toHaveBeenCalledTimes(1)
     })
 
     test('Get current user rewards', async() => {
@@ -108,7 +108,7 @@ describe('reward controller related unit tests', () => {
             }
         ]
 
-        rewardService.getUserRewards.mockResolvedValue(expectedOutcome)
+        RewardService.getUserRewards.mockResolvedValue(expectedOutcome)
 
         const response = await api
             .get('/api/rewards/')
@@ -116,6 +116,6 @@ describe('reward controller related unit tests', () => {
             .expect('Content-Type', /application\/json/)
 
         expect(response.body).toEqual(expectedOutcome)
-        expect(rewardService.getUserRewards).toHaveBeenCalledTimes(1)
+        expect(RewardService.getUserRewards).toHaveBeenCalledTimes(1)
     })
 })

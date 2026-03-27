@@ -1,4 +1,4 @@
-import { vi, test, expect } from 'vitest'
+import { vi, test, expect, describe } from 'vitest'
 import Reward from '../../../models/reward.js'
 import RewardService from '../../../services/rewardService.js'
 

@@ -51,6 +51,8 @@ const MemoryStore = memorystore(session)
 // Express session middleware
 app.use(session({
     secret: process.env.SESSION_SECRET,
+    name: 'sessionId',
+    secure: true,
     store: new MemoryStore({
         checkPeriod: 43200000 // prune expired entries every 12h, to avoid memory leaks
     }),
@@ -68,7 +70,7 @@ app.use(passport.session())
 /* ∨∨∨ Set the X-CSRF-TOKEN header in the frontend like this ∨∨∨
 import { getCsrfToken } from '../services/api'
 
-// ∨∨ this fetch('/auth/csrf-token') is required only in the login route, because the logout route clears cookies
+// ∨∨ this request is likely required only in the login route, because the logout route clears cookies
 // ∨∨ and no requests are made between logout and login, so the CSRF-token wont be set.
 await fetch('/auth/csrf-token')  // <-- Leave this Line out for other than auth/login requests
 
@@ -99,7 +101,7 @@ if (environmentMode !== 'production') {
     app.use(middleware.requestLogger)
 }
 
-if (environmentMode === 'production' && domainUrl === 'https://lukudiplomi.onrender.com/') {
+if (environmentMode === 'production' && domainUrl === 'https://lukudiplomi.onrender.com') {
     app.set('trust proxy', ['74.220.51.0/24', '74.220.59.0/24'])
 }
 
@@ -121,7 +123,7 @@ const makeLimiter = ({ windowMs, max, message }) => {
             })
         }
     }
-    if (process.env.NODE_ENV === 'production' && process.env.PUBLIC_URL === 'https://lukudiplomi.onrender.com/') {
+    if (process.env.NODE_ENV === 'production' && domainUrl === 'https://lukudiplomi.onrender.com') {
         return rateLimit({
             ...baseLimiterOptions,
             keyGenerator: (req) => {
@@ -136,23 +138,28 @@ const makeLimiter = ({ windowMs, max, message }) => {
 
 // ∨∨∨ Adjust these if needed
 const authLimiter = makeLimiter({
-    windowMs: 60 * 1000, // 1 minute
-    max: 20, // 20 requests per windowMs
+    // {max} requests per {windowMs} milliseconds
+    // 20 requests per minute allowed to the auth routes per client
+    windowMs: 60 * 1000,
+    max: 20,
 })
 
 const userLimiter = makeLimiter({
-    windowMs: 60 * 1000, // 1 minute
-    max: 100, // 100 requests per windowMs
+    // 100 requests per minute allowed for user related requests
+    windowMs: 60 * 1000,
+    max: 100,
 })
 
 const apiLimiter = makeLimiter({
-    windowMs: 60 * 1000, // 1 minute
-    max: 200, // 200 requests per windowMs
+    // 200 requests per minute allowed for other api routes
+    windowMs: 60 * 1000,
+    max: 200,
 })
 
 const indexLimiter = makeLimiter({
-    windowMs: 60 * 1000, // 1 minute
-    max: 250, // 250 requests per minute
+    // 250 requests per minute allowed for fronted routes in production env (welcomepage, loginpage etc.)
+    windowMs: 60 * 1000,
+    max: 250,
 })
 
 app.use('/auth', authLimiter, authRouter)
