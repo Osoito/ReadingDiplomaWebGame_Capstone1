@@ -43,9 +43,9 @@ const ProgressService = {
         return found
     },
 
-    async findSpecificEntry(level, user){
+    async findSpecificEntry(level, user) {
         const found = await Progress.findSpecificEntry(level, user)
-        if(!found){
+        if (!found) {
             const err = new Error(`Level:  ${level} has no entry for this user`)
             err.status = 404
             throw err
@@ -53,9 +53,9 @@ const ProgressService = {
         return found
     },
 
-    async getCurrentLevel(user){
+    async getCurrentLevel(user) {
         const found = await Progress.getCurrentLevel(user)
-        if(!found){
+        if (!found) {
             const err = new Error(`Was not able to fetch the current level for this user`)
             err.status = 404
             throw err
@@ -63,9 +63,20 @@ const ProgressService = {
         return found
     },
 
-    async changeBookinEntry(level, user, { book }){
+    async getLatestCompletedLevel(user) {
+        const found = await Progress.findLatestCompletedLevel(user)
+        if (!found) {
+            const err = new Error('Could not find any completed levels for this user')
+            err.userDetails = 'Käyttäjä ei ole suorittanut yhtään tasoa'
+            err.status = 400
+            throw err
+        }
+        return found
+    },
+
+    async changeBookinEntry(level, user, { book }) {
         const found = await Progress.findSpecificEntry(level, user)
-        if(!found){
+        if (!found) {
             const err = new Error(`Level:  ${level} has no entry for this user`)
             err.status = 404
             throw err

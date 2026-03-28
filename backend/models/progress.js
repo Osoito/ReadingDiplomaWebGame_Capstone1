@@ -6,12 +6,12 @@ const Progress = {
             .insert({ level, user, book, current_progress, level_status })
             .returning('*')
     },
-    async findByUser(user, dbConn = db){
+    async findByUser(user, dbConn = db) {
         return dbConn('progress')
             .select('level', 'user', 'book', 'current_progress', 'level_status')
-            .where({ user:user })
+            .where({ user: user })
     },
-    async findSpecificEntry(level, user, dbConn = db){
+    async findSpecificEntry(level, user, dbConn = db) {
         level = Number(level)
         user = Number(user)
         return dbConn('progress')
@@ -19,7 +19,7 @@ const Progress = {
             .where({ level, user })
             .first()
     },
-    async getCurrentLevel(user, dbConn = db){
+    async getCurrentLevel(user, dbConn = db) {
         user = Number(user)
         return dbConn('progress')
             .select('id', 'level', 'user', 'book', 'current_progress', 'level_status')
@@ -27,7 +27,15 @@ const Progress = {
             .orderBy('level', 'asc')
             .first()
     },
-    async completeLevel(level, user, dbConn = db){
+    async findLatestCompletedLevel(user, dbConn = db) {
+        user = Number(user)
+        return dbConn('progress')
+            .select('id', 'level', 'user', 'book', 'current_progress', 'level_status')
+            .where({ user: user, level_status: 'complete' })
+            .orderBy('level', 'desc')
+            .first()
+    },
+    async completeLevel(level, user, dbConn = db) {
         level = Number(level)
         user = Number(user)
         return dbConn('progress')
@@ -35,7 +43,7 @@ const Progress = {
             .update({ level_status: 'complete' })
             .returning('*')
     },
-    async changeBookinEntry(level, user, book, dbConn = db){
+    async changeBookinEntry(level, user, book, dbConn = db) {
         level = Number(level)
         user = Number(user)
         return dbConn('progress')
@@ -43,7 +51,7 @@ const Progress = {
             .update({ book: book })
             .returning('*')
     },
-    async getAll(dbConn = db){
+    async getAll(dbConn = db) {
         return dbConn('progress')
             .select('*')
     }
