@@ -24,7 +24,7 @@ vi.doMock('../../../services/progressService.js', async (importOriginal) => {
     return {
         default: {
             ...actual.default,
-            getCurrentLevel: vi.fn()
+            getLatestCompletedLevel: vi.fn()
         }
     }
 })
@@ -89,7 +89,7 @@ describe('Submissions controller unit tests', () => {
             level_status: 'incomplete'
         }
 
-        ProgressService.getCurrentLevel.mockResolvedValue(currentLevel)
+        ProgressService.getLatestCompletedLevel.mockResolvedValue(currentLevel)
         SubmissionService.createSubmission.mockResolvedValue(expectedOutcome)
 
 
@@ -101,7 +101,7 @@ describe('Submissions controller unit tests', () => {
 
         expect(response.body).toEqual(expectedOutcome)
 
-        expect(ProgressService.getCurrentLevel).toHaveBeenCalledTimes(1)
+        expect(ProgressService.getLatestCompletedLevel).toHaveBeenCalledTimes(1)
         expect(SubmissionService.createSubmission).toHaveBeenCalledTimes(1)
     })
 
