@@ -81,6 +81,16 @@ submissionsRouter.delete('/:id', middleware.requireTeacherRole, async (request, 
     }
 })
 
+// Gets submission entries for a specific student under the teacher making the request
+submissionsRouter.get('/student/:id', middleware.requireTeacherRole, async (request, response, next) => {
+    try {
+        const submission = await SubmissionService.findByUserAndTeacher({ userId: request.params.id, teacherId: request.user.id })
+        response.status(200).json(submission)
+    } catch (error) {
+        next(error)
+    }
+})
+
 submissionsRouter.get('/my-students', middleware.requireTeacherRole, async (request, response, next) => {
     try {
         const submissions = await SubmissionService.getSubmissionsForTeacher(request.user.id)

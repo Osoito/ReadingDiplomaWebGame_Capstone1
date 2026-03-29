@@ -23,7 +23,7 @@ const Progress = {
         user = Number(user)
         return dbConn('progress')
             .select('id', 'level', 'user', 'book', 'current_progress', 'level_status')
-            .where({ user:user, level_status:'incomplete' })
+            .where({ user: user, level_status: 'incomplete' })
             .orderBy('level', 'asc')
             .first()
     },
@@ -54,6 +54,16 @@ const Progress = {
     async getAll(dbConn = db) {
         return dbConn('progress')
             .select('*')
+    },
+    async findByUserAndTeacher(userId, teacherId, dbConn = db) {
+        userId = Number(userId)
+        teacherId = Number(teacherId)
+        return dbConn('progress')
+            .select('level', 'user', 'book', 'current_progress', 'level_status')
+            .innerJoin('users', 'users.id', 'progress.user')
+            .where('progress.user', userId)
+            .andWhere('users.teacher_id', teacherId)
+            .andWhere('users.role', 'student')
     }
 }
 

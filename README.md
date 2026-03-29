@@ -200,11 +200,13 @@ frontend/
 | POST   | `/api/progress/add-entry`            | Add a new progression entry                                   |
 | PUT    | `/api/progress/:level/completed`     | Updates level entry for user as complete                      |
 | GET    | `/api/progress/get-entry/:level`     | Gets specific level from current user                         |
+| GET    | `/api/progress/student/:id`          | Gets specified student's progress (requires teacher role)     |
 | GET    | `/api/progress/current-level`        | Gets user's most recent incomplete level                      |
 | PUT    | `/api/progress/:level/add-book`      | Changes the book attatched to a progress entry                |
 | POST   | `/api/submissions/add-submission`    | adds a submission entry for the current user in current level |
 | GET    | `/api/submissions/my-students/:id`   | Gets specific submission entry(needs teacher role)            |
 | GET    | `/api/submissions/my-students`       | Gets current user's student submissions(requires teacher role)|
+| GET    | `/api/submissions/student/:id`       | Gets specified student's submissions (requires teacher role)  |
 | DELETE | `/api/submissions/:id`               | Deletes specific submission entry(needs teacher role)         |
 | POST   | `/auth/login`                        | Login using basic credentials (email/username, password)      |
 | POST   | `/auth/logout`                       | Logout                                                        |
