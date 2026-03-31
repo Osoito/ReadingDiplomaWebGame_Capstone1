@@ -92,7 +92,7 @@ function StudentDashboard() {
             style={{ backgroundImage: `linear-gradient(rgba(235,243,254,0.82), rgba(235,243,254,0.82)), url(${homeBG})` }}
         >
             <header className="student-header">
-                <h1>Matkupäiväkirja</h1>
+                <h1>Matkapäiväkirja</h1>
                 <div className="header-right">
                     {hasBuddy && <BuddyIcon buddyId={user.avatar} size={38} />}
                     <span>{hasBuddy

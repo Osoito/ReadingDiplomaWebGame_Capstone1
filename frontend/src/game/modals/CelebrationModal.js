@@ -45,7 +45,7 @@ export default class CelebrationModal {
             .setDisplaySize(36 * s, 36 * s).setScrollFactor(0);
         this.celebrationUI.add(partyIcon);
 
-        const titleMsg = this.scene.add.text(width / 2 + (10 * s), height / 2 - (60 * s), 'ONNISTUKSIA!', {
+        const titleMsg = this.scene.add.text(width / 2 + (10 * s), height / 2 - (60 * s), 'ONNITTELUT!', {
             fontSize: `${32 * s}px`,
             color: CSS_COLORS.GOLD,
             fontFamily: FONTS.HEADING,

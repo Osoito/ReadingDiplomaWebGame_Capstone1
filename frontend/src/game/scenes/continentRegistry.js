@@ -14,7 +14,7 @@ const continentRegistry = [
         key: 'ArcticMap',
         assetKey: 'arcticMap',
         assetPath: arcticImg,
-        title: 'POHJOISNAVON TUTKIMUSMATKA',
+        title: 'POHJOISNAVAN TUTKIMUSMATKA',
         themeColor: 0x00ffff,
         rawPoints: [
             { x: 200, y: 300 }, { x: 1000, y: 400 }, { x: 800, y: 500 },
