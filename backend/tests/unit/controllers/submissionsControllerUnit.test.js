@@ -14,7 +14,8 @@ vi.doMock('../../../services/submissionService.js', async (importOriginal) => {
             createSubmission: vi.fn(),
             getById: vi.fn(),
             deleteSubmission: vi.fn(),
-            getSubmissionsForTeacher: vi.fn()
+            getSubmissionsForTeacher: vi.fn(),
+            findByUserAndTeacher: vi.fn()
         }
     }
 })
@@ -192,5 +193,52 @@ describe('Submissions controller unit tests', () => {
 
         expect(SubmissionService.getSubmissionsForTeacher).toHaveBeenCalledTimes(1)
 
+    })
+
+    test('Get all entries of a specific student who belongs to current teacher', async() => {
+        const expectedOutcome = [
+            {
+                user: 1,
+                question1: 'Test question1',
+                answer1: 'Test answer1',
+                completedLevel: 1,
+                name: 'testUser',
+                question2: 'Test question2',
+                answer2: 'Test answer2',
+                question3: 'Test question3',
+                answer3: 'Test answer3'
+            },
+            {
+                user: 1,
+                question1: 'Test question1',
+                answer1: 'Test answer1',
+                completedLevel: 2,
+                name: 'testUser',
+                question2: 'Test question2',
+                answer2: 'Test answer2',
+                question3: 'Test question3',
+                answer3: 'Test answer3'
+            },
+            {
+                user: 1,
+                question1: 'Test question1',
+                answer1: 'Test answer1',
+                completedLevel: 3,
+                name: 'testUser2',
+                question2: 'Test question2',
+                answer2: 'Test answer2',
+                question3: 'Test question3',
+                answer3: 'Test answer3'
+            }
+        ]
+
+        SubmissionService.findByUserAndTeacher.mockResolvedValue(expectedOutcome)
+
+        const response = await api
+            .get('/api/submissions/student/:id')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
     })
 })

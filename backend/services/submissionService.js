@@ -33,7 +33,7 @@ const SubmissionService = {
 
     async findByUserAndTeacher({ userId, teacherId }) {
         const submissions = await Submission.getSubmissionsForTeacherByStudent(userId, teacherId)
-        if (submissions.length === 0 || !submissions) {
+        if (!submissions || submissions.length === 0) {
             const err = new Error(`No submission entries found for this student or student isn't under this teacher`)
             err.userDetails = 'Opettaja ei opeta tätä opiskelijaa tai opiskelija ei ole vastannut yhdenkään tason kysymyksiin'
             err.status = 404

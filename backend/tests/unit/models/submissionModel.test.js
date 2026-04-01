@@ -642,4 +642,127 @@ describe('Submission model tests', () => {
         expect(result[1].completedLevel).toBe(input[1].completedLevel)
         expect(result[1].name).toBe(studentsInDB[0].name)
     })
+
+    test('Get all submission from a specific student of the current teacher', async() => {
+        const teachers = [{
+            email: 'testTeacher@test.com',
+            name: 'testTeacher',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            teacher_id: null,
+            role: 'teacher'
+        },
+        {
+            email: 'testTeacher2@test.com',
+            name: 'testTeacher2',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            teacher_id: null,
+            role: 'teacher'
+        }]
+        await trx('users').insert(teachers)
+        const teacherInDB = await trx('users')
+            .where({ role: 'teacher' })
+            .select('*')
+
+        const users = [{
+            email: 'john@doe.com',
+            name: 'John',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            teacher_id: teacherInDB[0].id
+        },
+        {
+            email: 'alice@doe.com',
+            name: 'Alice',
+            password_hash: 'sekret',
+            avatar: 'avatar2.jpg',
+            currently_reading: null,
+            grade: 2,
+            teacher_id: teacherInDB[1].id
+        }]
+        await trx('users').insert(users)
+
+        const studentsInDB = await trx('users')
+            .whereNot({ role: 'teacher' })
+            .select('*')
+
+        const progressEntries = [{
+            level: 1,
+            user: studentsInDB[0].id,
+            book: null,
+            current_progress: 100,
+            level_status: 'complete'
+        },
+        {
+            level: 2,
+            user: studentsInDB[0].id,
+            book: null,
+            current_progress: 100,
+            level_status: 'complete'
+        },
+        {
+            level: 1,
+            user: studentsInDB[1].id,
+            book: null,
+            current_progress: 100,
+            level_status: 'complete'
+        }]
+
+        await trx('progress').insert(progressEntries)
+
+        const entriesInDB = await trx('progress').select('*')
+
+        const input = [
+            {
+                user: studentsInDB[0].id,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: entriesInDB[0].id,
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test Answer 3'
+            },
+            {
+                user: studentsInDB[0].id,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: entriesInDB[1].id,
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test Answer 3'
+            },
+            {
+                user: studentsInDB[1].id,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: entriesInDB[2].id,
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test Answer 3'
+            }
+        ]
+
+        for(const submission of input){
+            await Submission.create(submission, trx)
+        }
+
+        const result = await Submission.getSubmissionsForTeacherByStudent(studentsInDB[0].id, teacherInDB[0].id, trx)
+
+        expect(result.length).toBe(2)
+
+        expect(result[0].user).toBe(input[0].user)
+        expect(result[0].completedLevel).toBe(input[0].completedLevel)
+        expect(result[1].user).toBe(input[1].user)
+        expect(result[1].completedLevel).toBe(input[1].completedLevel)
+    })
 })

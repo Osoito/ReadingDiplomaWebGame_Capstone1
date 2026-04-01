@@ -45,7 +45,7 @@ const ProgressService = {
 
     async findByUserAndTeacher({ userId, teacherId }) {
         const found = await Progress.findByUserAndTeacher(userId, teacherId)
-        if (found.length === 0 || !found) {
+        if (!found || found.length === 0) {
             const err = new Error(`No progress entries found for this student, being taught by this teacher`)
             err.userDetails = 'Opettaja ei opeta tätä opiskelijaa tai opiskelija ei ole suorittanut yhtään tasoa'
             err.status = 404

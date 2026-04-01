@@ -38,7 +38,7 @@ app.use('/api/submissions', submissionsRouter)
 
 const api = supertest(app)
 
-/*describe('Book integration tests', () => {
+describe('Book integration tests', () => {
     beforeEach(async () => {
         await resetDB()
     })
@@ -487,7 +487,63 @@ describe('Progress integration tests', () => {
 
         expect(response.body).toStrictEqual(expectedOutcome)
     })
-})*/
+
+    test('Get all entries for a specific student of the current teacher', async() => {
+        const progress1 = {
+            level: 1,
+            user: 2,
+        }
+        const progress2 = {
+            level: 2,
+            user: 2,
+        }
+        const progress3 = {
+            level: 3,
+            user: 2,
+        }
+        const progress4 = {
+            level: 1,
+            user: 4,
+        }
+
+
+        await api.post('/api/progress/add-entry').send(progress1)
+        await api.post('/api/progress/add-entry').send(progress2)
+        await api.post('/api/progress/add-entry').send(progress3)
+        await api.post('/api/progress/add-entry').send(progress4)
+
+        const expectedOutcome = [
+            {
+                level: 1,
+                user: 2,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            },
+            {
+                level: 2,
+                user: 2,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            },
+            {
+                level: 3,
+                user: 2,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            }
+        ]
+
+        const response = await api
+            .get('/api/progress/student/2')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+})
 
 describe('Submission integration tests', () => {
     beforeEach(async () => {
@@ -714,6 +770,93 @@ describe('Submission integration tests', () => {
 
         const response = await api
             .get('/api/submissions/my-students')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toStrictEqual(expectedOutcome)
+    })
+
+    test('Get all submission entries from a specific student of the current teacher', async() => {
+        const progresses = [
+            { level: 1, user: 2, name: 'Alice' },
+            { level: 1, user: 3, name: 'Kalle' },
+            { level: 1, user: 4, name: 'Unknown' }
+        ]
+
+        // Store progress IDs by user and level
+        const progressIds = {}
+        for (const progress of progresses) {
+            const res = await api.post('/api/progress/add-entry').send({ level: progress.level, user: progress.user })
+            const [resProgress] = res.body
+            if (!progressIds[progress.user]) progressIds[progress.user] = {}
+            progressIds[progress.user][progress.level] = resProgress.id
+        }
+
+        // Also add another progress entry for user 2 level 2
+        const user2Level2 = { level: 2, user: 2, name: 'Alice' }
+        const user2ProgressEntryRes = await api.post('/api/progress/add-entry').send({ level: user2Level2.level, user: user2Level2.user })
+        const [resProgress] = user2ProgressEntryRes.body
+        progressIds[user2Level2.user][user2Level2.level] = resProgress.id
+
+        // Mark each progress as completed
+        for (const progress of progresses) {
+            const progressUser = { user: progress.user }
+            await api.put(`/api/progress/${progress.level}/completed`).send(progressUser)
+        }
+
+        const submission = {
+            question1: 'Test question 1',
+            answer1: 'Test answer 1',
+            question2: 'Test question 2',
+            answer2: 'Test answer 2',
+            question3: 'Test question 3',
+            answer3: 'Test answer 3'
+        }
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id: 2, role: 'student' }))
+            .send(submission)
+
+        // make progress entry for user 2 level 2 complete, so the next submission associates the correct completedLevel id
+        await api.put(`/api/progress/${user2Level2.level.toString()}/completed`).send({ user: user2Level2.user })
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id: 2, role: 'student' }))
+            .send(submission)
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id: 3, role: 'student' }))
+            .send(submission)
+
+        await api.post('/api/submissions/add-submission')
+            .set('x-test-user', JSON.stringify({ id: 4, role: 'student' }))
+            .send(submission)
+
+        const expectedOutcome = [
+            {
+                user: 2,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: progressIds[2][1], // [2] <-- user 2, [1] <-- level 1
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test answer 3'
+            },
+            {
+                user: 2,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: progressIds[2][2],
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test answer 3'
+            }
+        ]
+
+        const response = await api
+            .get('/api/submissions/student/2')
             .expect(200)
             .expect('Content-Type', /application\/json/)
 

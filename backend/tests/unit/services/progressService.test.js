@@ -14,7 +14,8 @@ vi.mock('../../../models/progress.js', async (importOriginal) => {
             findByUser: vi.fn(),
             getCurrentLevel: vi.fn(),
             changeBookinEntry: vi.fn(),
-            getAll: vi.fn()
+            getAll: vi.fn(),
+            findByUserAndTeacher: vi.fn()
         }
     }
 })
@@ -376,5 +377,49 @@ describe('ProgressService related tests', () => {
         expect(result).toStrictEqual(mockEntries)
 
         expect(Progress.getAll).toHaveBeenCalledTimes(1)
+    })
+
+    test('Find all entries for a specific user of the current teacher', async() => {
+        const mockEntries = [
+            {
+                level: 1,
+                user: 2,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            },
+            {
+                level: 2,
+                user: 2,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            },
+            {
+                level: 2,
+                user: 2,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            },
+        ]
+
+        Progress.findByUserAndTeacher.mockResolvedValue(mockEntries)
+
+        const result = await ProgressService.findByUserAndTeacher({ userId: 2, teacherId: 1 })
+
+        expect(result).toStrictEqual(mockEntries)
+
+        expect(Progress.findByUserAndTeacher).toHaveBeenCalledTimes(1)
+    })
+
+    test('Fail to find all entries for a specific user of the current teacher', async() => {
+        Progress.findByUserAndTeacher.mockResolvedValue(undefined)
+
+        await expect(ProgressService.findByUserAndTeacher({ userId: 2, teacherId: 1 }))
+            .rejects
+            .toThrow('No progress entries found for this student, being taught by this teacher')
+
+        expect(Progress.findByUserAndTeacher).toHaveBeenCalledTimes(1)
     })
 })

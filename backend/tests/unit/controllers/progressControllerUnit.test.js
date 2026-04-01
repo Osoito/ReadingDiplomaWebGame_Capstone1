@@ -17,7 +17,8 @@ vi.doMock('../../../services/progressService.js', async (importOriginal) => {
             findSpecificEntry: vi.fn(),
             getCurrentLevel: vi.fn(),
             completeLevel: vi.fn(),
-            changeBookinEntry: vi.fn()
+            changeBookinEntry: vi.fn(),
+            findByUserAndTeacher: vi.fn()
         }
     }
 })
@@ -219,5 +220,34 @@ describe('Progress controller related unit tests', () => {
 
         expect(ProgressService.changeBookinEntry).toHaveBeenCalledTimes(1)
         expect(ProgressService.changeBookinEntry).toHaveBeenCalledWith('1', 1, { book: 1 })
+    })
+
+    test('Get entries for specific student for the current teacher account', async() => {
+        const mockoutput = [{
+            level: 1,
+            user: 2,
+            book: 1,
+            current_progress: 0,
+            level_status: 'complete'
+        },
+        {
+            level: 2,
+            user: 2,
+            book: 2,
+            current_progress: 0,
+            level_status: 'incomplete'
+        }]
+
+        ProgressService.findByUserAndTeacher.mockResolvedValue(mockoutput)
+
+        const response = await api
+            .get('/api/progress/student/2')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body).toEqual(mockoutput)
+
+        expect(ProgressService.findByUserAndTeacher).toHaveBeenCalledTimes(1)
+        expect(ProgressService.findByUserAndTeacher).toHaveBeenCalledWith({ userId: '2', teacherId: 1 })
     })
 })

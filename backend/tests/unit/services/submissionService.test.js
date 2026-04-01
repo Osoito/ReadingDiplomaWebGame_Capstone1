@@ -14,7 +14,8 @@ vi.mock('../../../models/submission.js', async (importOriginal) => {
             getAllBasedOnUser: vi.fn(),
             getById: vi.fn(),
             remove: vi.fn(),
-            getSubmissionsForTeacher: vi.fn()
+            getSubmissionsForTeacher: vi.fn(),
+            getSubmissionsForTeacherByStudent: vi.fn()
         }
     }
 })
@@ -220,7 +221,7 @@ describe('SubmissionService unit tests', () => {
 
         const expectedOutcome = [
             {
-                user: 1,
+                user: 2,
                 question1: 'Test question 1',
                 answer1: 'Test answer 1',
                 completedLevel: 1,
@@ -231,7 +232,7 @@ describe('SubmissionService unit tests', () => {
                 answer3: 'Test answer 3'
             },
             {
-                user: 1,
+                user: 2,
                 question1: 'Test question 1',
                 answer1: 'Test answer 1',
                 completedLevel: 2,
@@ -264,5 +265,57 @@ describe('SubmissionService unit tests', () => {
 
         expect(Submission.getSubmissionsForTeacher).toHaveBeenCalledTimes(1)
         expect(Submission.getSubmissionsForTeacher).toHaveBeenCalledWith(id)
+    })
+
+    test('Get all entries for a specific student who belongs to current teacher', async() => {
+        const id = 2
+        const teacher_id = 1
+        const expectedOutcome = [
+            {
+                user: 2,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: 1,
+                name: 'testUser',
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test answer 3'
+            },
+            {
+                user: 2,
+                question1: 'Test question 1',
+                answer1: 'Test answer 1',
+                completedLevel: 2,
+                name: 'testUser',
+                question2: 'Test question 2',
+                answer2: 'Test answer 2',
+                question3: 'Test question 3',
+                answer3: 'Test answer 3'
+            }
+        ]
+
+        Submission.getSubmissionsForTeacherByStudent.mockResolvedValue(expectedOutcome)
+
+        const result = await SubmissionService.findByUserAndTeacher({ userId: id, teacherId: teacher_id })
+
+        expect(result).toStrictEqual(expectedOutcome)
+
+        expect(Submission.getSubmissionsForTeacherByStudent).toHaveBeenCalledTimes(1)
+        expect(Submission.getSubmissionsForTeacherByStudent).toHaveBeenCalledWith(id, teacher_id)
+    })
+
+    test('Fail to get all entries for a specific student who belongs to current teacher', async() => {
+        const id = 2
+        const teacher_id = 1
+
+        Submission.getSubmissionsForTeacherByStudent.mockResolvedValue(undefined)
+
+        await expect(SubmissionService.findByUserAndTeacher({ userId: id, teacherId: teacher_id }))
+            .rejects
+            .toThrow(`No submission entries found for this student or student isn't under this teacher`)
+
+        expect(Submission.getSubmissionsForTeacherByStudent).toHaveBeenCalledTimes(1)
+        expect(Submission.getSubmissionsForTeacherByStudent).toHaveBeenCalledWith(id, teacher_id)
     })
 })

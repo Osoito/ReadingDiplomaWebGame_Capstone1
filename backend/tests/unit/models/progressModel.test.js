@@ -425,4 +425,103 @@ describe('bookModel unit tests', () => {
         expect(result[0].current_progress).toBe(input[1].current_progress)
         expect(result[0].level_status).toBe(input[1].level_status)
     })
+
+    test('Get all the entries for a specific student of the current teacher', async() => {
+        const teachers = [{
+            email: 'testTeacher@test.com',
+            name: 'testTeacher',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            teacher_id: null,
+            role: 'teacher'
+        },
+        {
+            email: 'testTeacher2@test.com',
+            name: 'testTeacher2',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            teacher_id: null,
+            role: 'teacher'
+        }]
+        await trx('users').insert(teachers)
+        const teacherInDB = await trx('users')
+            .where({ role: 'teacher' })
+            .select('*')
+
+        const users = [{
+            email: 'john@doe.com',
+            name: 'John',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            teacher_id: teacherInDB[0].id
+        },
+        {
+            email: 'alice@doe.com',
+            name: 'Alice',
+            password_hash: 'sekret',
+            avatar: 'avatar2.jpg',
+            currently_reading: null,
+            grade: 2,
+            teacher_id: teacherInDB[1].id
+        }]
+        await trx('users').insert(users)
+
+        const studentsInDB = await trx('users')
+            .whereNot({ role: 'teacher' })
+            .select('*')
+
+        const input = [
+            {
+                level: 1,
+                user: studentsInDB[0].id,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            },
+            {
+                level: 2,
+                user: studentsInDB[0].id,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            },
+            {
+                level: 1,
+                user: studentsInDB[1].id,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            }
+        ]
+
+        const expectedOutcome = [
+            {
+                level: 1,
+                user: studentsInDB[0].id,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            },
+            {
+                level: 2,
+                user: studentsInDB[0].id,
+                book: null,
+                current_progress: 0,
+                level_status: 'incomplete'
+            }
+        ]
+
+        for(const entry of input){
+            await Progress.create(entry, trx)
+        }
+        const result = await Progress.findByUserAndTeacher(studentsInDB[0].id, teacherInDB[0].id, trx)
+
+        expect(result).toStrictEqual(expectedOutcome)
+    })
 })
