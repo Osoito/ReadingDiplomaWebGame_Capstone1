@@ -1,5 +1,16 @@
-import { useState, useEffect } from 'react'
-import { getCsrfToken } from '../services/api'
+import React, { useState, useEffect } from 'react'
+import { getCsrfToken, fetchStudentProgress, fetchStudentSubmissions } from '../services/api'
+
+const LEVELS = [
+    { level: 1, name: 'Arktis' },
+    { level: 2, name: 'Eurooppa' },
+    { level: 3, name: 'Aasia' },
+    { level: 4, name: 'Pohjois-Amerikka' },
+    { level: 5, name: 'Etelä-Amerikka' },
+    { level: 6, name: 'Afrikka' },
+    { level: 7, name: 'Oseania' },
+    { level: 8, name: 'Antarktis' },
+]
 
 function StudentManager() {
     const [students, setStudents] = useState([])
@@ -15,6 +26,10 @@ function StudentManager() {
     const [editEmailId, setEditEmailId] = useState(null)
     const [editEmail, setEditEmail] = useState('')
     const [editEmailError, setEditEmailError] = useState('')
+    const [progressMap, setProgressMap] = useState({})
+    const [submissionsMap, setSubmissionsMap] = useState({})
+    const [expandedId, setExpandedId] = useState(null)
+    const [loadingSubs, setLoadingSubs] = useState(false)
 
     const fetchStudents = async () => {
         try {
@@ -33,6 +48,21 @@ function StudentManager() {
     useEffect(() => {
         fetchStudents()
     }, [])
+
+    useEffect(() => {
+        if (students.length === 0) return
+        const loadProgress = async () => {
+            const entries = await Promise.allSettled(
+                students.map(s => fetchStudentProgress(s.id))
+            )
+            const map = {}
+            students.forEach((s, i) => {
+                map[s.id] = entries[i].status === 'fulfilled' ? entries[i].value : []
+            })
+            setProgressMap(map)
+        }
+        loadProgress()
+    }, [students])
 
     const handleAdd = async (e) => {
         e.preventDefault()
@@ -166,6 +196,25 @@ function StudentManager() {
         }
     }
 
+    const handleToggleSubmissions = async (studentId) => {
+        if (expandedId === studentId) {
+            setExpandedId(null)
+            return
+        }
+        setExpandedId(studentId)
+        if (!submissionsMap[studentId]) {
+            setLoadingSubs(true)
+            try {
+                const data = await fetchStudentSubmissions(studentId)
+                setSubmissionsMap(prev => ({ ...prev, [studentId]: data }))
+            } catch {
+                setSubmissionsMap(prev => ({ ...prev, [studentId]: [] }))
+            } finally {
+                setLoadingSubs(false)
+            }
+        }
+    }
+
     return (
         <div className="dashboard-section">
             <h2>Oppilaat {students.length > 0 && <span className="student-count">{students.length}</span>}</h2>
@@ -179,8 +228,13 @@ function StudentManager() {
                         </tr>
                     </thead>
                     <tbody>
-                        {students.map((s) => (
-                            <tr key={s.id} className={resetPwdId === s.id ? 'editing-row lock-row' : (editingId === s.id || editEmailId === s.id ? 'editing-row' : '')}>
+                        {students.map((s) => {
+                            const progress = progressMap[s.id] || []
+                            const submissions = submissionsMap[s.id]
+                            const isExpanded = expandedId === s.id
+                            return (
+                            <React.Fragment key={s.id}>
+                            <tr className={resetPwdId === s.id ? 'editing-row lock-row' : (editingId === s.id || editEmailId === s.id ? 'editing-row' : '')}>
                                 <td data-label="Nimi">
                                     {editingId === s.id ? (
                                         <input
@@ -286,7 +340,78 @@ function StudentManager() {
                                     )}
                                 </td>
                             </tr>
-                        ))}
+                            {/* Progress row */}
+                            <tr className="progress-row">
+                                <td colSpan={3}>
+                                    <div className="progress-bar-row">
+                                        <div className="level-badges">
+                                            {LEVELS.map(({ level, name: levelName }) => {
+                                                const entry = progress.find(p => p.level === level)
+                                                const done = entry?.level_status === 'complete'
+                                                return (
+                                                    <span
+                                                        key={level}
+                                                        className={`level-badge ${done ? 'level-badge--done' : ''}`}
+                                                        title={`${levelName}${done ? ' ✓' : ''}`}
+                                                    >
+                                                        {level}
+                                                    </span>
+                                                )
+                                            })}
+                                        </div>
+                                        <span className="progress-summary">
+                                            {progress.filter(p => p.level_status === 'complete').length} / 8
+                                        </span>
+                                        <button
+                                            className="expand-btn"
+                                            onClick={() => handleToggleSubmissions(s.id)}
+                                        >
+                                            {isExpanded ? 'Piilota palautukset' : 'Näytä palautukset'}
+                                            <svg
+                                                className={`expand-chevron ${isExpanded ? 'expand-chevron--open' : ''}`}
+                                                viewBox="0 0 12 12" width="12" height="12"
+                                                fill="none" stroke="currentColor" strokeWidth="2"
+                                                strokeLinecap="round" strokeLinejoin="round"
+                                            >
+                                                <path d="M3 4.5L6 7.5L9 4.5"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {isExpanded && (
+                                        <div className="submissions-detail">
+                                            {loadingSubs && !submissions ? (
+                                                <p className="empty-message">Ladataan...</p>
+                                            ) : submissions && submissions.length > 0 ? (
+                                                LEVELS
+                                                    .filter(({ level }) => submissions.some(sub => sub.completedLevel === progress.find(p => p.level === level)?.id))
+                                                    .map(({ level, name: levelName }) => {
+                                                        const progressEntry = progress.find(p => p.level === level)
+                                                        const sub = submissions.find(sb => sb.completedLevel === progressEntry?.id)
+                                                        if (!sub) return null
+                                                        return (
+                                                            <div key={level} className="submission-group">
+                                                                <h4 className="submission-level-title">Taso {level} — {levelName}</h4>
+                                                                <div className="submission-qa">
+                                                                    <p><strong>K1:</strong> {sub.question1}</p>
+                                                                    <p className="submission-answer"><strong>V1:</strong> {sub.answer1}</p>
+                                                                    <p><strong>K2:</strong> {sub.question2}</p>
+                                                                    <p className="submission-answer"><strong>V2:</strong> {sub.answer2}</p>
+                                                                    <p><strong>K3:</strong> {sub.question3}</p>
+                                                                    <p className="submission-answer"><strong>V3:</strong> {sub.answer3}</p>
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })
+                                            ) : (
+                                                <p className="empty-message">Ei palautuksia vielä.</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </td>
+                            </tr>
+                            </React.Fragment>
+                            )
+                        })}
                     </tbody>
                 </table>
             ) : (

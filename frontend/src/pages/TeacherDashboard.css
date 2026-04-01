@@ -599,6 +599,148 @@
     to   { opacity: 1; transform: scaleY(1); }
 }
 
+/* ── Progress Row ───────────────────────────────────────── */
+.progress-row td {
+    padding: 0 1rem 0.85rem !important;
+    border-bottom: 1px solid rgba(196, 151, 58, 0.18);
+    background: rgba(253, 251, 244, 0.5);
+}
+
+.progress-row:hover td {
+    background: rgba(253, 251, 244, 0.5) !important;
+    box-shadow: none !important;
+}
+
+.progress-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.level-badges {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    border: 1.5px solid #ccc;
+    color: #999;
+    background: transparent;
+    transition: all 0.2s;
+}
+
+.level-badge--done {
+    background: linear-gradient(145deg, #D8B25A, #C4973A);
+    border-color: #9E7A2A;
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(158, 122, 42, 0.3);
+}
+
+.progress-summary {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #9E7A2A;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.expand-btn {
+    background: none;
+    border: 1px solid rgba(196, 151, 58, 0.35);
+    border-radius: 4px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.78rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    color: #9E7A2A;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+}
+
+.expand-btn:hover {
+    background: rgba(196, 151, 58, 0.1);
+    border-color: #C4973A;
+    color: #C4973A;
+}
+
+.expand-chevron {
+    transition: transform 0.2s ease;
+}
+
+.expand-chevron--open {
+    transform: rotate(180deg);
+}
+
+.submissions-detail {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(253, 251, 244, 0.7);
+    border-left: 3px solid #C4973A;
+    border-radius: 0 4px 4px 0;
+    animation: widgetExpand 0.22s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+}
+
+.submission-group {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(196, 151, 58, 0.12);
+}
+
+.submission-group:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.submission-level-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.9rem;
+    color: #1e3a5f;
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+}
+
+.submission-qa {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.submission-qa p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #3a2a10;
+    line-height: 1.5;
+}
+
+.submission-qa strong {
+    color: #9E7A2A;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+}
+
+.submission-answer {
+    padding-left: 1.5rem;
+    margin-bottom: 0.35rem !important;
+    color: #4a3a1a;
+}
+
 /* ── Mobile: Compact Nav Bar ───────────────────────────── */
 @media (max-width: 600px) {
     .dashboard-header {
@@ -662,4 +804,31 @@
         min-width: 5rem;
     }
     .data-table td:first-child::before { content: ''; min-width: 0; }
+    .progress-row {
+        border: none !important;
+        padding: 0 0.75rem 0.75rem !important;
+        margin-bottom: 0 !important;
+        margin-top: -0.5rem;
+    }
+    .progress-row td {
+        padding: 0 !important;
+    }
+    .progress-row td::before {
+        content: '' !important;
+        min-width: 0 !important;
+    }
+    .progress-bar-row {
+        flex-wrap: wrap;
+    }
+    .level-badges {
+        flex-wrap: wrap;
+    }
+    .expand-btn {
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+    .submissions-detail {
+        padding: 0.5rem 0.75rem;
+    }
 }

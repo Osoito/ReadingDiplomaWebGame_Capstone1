@@ -57,4 +57,6 @@ export function addReward(owner, type, name) {
     });
 }
 export function fetchRewards() { return request('/api/rewards'); }
+export function fetchStudentProgress(id) { return request(`/api/progress/student/${id}`); }
+export function fetchStudentSubmissions(id) { return request(`/api/submissions/student/${id}`); }
 export { ApiError };
