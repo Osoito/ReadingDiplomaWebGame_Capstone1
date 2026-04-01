@@ -330,7 +330,7 @@ describe('User model tests', () => {
 
         const userId = usersInDb[0].id
         const provider = 'google'
-        const providerUsrId = 12345678
+        const providerUsrId = '12345678'
 
         const result = await User.createFederatedCredentials(userId, provider, providerUsrId, trx)
 
@@ -340,14 +340,66 @@ describe('User model tests', () => {
             id: federatedInDb[0].id,
             user_id: userId,
             provider: provider,
-            provider_user_id: "12345678"
+            provider_user_id: '12345678'
         }]
 
         expect(result).toStrictEqual(expectedOutcome)
     })
-    /*
-    test('Find federated credentials', async() => {
 
+    test('Find federated credentials', async() => {
+        const users = [{
+            email: 'john@doe.com',
+            name: 'John',
+            password_hash: 'secret',
+            avatar: 'avatar1.jpg',
+            currently_reading: null,
+            grade: 1,
+            role: 'teacher',
+            teacher_id: null
+        },
+        {
+            email: 'alice@doe.com',
+            name: 'Alice',
+            password_hash: 'sekret',
+            avatar: 'avatar2.jpg',
+            currently_reading: null,
+            grade: 2,
+            role: 'student',
+            teacher_id: null
+        }]
+
+        for(const user of users){
+            await User.create(user, trx)
+        }
+
+        const usersInDb = await User.getAll(trx)
+
+        const federated_credentials = [{
+            user_id: usersInDb[0].id,
+            provider: 'google',
+            provider_user_id: '12345678'
+        },
+        {
+            user_id: usersInDb[1].id,
+            provider: 'google',
+            provider_user_id: '123456789'
+        }]
+
+        for(const federated_user of federated_credentials){
+            await User.createFederatedCredentials(federated_user.user_id, federated_user.provider, federated_user.provider_user_id, trx)
+        }
+
+        const result = await User.findFederatedCredentials('google', 12345678, trx)
+
+        const federatedInDb = await trx('federated_credentials').select('*')
+
+        const expectedOutcome = {
+            id: federatedInDb[0].id,
+            user_id: usersInDb[0].id,
+            provider: 'google',
+            provider_user_id: '12345678'
+        }
+
+        expect(result).toStrictEqual(expectedOutcome)
     })
-    */
 })
