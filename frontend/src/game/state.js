@@ -127,6 +127,10 @@ const ReadingState = {
      * Load progress and books from backend. Called once before Phaser starts.
      * On failure: console.warn, keep default client-side values (graceful degradation).
      */
+    /**
+     * Load progress and books from backend. Called once before Phaser starts.
+     * Fixed: Resolved issues with progress not being inherited, BookList disappearing, and Level data type matching.
+     */
     async loadFromBackend() {
         try {
             const [progressData, booksData] = await Promise.allSettled([
@@ -134,46 +138,50 @@ const ReadingState = {
                 fetchBooks()
             ]);
 
-            // Populate from progress API
+            // --- 1. Prioritize handling the book list (ensure Book List does not disappear due to progress errors) ---
+            if (booksData.status === 'fulfilled' && Array.isArray(booksData.value)) {
+                if (booksData.value.length > 0) {
+                    this.globalBooks = booksData.value.map(b => ({
+                        title: b.title,
+                        author: b.author,
+                        id: String(b.id),
+                        dbId: b.id
+                    }));
+                }
+            }
+
+            // --- 2. Handle progress and unlocking logic ---
             if (progressData.status === 'fulfilled' && Array.isArray(progressData.value)) {
                 const entries = progressData.value;
+                
+                // If the backend returns no data at all, skip directly and keep the current frontend state
+                if (entries.length === 0) return;
 
-                // Index entries by level for ordered unlock logic
+                // Normalize Level indexing
                 const byLevel = {};
                 for (const entry of entries) {
-                    byLevel[entry.level] = entry;
+                    byLevel[Number(entry.level)] = entry;
                 }
 
-                // Reset unlocks — only first is unlocked by default
-                for (const key of this.mapOrder) {
-                    this.mapUnlock[key] = false;
-                }
+                // [Key Change 1]: Do not reset mapUnlock immediately.
+                // Update based on the existing mapUnlock state.
+                // Ensure the North Pole is at least unlocked
                 this.mapUnlock[this.mapOrder[0]] = true;
 
-                // Walk in order: unlock next only if previous is completed
+                // Iterate according to mapOrder
                 for (let i = 0; i < this.mapOrder.length; i++) {
                     const level = i + 1;
                     const mapKey = this.mapOrder[i];
                     const entry = byLevel[level];
+                    
                     if (!entry) continue;
 
-                    // Map completion
-                    if (entry.completed) {
-                        if (!this._continentCompletedFlags) this._continentCompletedFlags = {};
-                        this._continentCompletedFlags[mapKey] = true;
-                        this.booksRead = Math.max(this.booksRead, level);
-                        // Unlock next continent
-                        if (i + 1 < this.mapOrder.length) {
-                            this.mapUnlock[this.mapOrder[i + 1]] = true;
-                        }
-                    }
-
-                    // Book assignment
+                    // Restore book binding
                     if (entry.book) {
                         this.mapSelectedBook[mapKey] = String(entry.book);
                     }
 
-                    // Progress percentage
+                    // Restore progress percentage
                     if (entry.current_progress != null) {
                         const cfg = this.mapConfig[mapKey];
                         if (cfg) {
@@ -183,17 +191,28 @@ const ReadingState = {
                             this.bookProgress[String(entry.book)] = entry.current_progress;
                         }
                     }
-                }
-            }
 
-            // Populate from books API
-            if (booksData.status === 'fulfilled' && Array.isArray(booksData.value) && booksData.value.length > 0) {
-                this.globalBooks = booksData.value.map(b => ({
-                    title: b.title,
-                    author: b.author,
-                    id: String(b.id),
-                    dbId: b.id
-                }));
+                    // [Key Change 2]: Core unlocking logic
+                    // As long as the backend indicates this level is completed,
+                    // the next level must be unlocked
+                    if (entry.completed === true || entry.completed === "true" || entry.completed === 1) {
+                        if (!this._continentCompletedFlags) this._continentCompletedFlags = {};
+                        this._continentCompletedFlags[mapKey] = true;
+                        
+                        this.booksRead = Math.max(this.booksRead, level);
+                        
+                        // Unlock the next level
+                        if (i + 1 < this.mapOrder.length) {
+                            const nextMapKey = this.mapOrder[i + 1];
+                            this.mapUnlock[nextMapKey] = true; 
+                            console.log(`Detected level ${level} completed, auto-unlocking: ${nextMapKey}`);
+                        }
+                    }
+                }
+                
+                // [Note]: Directly modifying properties of this.mapUnlock is sufficient,
+                // no need to reassign a newUnlocks object,
+                // this avoids assignment failure caused by variable scope issues.
             }
 
         } catch (err) {
