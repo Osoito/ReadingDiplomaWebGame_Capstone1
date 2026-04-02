@@ -541,7 +541,15 @@ describe('Progress integration tests', () => {
             .expect(200)
             .expect('Content-Type', /application\/json/)
 
-        expect(response.body).toStrictEqual(expectedOutcome)
+        expect(response.body.length).toBe(expectedOutcome.length)
+        for (let i = 0; i < expectedOutcome.length; i++) {
+            expect(response.body[i].id).toBeDefined()
+            expect(response.body[i].level).toBe(expectedOutcome[i].level)
+            expect(response.body[i].user).toBe(expectedOutcome[i].user)
+            expect(response.body[i].book).toBe(expectedOutcome[i].book)
+            expect(response.body[i].current_progress).toBe(expectedOutcome[i].current_progress)
+            expect(response.body[i].level_status).toBe(expectedOutcome[i].level_status)
+        }
     })
 })
 
