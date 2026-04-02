@@ -52,6 +52,9 @@ function WelcomePage() {
             </div>
 
             <p className="welcome-footer">Tarvitsetko apua? Ota yhteys opettajaasi.</p>
+            <div>
+                Jätä palautetta / leave feedback ➡️ <a href='https://docs.google.com/forms/d/e/1FAIpQLSc7E9irvWsfvF8Zb4D505cs5p9U9kiqt4TQwRHINyRFFnQkXg/viewform?usp=publish-editor'>Google forms</a>
+            </div>
         </div>
     )
 }
