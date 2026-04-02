@@ -195,7 +195,7 @@ const ReadingState = {
                     // [Key Change 2]: Core unlocking logic
                     // As long as the backend indicates this level is completed,
                     // the next level must be unlocked
-                    if (entry.completed === true || entry.completed === "true" || entry.completed === 1) {
+                    if (entry.level_status === 'complete') {
                         if (!this._continentCompletedFlags) this._continentCompletedFlags = {};
                         this._continentCompletedFlags[mapKey] = true;
                         
