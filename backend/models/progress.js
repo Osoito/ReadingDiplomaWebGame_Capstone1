@@ -59,7 +59,7 @@ const Progress = {
         userId = Number(userId)
         teacherId = Number(teacherId)
         return dbConn('progress')
-            .select('level', 'user', 'book', 'current_progress', 'level_status')
+            .select('progress.id', 'level', 'user', 'book', 'current_progress', 'level_status')
             .innerJoin('users', 'users.id', 'progress.user')
             .where('progress.user', userId)
             .andWhere('users.teacher_id', teacherId)
