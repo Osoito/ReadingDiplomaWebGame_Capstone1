@@ -7,6 +7,7 @@ import TeacherLoginPage from './pages/TeacherLoginPage'
 import StudentLoginPage from './pages/StudentLoginPage'
 import TeacherDashboard from './pages/TeacherDashboard'
 import StudentDashboard from './pages/StudentDashboard'
+import TrafficWarningBanner from './components/TrafficWarningBanner'
 
 function ProtectedRoute({ children, role }) {
     const { user, loading } = useAuth()
@@ -30,6 +31,7 @@ function App() {
     return (
         <BrowserRouter>
             <AuthProvider>
+                <TrafficWarningBanner />
                 <Routes>
                     <Route path="/" element={
                         <PublicRoute><WelcomePage /></PublicRoute>
