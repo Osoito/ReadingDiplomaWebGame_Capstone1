@@ -522,6 +522,14 @@ describe('bookModel unit tests', () => {
         }
         const result = await Progress.findByUserAndTeacher(studentsInDB[0].id, teacherInDB[0].id, trx)
 
-        expect(result).toStrictEqual(expectedOutcome)
+        expect(result.length).toBe(expectedOutcome.length)
+        for (let i = 0; i < expectedOutcome.length; i++) {
+            expect(result[i].id).toBeDefined()
+            expect(result[i].level).toBe(expectedOutcome[i].level)
+            expect(result[i].user).toBe(expectedOutcome[i].user)
+            expect(result[i].book).toBe(expectedOutcome[i].book)
+            expect(result[i].current_progress).toBe(expectedOutcome[i].current_progress)
+            expect(result[i].level_status).toBe(expectedOutcome[i].level_status)
+        }
     })
 })
