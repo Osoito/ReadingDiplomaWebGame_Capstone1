@@ -100,6 +100,12 @@ function StudentLoginPage() {
                 <button type="button" className="google-button" onClick={() => window.location.href = '/auth/google'}>
                     Kirjaudu Google-tilillä
                 </button>
+                <p className="subtitle"><strong>HUOM:</strong> Jos et halua ensin luoda uutta oppilaskäyttäjää opettajana, voit käyttää testikäyttäjää. Huomioi kuitenkin, että <strong>testikäyttäjä</strong> voi toimia arvaamattomasti, kun se on samanaikaisesti usealla testaajalla käytössä. Siksi suosittelemme luomaan uuden oppilaskäyttäjän opettajana, jotta saat mahdollisimman luontaisen kokemuksen.</p>
+                <div className="subtitle">
+                    Opettajan nimi: teacher
+                    <br/>Oppilaan nimi: student
+                    <br/>Salasana: student
+                </div>
             </div>
         </div>
     )
