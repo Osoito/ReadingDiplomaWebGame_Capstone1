@@ -270,19 +270,23 @@ backend/
 │   ├── integration/                    # Integration tests
 │   │   └── api_integration.test.js     # All integration tests, currently in one file so that they even work, could try to separate them later on if there is time.
 │   ├── unit/                           # Unit tests
-│   │   ├── models/                     # Tests for database interaction
+│   │   ├── controllers/                # Unit Tests for controller routes
+│   │   │   ├── bookControllerUnit.test.js
+│   │   │   ├── progressControllerUnit.test.js
+│   │   │   ├── rewardControllerUnit.test.js
+│   │   │   └── submissionsControllerUnit.test.js
+│   │   ├── models/                     # Unit Tests for database interaction
 │   │   │   ├── userModel.test.js
 │   │   │   ├── bookModel.test.js
 │   │   │   ├── rewardModel.test.js
+│   │   │   ├── submissionModel.test.js
 │   │   │   └── progressModel.test.js
 │   │   ├── services/                   # Unit tests for service functions
 │   │   │   ├── userService.test.js
 │   │   │   ├── bookService.test.js
 │   │   │   ├── rewardService.test.js
+│   │   │   ├── submissionService.test.js
 │   │   │   └── progressService.test.js
-│   │   ├── bookControllerUnit.test.js
-│   │   ├── rewardControllerUnit.test.js
-│   │   ├── progressControllerUnit.test.js
 │   │   └── user_api.test.js            # variety of tests for user functions
 │   └── testConfig/                     # Test configuration files
 │        ├── cleanTestDB.js             # Currently in use script to clean the database between tests, may be deleted at some point
