@@ -68,9 +68,9 @@ function BookManager() {
                     <tbody>
                         {books.map((b) => (
                             <tr key={b.id}>
-                                <td>{b.title}</td>
-                                <td>{b.author}</td>
-                                <td>{b.booktype}</td>
+                                <td data-label="Nimi"> {b.title}</td>
+                                <td data-label="Kirjoittaja"> {b.author}</td>
+                                <td data-label="Tyyppi"> {b.booktype}</td>
                             </tr>
                         ))}
                     </tbody>

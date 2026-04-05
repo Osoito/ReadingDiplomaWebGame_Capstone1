@@ -12,7 +12,6 @@ export const getCsrfToken = () => {
 
 async function request(path, options = {}) {
     const csrfToken = getCsrfToken()
-    console.log('csrfToken', csrfToken)
     const res = await fetch(path, {
         credentials: 'same-origin',
         headers: {
@@ -59,4 +58,11 @@ export function addReward(owner, type, name) {
 export function fetchRewards() { return request('/api/rewards'); }
 export function fetchStudentProgress(id) { return request(`/api/progress/student/${id}`); }
 export function fetchStudentSubmissions(id) { return request(`/api/submissions/student/${id}`); }
+
+export function updateSubmissionStatus(level, userId, status) {
+    return request(`/api/progress/${level}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ user: userId, status}),
+    });
+}
 export { ApiError };

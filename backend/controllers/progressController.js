@@ -7,7 +7,7 @@ const progressRouter = express.Router()
 import { z } from 'zod'
 import middleware from '../utils/middleware.js'
 
-//const statusTypes = z.enum(['incomplete', 'complete'])
+const statusTypes = z.enum(['incomplete', 'complete', 'reviewed'])
 
 const ProgressSchema = z.object({
     level: z.number(),
@@ -16,6 +16,11 @@ const ProgressSchema = z.object({
 
 const LevelCompleteSchema = z.object({
     user: z.number()
+}).strict()
+
+const LevelStatusSchema = z.object({
+    user: z.number(),
+    status: statusTypes
 }).strict()
 
 const addBookToEntrySchema = z.object({
@@ -85,6 +90,19 @@ progressRouter.put('/:level/completed', middleware.requireAuthentication(true), 
     try {
         await ProgressService.completeLevel(level, { user })
         response.status(200).json('Level marked as completed successfully!')
+    } catch (error) {
+        next(error)
+    }
+})
+
+progressRouter.put('/:level/status', middleware.requireTeacherRole, middleware.zValidate(LevelStatusSchema), async (request, response, next) => {
+    const level = request.params.level
+    const { user, status } = request.validated
+    const teacherId = request.user.id
+
+    try {
+        const progressEntry = await ProgressService.changeLevelStatus(level, { user, status, teacherId })
+        response.status(200).json(progressEntry)
     } catch (error) {
         next(error)
     }

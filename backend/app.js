@@ -85,17 +85,6 @@ const res = await fetch('/endpoint', {
     // body...
 })*/
 
-// Every method besides get requires the X-CSRF-TOKEN header!!!
-app.use(lusca({
-    // Cookie ∨∨∨ option here generates a new X-CSRF-TOKEN
-    // and header option and sends it to the client on every request
-    csrf: {
-        cookie: 'X-CSRF-TOKEN',
-        header: 'X-CSRF-TOKEN',
-    },
-    nosniff: true,
-}))
-
 // prints all requests in the console (not required during production)
 if (environmentMode !== 'production') {
     app.use(middleware.requestLogger)
@@ -103,6 +92,18 @@ if (environmentMode !== 'production') {
 
 if (environmentMode === 'production' && domainUrl === 'https://lukudiplomi.onrender.com') {
     app.set('trust proxy', ['74.220.51.0/24', '74.220.59.0/24'])
+} else if (environmentMode === 'production') {
+    // Moved this here, because i'm worried this will interfere with the render demo during high traffic
+    // Every method besides get requires the X-CSRF-TOKEN header!!!
+    app.use(lusca({
+        // Cookie ∨∨∨ option here generates a new X-CSRF-TOKEN
+        // and header option and sends it to the client on every request
+        csrf: {
+            cookie: 'X-CSRF-TOKEN',
+            header: 'X-CSRF-TOKEN',
+        },
+        nosniff: true,
+    }))
 }
 
 // ∨∨∨ Rate limiting for all requests to prevent denial of service attacks

@@ -33,6 +33,32 @@ const ProgressService = {
         return Progress.completeLevel(level, user)
     },
 
+    async changeLevelStatus(level, { user, status, teacherId }) {
+        // Check that the teacher is the teacher of the student for this level
+        const entry = await Progress.findSpecificEntryByUserAndTeacher(level, user, teacherId)
+        if (!entry) {
+            const err = new Error(`No progress entry found for this student, level, and teacher combination`)
+            err.userDetails = 'Opettaja ei opeta tätä opiskelijaa tai opiskelija ei ole suorittanut tätä tasoa'
+            err.status = 400
+            throw err
+        }
+        if (entry.level_status === status) {
+            const translate = status === 'complete'
+                ? 'suoritettu'
+                : status === 'incomplete'
+                    ? 'suorittamaton'
+                    : 'arvioitu'
+            const err = new Error(`Level status is already ${status}.`)
+            err.userDetails = `Taso on jo ${translate}`
+            err.status = 400
+            throw err
+        }
+
+        // Result is returned as an array, it's destructurized into an object here
+        const [updatedProgress] = await Progress.changeLevelStatus(level, user, status)
+        return updatedProgress
+    },
+
     async findByUser(user) {
         const found = await Progress.findByUser(user)
         if (!found) {

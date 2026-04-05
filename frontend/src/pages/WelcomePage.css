@@ -1,6 +1,6 @@
 /* ── Page Shell ──────────────────────────────────────────── */
 .welcome-page {
-    height: 100vh;
+    min-height: 100vh;
     box-sizing: border-box;
     background-color: #EBF3FE;
     background-size: cover;

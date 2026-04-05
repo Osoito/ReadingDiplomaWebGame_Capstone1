@@ -19,6 +19,19 @@ const Progress = {
             .where({ level, user })
             .first()
     },
+    async findSpecificEntryByUserAndTeacher(level, userId, teacherId, dbConn = db) {
+        level = Number(level)
+        userId = Number(userId)
+        teacherId = Number(teacherId)
+        return dbConn('progress')
+            .select('progress.id', 'level', 'user', 'book', 'current_progress', 'level_status')
+            .innerJoin('users', 'users.id', 'progress.user')
+            .where('progress.level', level)
+            .andWhere('progress.user', userId)
+            .andWhere('users.teacher_id', teacherId)
+            .andWhere('users.role', 'student')
+            .first()
+    },
     async getCurrentLevel(user, dbConn = db) {
         user = Number(user)
         return dbConn('progress')
@@ -41,6 +54,14 @@ const Progress = {
         return dbConn('progress')
             .where({ level, user })
             .update({ level_status: 'complete' })
+            .returning('*')
+    },
+    async changeLevelStatus(level, user, status, dbConn = db) {
+        level = Number(level)
+        user = Number(user)
+        return dbConn('progress')
+            .where({ level, user })
+            .update({ level_status: status })
             .returning('*')
     },
     async changeBookinEntry(level, user, book, dbConn = db) {

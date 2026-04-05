@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getCsrfToken, fetchStudentProgress, fetchStudentSubmissions } from '../services/api'
+import { getCsrfToken, fetchStudentProgress, fetchStudentSubmissions, updateSubmissionStatus } from '../services/api'
 
 const LEVELS = [
     { level: 1, name: 'Arktis' },
@@ -215,6 +215,18 @@ function StudentManager() {
         }
     }
 
+    const handleLevelStatusChange = async (studentId, level, newStatus) => {
+        const updatedEntry = await updateSubmissionStatus(level, studentId, newStatus)
+        setProgressMap(prev => {
+            const studentProgress = prev[studentId] ? [...prev[studentId]] : []
+            const idx = studentProgress.findIndex(p => p.level === level)
+            if (idx !== -1 && updatedEntry) {
+                studentProgress[idx] = { ...studentProgress[idx], level_status: updatedEntry.level_status }
+            }
+            return { ...prev, [studentId]: studentProgress }
+        })
+    }
+
     return (
         <div className="dashboard-section">
             <h2>Oppilaat {students.length > 0 && <span className="student-count">{students.length}</span>}</h2>
@@ -347,21 +359,18 @@ function StudentManager() {
                                         <div className="level-badges">
                                             {LEVELS.map(({ level, name: levelName }) => {
                                                 const entry = progress.find(p => p.level === level)
-                                                const done = entry?.level_status === 'complete'
+                                                const status = entry?.level_status || 'incomplete'
                                                 return (
                                                     <span
                                                         key={level}
-                                                        className={`level-badge ${done ? 'level-badge--done' : ''}`}
-                                                        title={`${levelName}${done ? ' ✓' : ''}`}
+                                                        className={`level-badge level-badge--${status}`}
+                                                        title={`${levelName}${status === 'complete' || status === 'reviewed' ? ' ✓' : ''}`}
                                                     >
                                                         {level}
                                                     </span>
                                                 )
                                             })}
                                         </div>
-                                        <span className="progress-summary">
-                                            {progress.filter(p => p.level_status === 'complete').length} / 8
-                                        </span>
                                         <button
                                             className="expand-btn"
                                             onClick={() => handleToggleSubmissions(s.id)}
@@ -383,22 +392,35 @@ function StudentManager() {
                                                 <p className="empty-message">Ladataan...</p>
                                             ) : submissions && submissions.length > 0 ? (
                                                 LEVELS
-                                                    .filter(({ level }) => submissions.some(sub => sub.completedLevel === progress.find(p => p.level === level)?.id))
                                                     .map(({ level, name: levelName }) => {
                                                         const progressEntry = progress.find(p => p.level === level)
+                                                        if (!progressEntry) return null; // Only show levels with progress entries
                                                         const sub = submissions.find(sb => sb.completedLevel === progressEntry?.id)
-                                                        if (!sub) return null
+                                                        const status = progressEntry?.level_status || 'incomplete';
                                                         return (
                                                             <div key={level} className="submission-group">
-                                                                <h4 className="submission-level-title">Taso {level} — {levelName}</h4>
-                                                                <div className="submission-qa">
-                                                                    <p><strong>K1:</strong> {sub.question1}</p>
-                                                                    <p className="submission-answer"><strong>V1:</strong> {sub.answer1}</p>
-                                                                    <p><strong>K2:</strong> {sub.question2}</p>
-                                                                    <p className="submission-answer"><strong>V2:</strong> {sub.answer2}</p>
-                                                                    <p><strong>K3:</strong> {sub.question3}</p>
-                                                                    <p className="submission-answer"><strong>V3:</strong> {sub.answer3}</p>
-                                                                </div>
+                                                                <h4 className="submission-level-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                                    <span>Taso {level} — {levelName}</span>
+                                                                    <select
+                                                                        className={`level-status-select status-${status}`}
+                                                                        value={status}
+                                                                        onChange={e => handleLevelStatusChange(s.id, level, e.target.value)}
+                                                                    >
+                                                                        <option value="incomplete">Suorittamaton</option>
+                                                                        <option value="complete">Suoritettu</option>
+                                                                        <option value="reviewed">Arvioitu</option>
+                                                                    </select>
+                                                                </h4>
+                                                                {sub ? (
+                                                                    <div className="submission-qa">
+                                                                        <p><strong>K1:</strong> {sub.question1}</p>
+                                                                        <p className="submission-answer"><strong>V1:</strong> {sub.answer1}</p>
+                                                                        <p><strong>K2:</strong> {sub.question2}</p>
+                                                                        <p className="submission-answer"><strong>V2:</strong> {sub.answer2}</p>
+                                                                        <p><strong>K3:</strong> {sub.question3}</p>
+                                                                        <p className="submission-answer"><strong>V3:</strong> {sub.answer3}</p>
+                                                                    </div>
+                                                                ) : null}
                                                             </div>
                                                         )
                                                     })

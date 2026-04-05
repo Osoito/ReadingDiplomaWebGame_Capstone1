@@ -640,11 +640,53 @@
     transition: all 0.2s;
 }
 
-.level-badge--done {
-    background: linear-gradient(145deg, #D8B25A, #C4973A);
+.level-status-select {
+    font-size: 1em;
+    padding: 0.3em 1.8em 0.3em 0.8em;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1.5px solid #C4973A;
+    border-radius: 6px;
+}
+
+.level-status-select option {
+    background: #F5EFE0;
+    color: #1e3a5f;
+}
+
+.level-badge--complete {
+    background: linear-gradient(145deg, #D8B25A, #C4973A); 
     border-color: #9E7A2A;
     color: #fff;
     box-shadow: 0 1px 4px rgba(158, 122, 42, 0.3);
+}
+
+.level-status-select.status-complete {
+    background: linear-gradient(145deg, #D8B25A, #C4973A) !important;
+    border-color: #9E7A2A;
+    color: #fff;
+}
+
+.level-badge--reviewed {
+    background: linear-gradient(145deg, #7BCF8A, #5BAF6C);
+    border-color: #4A965A;
+    color: #fff;
+}
+
+.level-status-select.status-reviewed {
+    background-color: #eafbea;
+    border-color: #3c763d;
+    color: #3c763d !important;
+}
+
+.status-incomplete {
+    color: #888 !important;
+}
+
+.level-status-select.status-incomplete {
+    background: #ededed !important;
+    border-color: #888;
+    color: #888;
 }
 
 .progress-summary {
@@ -770,7 +812,7 @@
 }
 
 /* ── Mobile: Table → Card Layout ───────────────────────── */
-@media (max-width: 600px) {
+/*@media (max-width: 600px) {
     .dashboard-section {
         padding: 1rem;
     }
@@ -830,5 +872,117 @@
     }
     .submissions-detail {
         padding: 0.5rem 0.75rem;
+    }
+}*/
+
+/* ── Mobile: Convert Progress Row Into Card ───────────────────────── */
+@media (max-width: 600px) {
+    .dashboard-section {
+        padding: 0.75rem !important;
+    }
+    .data-table thead { display: none; }
+    .data-table, .data-table tbody, .data-table tr, .data-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .data-table tr {
+        border: 1.5px solid rgba(196,151,58,0.3);
+        border-radius: 6px;
+        margin-bottom: 0.75rem;
+        background: rgba(253,251,244,0.5);
+
+        padding-bottom: 1rem;
+        padding-top: 1rem;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+    .data-table td {
+        padding-bottom: 1rem;
+        padding-top: 1rem;
+        padding-left: 0rem !important;
+        padding-right: 0rem !important;
+    }
+    .data-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #9E7A2A;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        min-width: 5rem;
+    }
+    .data-table td:first-child::before { content: ''; min-width: 0; }
+    
+    .add-form select {
+        max-width: 100vw;
+        font-size: 1rem;
+        padding: 0.4rem 0.5rem;
+        box-sizing: border-box;
+        min-width: 0;
+        width: 100%;
+    }
+    .submission-group,
+    .submission-level-title {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .progress-row {
+        border: 1.5px solid rgba(196,151,58,0.3);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: rgba(253,251,244,0.7);
+    }
+
+    .expand-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.6rem 1rem;
+        margin-top: 0.5rem;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+    .submissions-detail {
+        overflow-x: hidden;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid rgba(196,151,58,0.25);
+    }
+
+    .submission-level-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .level-status-select {
+        width: 100%;
+        border-radius: 6px;
+        max-width: 100vw;
+        font-size: 1rem;
+        padding: 0.4rem 0.5rem;
+        box-sizing: border-box;
+        min-width: 0;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .submission-qa p {
+        margin: 0.4rem 0;
+        line-height: 1.35;
+    }
+
+    .submission-answer {
+        margin-bottom: 0.75rem;
+        padding-left: 0.5rem;
+        border-left: 3px solid rgba(196,151,58,0.4);
     }
 }
