@@ -67,11 +67,11 @@ jobs:
 
     - name: Install backend depedencies
       working-directory: ./backend
-      run: pnpm install --ignore-scripts
+      run: npm install --ignore-scripts
 
     - name: Install frontend depedencies
       working-directory: ./frontend
-      run: pnpm install
+      run: npm install
       continue-on-error: true
 
     # Initializes the CodeQL tools for scanning.
