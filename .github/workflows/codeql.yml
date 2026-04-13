@@ -16,8 +16,8 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  schedule:
-    - cron: '37 18 * * 0'
+  #schedule:
+  #  - cron: '37 18 * * 0'
 
 jobs:
   analyze:
@@ -67,11 +67,11 @@ jobs:
 
     - name: Install backend depedencies
       working-directory: ./backend
-      run: npm install --ignore-scripts
+      run: pnpm install --ignore-scripts
 
     - name: Install frontend depedencies
       working-directory: ./frontend
-      run: npm install
+      run: pnpm install
       continue-on-error: true
 
     # Initializes the CodeQL tools for scanning.
