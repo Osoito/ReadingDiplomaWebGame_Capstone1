@@ -14,6 +14,15 @@ const submissionAddSchema = z.object({
     answer3: z.string()
 }).strict()
 
+// Gets submission entries for the user making the request
+submissionsRouter.get('/', middleware.requireAuthentication(true), async (request, response, next) => {
+    try {
+        const submissions = await SubmissionService.findByUser(request.user.id)
+        response.status(200).json(submissions)
+    } catch (error) {
+        next(error)
+    }
+})
 
 submissionsRouter.post('/add-submission', middleware.requireAuthentication(true), middleware.zValidate(submissionAddSchema), async (request, response, next) => {
     const { question1, answer1, question2, answer2, question3, answer3 } = request.validated

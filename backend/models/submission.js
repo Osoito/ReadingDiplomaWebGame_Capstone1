@@ -42,6 +42,13 @@ const Submission = {
             .del()
     },
 
+    async findByUser(userId, dbConn = db) {
+        userId = Number(userId)
+        return dbConn('submissions')
+            .select('id', 'user', 'completedLevel', 'question1', 'answer1', 'question2', 'answer2', 'question3', 'answer3')
+            .where('user', userId)
+    },
+
     async getSubmissionsForTeacherByStudent(userId, teacherId, dbConn = db) {
         userId = Number(userId)
         teacherId = Number(teacherId)

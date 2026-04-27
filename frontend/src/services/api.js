@@ -27,6 +27,7 @@ async function request(path, options = {}) {
     return res.json();
 }
 
+export function fetchSubmissions() { return request(`/api/submissions`); }
 export function fetchProgress() { return request('/api/progress'); }
 export function fetchCurrentLevel() { return request('/api/progress/current-level'); }
 export function completeLevel(level, userId) {

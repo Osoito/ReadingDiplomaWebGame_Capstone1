@@ -82,7 +82,7 @@ function StudentDashboard() {
         return entry?.level_status ?? 'incomplete'
     }
 
-    const completedCount = progress.filter(p => p.level_status === 'complete').length
+    const completedCount = progress.filter(p => p.level_status !== 'incomplete').length
     const hasBuddy = !!user?.avatar
     const showPicker = !hasBuddy || buddySelecting
 
@@ -183,7 +183,7 @@ function StudentDashboard() {
                             </p>
                             <div className="level-grid">
                                 {LEVELS.map(({ level, name }) => {
-                                    const done = getStatus(level) === 'complete'
+                                    const done = getStatus(level) !== 'incomplete'
                                     return (
                                         <div key={level} className={`level-card ${done ? 'level-done' : 'level-pending'}`}>
                                             <span className="level-number">{level}</span>

@@ -8,7 +8,7 @@ const Progress = {
     },
     async findByUser(user, dbConn = db) {
         return dbConn('progress')
-            .select('level', 'user', 'book', 'current_progress', 'level_status')
+            .select('id', 'level', 'user', 'book', 'current_progress', 'level_status')
             .where({ user: user })
     },
     async findSpecificEntry(level, user, dbConn = db) {

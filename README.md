@@ -199,13 +199,13 @@ frontend/
 |--------|--------------------------------------|----------------------------------------------------------------|
 | GET    | `/api/books`                         | Get all books                                                  |
 | POST   | `/api/books`                         | Add new book                                                   |
-| DELETE | `/api/books/delete-book/:id`         | (<span style="color:#ffcc00">Unused</span>) Deletes book       |
+| DELETE | `/api/books/delete-book/:id`         | **Unused** Deletes book       |
 ||||
-| GET    | `/api/users`                         | (<span style="color:#ffcc00">Unused</span>) Get all users      |
-| POST   | `/api/users/register`                | (<span style="color:#ffcc00">Unused</span>) Create new user (also creates progress entries for new user)|
-| PATCH  | `/api/users/:id/role`                | (<span style="color:#ffcc00">Unused</span>) Swaps the user role|
-| PATCH  | `/api/users/:id/change-password`     | (<span style="color:#ffcc00">Unused</span>) Change user's password (needs currentPassword, password)|
-| GET    | `/api/users/profile/:id`             | (<span style="color:#ffcc00">Unused</span>) Get user profile   |
+| GET    | `/api/users`                         | **Unused** Get all users      |
+| POST   | `/api/users/register`                | **Unused** Create new user (also creates progress entries for new user)|
+| PATCH  | `/api/users/:id/role`                | **Unused** Swaps the user role|
+| PATCH  | `/api/users/:id/change-password`     | **Unused** Change user's password (needs currentPassword, password)|
+| GET    | `/api/users/profile/:id`             | **Unused** Get user profile   |
 | PATCH  | `/api/users/profile/:id`             | Update profile info (name / avatar / grade)                    |
 ||||
 | GET    | `/api/users/my-students`             | Get all students belonging to the logged-in teacher            |
@@ -214,22 +214,23 @@ frontend/
 | DELETE | `/api/users/students/:id`            | Delete a student                                               |
 ||||
 | GET    | `/api/progress`                      | Fetches all current user's progress entries                    |
-| POST   | `/api/progress/add-entry`            | (<span style="color:#ffcc00">Unused</span>) Add a new progression entry|
+| POST   | `/api/progress/add-entry`            | **Unused** Add a new progression entry|
 | PUT    | `/api/progress/:level/completed`     | Updates level entry for user as complete                       |
 | PUT    | `/api/progress/:level/status`        | Updates level status for student (incomplete/complete/reviewed)|
-| GET    | `/api/progress/get-entry/:level`     | (<span style="color:#ffcc00">Unused</span>) Gets specific level from current user|
+| GET    | `/api/progress/get-entry/:level`     | **Unused** Gets specific level from current user|
 | GET    | `/api/progress/student/:id`          | Gets specified student's progress                              |
 | GET    | `/api/progress/current-level`        | Gets user's most recent incomplete level                       |
 | PUT    | `/api/progress/:level/add-book`      | Changes the book attached to a progress entry                  |
 ||||
 | POST   | `/api/submissions/add-submission`    | adds a submission entry for the current user in current level  |
-| GET    | `/api/submissions/my-students/:id`   | (<span style="color:#ffcc00">Unused</span>) Gets specific submission entry|
-| GET    | `/api/submissions/my-students`       | (<span style="color:#ffcc00">Unused</span>) Gets current user's student submissions|
+| GET    | `/api/submissions/my-students/:id`   | **Unused** Gets specific submission entry|
+| GET    | `/api/submissions/my-students`       | **Unused** Gets current user's student submissions|
 | GET    | `/api/submissions/student/:id`       | Gets specified student's submissions                           |
-| DELETE | `/api/submissions/:id`               | (<span style="color:#ffcc00">Unused</span>) Deletes specific submission entry|
+| GET    | `/api/submissions`                   | Gets user's submissions                                        |
+| DELETE | `/api/submissions/:id`               | **Unused** Deletes specific submission entry|
 ||||
 | POST   | `/api/rewards/add-reward`            | Add a reward (avatar?) for user                                |
-| GET    | `/api/rewards/:id`                   | (<span style="color:#ffcc00">Unused</span>) Fetches all of user's rewards|
+| GET    | `/api/rewards/:id`                   | **Unused** Fetches all of user's rewards|
 | GET    | `/api/rewards`                       | Fetches all of current user's rewards                          |
 ||||
 | POST   | `/auth/login`                        | Login using basic credentials (username, password)             |

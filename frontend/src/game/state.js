@@ -9,6 +9,7 @@ import {
 } from './data/index.js';
 
 import {
+    fetchSubmissions,
     fetchProgress,
     fetchBooks,
     completeLevel,
@@ -133,7 +134,8 @@ const ReadingState = {
      */
     async loadFromBackend() {
         try {
-            const [progressData, booksData] = await Promise.allSettled([
+            const [submissionsData, progressData, booksData] = await Promise.allSettled([
+                fetchSubmissions(),
                 fetchProgress(),
                 fetchBooks()
             ]);
@@ -152,15 +154,25 @@ const ReadingState = {
 
             // --- 2. Handle progress and unlocking logic ---
             if (progressData.status === 'fulfilled' && Array.isArray(progressData.value)) {
-                const entries = progressData.value;
+                const progressEntries = progressData.value;
+
+                let submissionEntries = {}
+                if (submissionsData.status === 'fulfilled' && Array.isArray(submissionsData.value)) {
+                    submissionEntries = submissionsData.value;
+                }
                 
                 // If the backend returns no data at all, skip directly and keep the current frontend state
-                if (entries.length === 0) return;
+                if (progressEntries.length === 0) return;
 
                 // Normalize Level indexing
-                const byLevel = {};
-                for (const entry of entries) {
-                    byLevel[Number(entry.level)] = entry;
+                const progressByLevel = {};
+                for (const entry of progressEntries) {
+                    progressByLevel[Number(entry.level)] = entry;
+                }
+
+                const submissionByLevelId = {};
+                for (const entry of submissionEntries) {
+                    submissionByLevelId[Number(entry.completedLevel)] = entry;
                 }
 
                 // [Key Change 1]: Do not reset mapUnlock immediately.
@@ -171,31 +183,38 @@ const ReadingState = {
                 // Iterate according to mapOrder
                 for (let i = 0; i < this.mapOrder.length; i++) {
                     const level = i + 1;
-                    const mapKey = this.mapOrder[i];
-                    const entry = byLevel[level];
+                    const mapKey = this.mapOrder[i]; // Name of level
+                    const progressEntry = progressByLevel[level]; // Progress data for this level
+                    const submissionEntry = submissionByLevelId[progressEntry.id]; // Submission data for this level
                     
-                    if (!entry) continue;
+                    if (!progressEntry) continue;
 
                     // Restore book binding
-                    if (entry.book) {
-                        this.mapSelectedBook[mapKey] = String(entry.book);
+                    if (progressEntry.book) {
+                        this.mapSelectedBook[mapKey] = String(progressEntry.book);
                     }
 
                     // Restore progress percentage
-                    if (entry.current_progress != null) {
+                    if (progressEntry.current_progress != null) {
                         const cfg = this.mapConfig[mapKey];
                         if (cfg) {
-                            this[cfg.storage] = entry.current_progress;
+                            this[cfg.storage] = progressEntry.current_progress;
                         }
-                        if (entry.book) {
-                            this.bookProgress[String(entry.book)] = entry.current_progress;
+                        if (progressEntry.book) {
+                            this.bookProgress[String(progressEntry.book)] = progressEntry.current_progress;
                         }
                     }
 
+                    if (submissionEntry) {
+                        // Restore submission answers on levels which have them
+                        if (!ReadingState.quizAnswers) ReadingState.quizAnswers = {};
+                        this.quizAnswers[mapKey] = [String(submissionEntry.answer1), String(submissionEntry.answer2), String(submissionEntry.answer3)];
+                    }
+
                     // [Key Change 2]: Core unlocking logic
-                    // As long as the backend indicates this level is completed,
+                    // As long as the backend indicates this level is not incomplete (the level is complete or reviewed),
                     // the next level must be unlocked
-                    if (entry.level_status === 'complete') {
+                    if (progressEntry.level_status !== 'incomplete') {
                         if (!this._continentCompletedFlags) this._continentCompletedFlags = {};
                         this._continentCompletedFlags[mapKey] = true;
                         

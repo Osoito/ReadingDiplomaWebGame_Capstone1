@@ -42,6 +42,17 @@ const SubmissionService = {
         return submissions
     },
 
+    async findByUser(userId) {
+        const submissions = await Submission.findByUser(userId)
+        if (!submissions || submissions.length === 0) {
+            const err = new Error(`No submission entries found for this user`)
+            err.userDetails = 'Et ole vastannut yhdenkään tason kysymyksiin'
+            err.status = 404
+            throw err
+        }
+        return submissions
+    },
+
     async getById(id, teacher_id) {
         const submission = await Submission.getById(id, teacher_id)
         if (!submission) {
