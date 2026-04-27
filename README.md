@@ -1,8 +1,11 @@
 # Reading Diploma Web Game (Capstone 1)
-Repo for the course Capstone Project 1. The project is a web-based reading diploma for youth. The idea is to gamify reading books for the youth and that way, encourage them to read more. The solution should work on mobile and PC and have a responsive design. The teachers on the course provided a direction for our idea and in this project plan document we will explain how we are going to approach the solution. Primary and middle schools could be potential customers for this project.  
+Repo for the course Capstone Project 1. The project is a web-based reading diploma for youth. The idea is to gamify reading books for the youth and that way, encourage them to read more. The solution should work on mobile and PC and have a responsive design. The teachers on the course provided a direction for our idea. Primary and middle schools could be potential customers for this project.  
+
+## Deployed version (easy testing)
+The application is deployed in a free render instance, which can be tested by anyone here https://lukudiplomi.onrender.com/.
+>**Note**: The database used in the free render instance expires on May 10, 2026. After which the deployment will not work properly unless a new database is setup (I will not be setting up a new database every month).
 
 ## Installation & Setup 
->Will be updated as the project progresses
 
 ### Prerequisites
 
@@ -11,7 +14,7 @@ Repo for the course Capstone Project 1. The project is a web-based reading diplo
 ---
 ### Installation
 ### Backend
-Create a .env file in the root of your backend which contains these parameters
+Create a .env file in the root of your backend which contains AT LEAST these required parameters. The optional parameters can be used to configure the database connection and names incase default values don't work.
 ```
 # ∨∨∨ REQUIRED ∨∨∨
 PORT=3001                                           #<--- Port where the backend will run
@@ -21,26 +24,31 @@ GOOGLE_CLIENT_SECRET=123                            #<--- Required for Google au
 SESSION_SECRET=randomlyGeneratedStringOfCharacters  #<--- Generate this yourself (tools below)
 # ∧∧∧ REQUIRED ∧∧∧
 
-# ∨∨∨ Required in production environments, to set the Access-Control-Allow-Origin to service domain (locally it's http://localhost:3001/)
-PUBLIC_URL=http://localhost:3001/
+# ∨∨∨ Required in production environments, to set the Access-Control-Allow-Origin to service domain
+PUBLIC_URL=http://localhost:3001/         #<--- server domain when running locally
+# ∧∧∧ Production ∧∧∧
 
 # ∨∨∨ optional ∨∨∨ These values will be set to these defaults if not defined here
-NODE_ENV=development                                #<--- Environment mode (development/test/production), set by npm scripts
-DB_HOST=localhost                                   #<--- Where the database is hosted, localhost if not defined
-DB_PORT=5432                                        #<--- Port where your PostgreSQL database is running (5432 by default)
-DB_USER=postgres                                    #<--- PostgreSQL username (postgres by default)
-DB_NAME=rdiploma                                    #<--- Name of the database, 'rdiploma' if not defined
-UNIT_TEST_DB_NAME=rdiplomatestunit                  #<--- Name of the database used for unit tests, 'rdiplomatestunit' if not defined
-INTEGRATION_TEST_DB_NAME=rdiplomatestintegration    #<--- Name of the database used for integration tests, 'rdiplomatestintegration' if not defined
+DB_HOST=localhost                                 #<--- Where the database is hosted, localhost if not defined
+DB_PORT=5432                                      #<--- Port where your PostgreSQL database is running (5432 by default)
+DB_USER=postgres                                  #<--- PostgreSQL username (postgres by default)
+DB_NAME=rdiploma                                  #<--- Name of the database, 'rdiploma' if not defined
+NODE_ENV=development                              #<--- Environment mode (development/test/production), set by npm scripts
+
+UNIT_TEST_DB_NAME=rdiplomatestunit                #<--- Name of the database used for unit tests, 'rdiplomatestunit' if not defined
+INTEGRATION_TEST_DB_NAME=rdiplomatestintegration  #<--- Name of the database used for integration tests, 'rdiplomatestintegration' if not defined
 # ∧∧∧ optional ∧∧∧
 ```
 
->**IMPORTANT** GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are used for google authentication can't be uploaded to GitHub, but they will be provided to team members.
+>**IMPORTANT** GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are used for google authentication can't be uploaded to GitHub, **Google authentication will not work without them**. The team members have these values. Alternatively you can create your own project in the Google cloud api console (https://console.developers.google.com/) and use the values provided there. More detailed instructions (for developers creating your own project) can be found at https://developers.google.com/identity/oauth2/web/guides/get-google-api-clientid.
 
-You can use the command below to generate the SESSION SECRET for the .env. Generators can be found online as well (e.g. [it-tools.tech/token-generator](https://it-tools.tech/token-generator))
->node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+>If you don't have the GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, you can also use the browser console snippets in the [Testing](#testing-without-google-auth) section instead. **Requires you to create a testing teacher account first**
+
+You can use the command `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` to generate the SESSION SECRET for the .env file. Generators can also be found online (e.g. [it-tools.tech/token-generator](https://it-tools.tech/token-generator)).
+
 ```bash
 # Backend installation
+# Creates required PostgreSQL database, installs required packages, and runs migrations .
 cd backend
 npm install
 ```
@@ -85,6 +93,7 @@ npm run preview  # Preview the production build locally
 cd backend
 npm run start
 # Application uses built frontend/dist/
+# npm run start also checks if frontend/dist/ exists and builds it if it doesn't exist (check doesn't work in powershell or cmd).
 ```
 
 ## Frontend
@@ -153,7 +162,7 @@ frontend/
 
 - **Node.js (ES module)** — Runtime environment
 - **Express.js** — Web application framework
-    - **express-rate-limit** rate limiting (login throttling)
+    - **express-rate-limit** — rate limiting (login throttling)
     - **express-session** — session management
     - **memorystore** — session store to avoid memory leaks while using express-session
 
@@ -171,16 +180,16 @@ frontend/
     - Automatic migrations on npm install
 
 ### Testing
-- **Vitests** — Unit & integration testing
+- **Vitest** — Unit & integration testing
 - **supertest** — HTTP endpoint testing
 - **@vitest/coverage-istanbul** — coverage reporting
 
 ### Utilities & tooling
 - **dotenv** — Environment variable management
+- **cross-env** — Environment variable compatibility across operating systems
 - **bcrypt** — Password hashing
 - **zod** — Input validation
-- **cross-env** — Environment variable compatibility across operating systems
-- **nodemon** — Auto restart server when changes detected, in development env
+- **nodemon** — Auto restart server when changes detected (hotreload), in development env
 - **eslint** + stylistic plugins — Linting and consistent code style
 ---
 
@@ -190,48 +199,57 @@ frontend/
 |--------|--------------------------------------|----------------------------------------------------------------|
 | GET    | `/api/books`                         | Get all books                                                  |
 | POST   | `/api/books`                         | Add new book                                                   |
-| DELETE | `/api/books/delete-book/:id`         | Deletes book(requires teacher role)                            |
-| GET    | `/api/users`                         | Get all users                                                  |
-| POST   | `/api/users/register`                | Create new user(also creates progress entries for new user)    |
-| PATCH  | `/api/users/:id/role`                | Swaps the user role                                            |
-| PATCH  | `/api/users/:id/change-password`     | Change user's password, needs currentPassword, password        |
-| GET    | `/api/users/profile/:id`             | Get user profile                                               |
+| DELETE | `/api/books/delete-book/:id`         | (<span style="color:#ffcc00">Unused</span>) Deletes book       |
+||||
+| GET    | `/api/users`                         | (<span style="color:#ffcc00">Unused</span>) Get all users      |
+| POST   | `/api/users/register`                | (<span style="color:#ffcc00">Unused</span>) Create new user (also creates progress entries for new user)|
+| PATCH  | `/api/users/:id/role`                | (<span style="color:#ffcc00">Unused</span>) Swaps the user role|
+| PATCH  | `/api/users/:id/change-password`     | (<span style="color:#ffcc00">Unused</span>) Change user's password (needs currentPassword, password)|
+| GET    | `/api/users/profile/:id`             | (<span style="color:#ffcc00">Unused</span>) Get user profile   |
 | PATCH  | `/api/users/profile/:id`             | Update profile info (name / avatar / grade)                    |
-| POST   | `/api/progress/add-entry`            | Add a new progression entry                                    |
+||||
+| GET    | `/api/users/my-students`             | Get all students belonging to the logged-in teacher            |
+| POST   | `/api/users/students`                | Create a student under the logged-in teacher                   |
+| DELETE | `/api/users/students/:id/password`   | Change the student's password                                  |
+| DELETE | `/api/users/students/:id`            | Delete a student                                               |
+||||
+| GET    | `/api/progress`                      | Fetches all current user's progress entries                    |
+| POST   | `/api/progress/add-entry`            | (<span style="color:#ffcc00">Unused</span>) Add a new progression entry|
 | PUT    | `/api/progress/:level/completed`     | Updates level entry for user as complete                       |
 | PUT    | `/api/progress/:level/status`        | Updates level status for student (incomplete/complete/reviewed)|
-| GET    | `/api/progress/get-entry/:level`     | Gets specific level from current user                          |
-| GET    | `/api/progress/student/:id`          | Gets specified student's progress (requires teacher role)      |
+| GET    | `/api/progress/get-entry/:level`     | (<span style="color:#ffcc00">Unused</span>) Gets specific level from current user|
+| GET    | `/api/progress/student/:id`          | Gets specified student's progress                              |
 | GET    | `/api/progress/current-level`        | Gets user's most recent incomplete level                       |
-| PUT    | `/api/progress/:level/add-book`      | Changes the book attatched to a progress entry                 |
+| PUT    | `/api/progress/:level/add-book`      | Changes the book attached to a progress entry                  |
+||||
 | POST   | `/api/submissions/add-submission`    | adds a submission entry for the current user in current level  |
-| GET    | `/api/submissions/my-students/:id`   | Gets specific submission entry(needs teacher role)             |
-| GET    | `/api/submissions/my-students`       | Gets current user's student submissions(requires teacher role) |
-| GET    | `/api/submissions/student/:id`       | Gets specified student's submissions (requires teacher role)   |
-| DELETE | `/api/submissions/:id`               | Deletes specific submission entry(needs teacher role)          |
-| POST   | `/auth/login`                        | Login using basic credentials (email/username, password)       |
+| GET    | `/api/submissions/my-students/:id`   | (<span style="color:#ffcc00">Unused</span>) Gets specific submission entry|
+| GET    | `/api/submissions/my-students`       | (<span style="color:#ffcc00">Unused</span>) Gets current user's student submissions|
+| GET    | `/api/submissions/student/:id`       | Gets specified student's submissions                           |
+| DELETE | `/api/submissions/:id`               | (<span style="color:#ffcc00">Unused</span>) Deletes specific submission entry|
+||||
+| POST   | `/api/rewards/add-reward`            | Add a reward (avatar?) for user                                |
+| GET    | `/api/rewards/:id`                   | (<span style="color:#ffcc00">Unused</span>) Fetches all of user's rewards|
+| GET    | `/api/rewards`                       | Fetches all of current user's rewards                          |
+||||
+| POST   | `/auth/login`                        | Login using basic credentials (username, password)             |
 | POST   | `/auth/logout`                       | Logout                                                         |
 | GET    | `/auth/me`                           | Returns current session user                                   |
 | GET    | `/auth/google`                       | Sign up or login using Google account                          |
-| GET    | `/api/users/my-students`             | Get all students belonging to the logged-in teacher            |
-| POST   | `/api/users/students`                | Create a student under the logged-in teacher                   |
-| DELETE | `/api/users/students/:id`            | Delete a student (teacher must own the student)                |
-| POST   | `/api/rewards/add-reward`            | Add a reward (avatar?) for user                                |
-| GET    | `/api/rewards/:id`                   | Fetches all of user's rewards (requires teacher role)          |
-| GET    | `/api/rewards/`                      | Fetches all of current user's rewards                          |
+| GET    | `/auth/google/callback`              | Redirects back to app frontend after login with Google         |
 ---
 
 ### Backend Project Structure
 ```
 backend/
 ├── app.js                              # Backend main entry point
-├── eslint.config.mjs                   # Configuration file for JavaScript linter
+├── eslint.config.mjs                   # Configuration file for JavaScript linter (code style)
 ├── index.js                            # Boots up server and loads app.js
-├── knexfile.js                         # Configuration file for knex
+├── knexfile.js                         # Configuration file for Knex
 ├── package.json
 ├── pnpm-lock.yaml                      # Required by the 'Backend CI' GitHub action
 ├── vitest.integration.config.js        # Configuration file for integration testing environment
-├── vitest.unit.config.js               # Configuration file for unit testing enviorement
+├── vitest.unit.config.js               # Configuration file for unit testing environment
 ├── .env                                # File with secret environmental variables (not found on github)
 ├── controllers/                        # controllers/ includes all the API routes (get, post etc.)
 │   ├── auth.js
@@ -248,7 +266,7 @@ backend/
 │   │   ├── migration.stub              # Template for the migration files
 │   │   └── README.md
 │   └── seeds/
-│       ├── users_seed.js               # Populates (integration)database with users for testing
+│       ├── users_seed.js               # Populates (integration) database with users for testing
 │       └── seed.stub                   # Template for seed files
 ├── models/                             # Models are used to make SQL requests to the database (called by services)
 │   ├── book.js                         
@@ -269,7 +287,7 @@ backend/
 │   └── README.md
 ├── tests/
 │   ├── integration/                    # Integration tests
-│   │   └── api_integration.test.js     # All integration tests, currently in one file so that they even work, could try to separate them later on if there is time.
+│   │   └── api_integration.test.js     # All integration tests
 │   ├── unit/                           # Unit tests
 │   │   ├── controllers/                # Unit Tests for controller routes
 │   │   │   ├── bookControllerUnit.test.js
@@ -296,7 +314,6 @@ backend/
 │        ├── passport-mock.js           # Mocks local authentication
 │        ├── test-strategy.js           # Used by the passport-mock to simulate local login
 │        └── testHelper.js              # Currently just mocks users in Database
-│        
 │                    
 └── utils/
     ├── config.js                       # Loads .env environmental variables
@@ -309,11 +326,11 @@ backend/
 ### Backend Testing Instructions
 The backend has unit and integration tests.
 
-To run tests in the backend use: **npm test**, which runs all tests.
+To run tests in the backend use: `npm test`, which runs all tests.
 
-To run only unit tests use: **npm run unit**
+To run only unit tests use: `npm run unit`
 
-To run only integration tests use: **npm run integration**
+To run only integration tests use: `npm run integration`
 
 Unit and integration tests are run in different environments to avoid conflicts.
 
@@ -379,7 +396,7 @@ Or directly log in through the login page by typing in the student credentials y
 **Can't test endpoints using REST client**
 - Error: 'Invalid CSRF token': comment out app.use(lusca({...})) for the duration of testing (It creates the csrf token requirement. Applies to all REST clients).
 - If using **Thunder client**, after commenting out the lusca part, Error: 'Unauthorized' on every other endpoint except auth/**: reason for this is still unknown, but this problem doesn't appear when using Postman, so consider using that, or another REST client instead.
-- **FYI**: The reason for the 'Invalid CSRF token' error is that the X-CSRF-TOKEN header needs to be set on every request, but the value required for it also changes every request and changing it after every request is very tedious, so it's easier to just disable it for the duration of testing. In the frontend the header gets fetched from a cookie or the auth/csrf-token endpoint, before any request.
+- **FYI**: The reason for the 'Invalid CSRF token' error is that the X-CSRF-TOKEN header needs to be set on every request, but the value required for it also changes every request and changing it in REST client after every request is very tedious, so it's easier to just disable it for the duration of testing. In the frontend the header gets fetched from a cookie or the auth/csrf-token endpoint, before any request.
 
 **Error: 'Invalid CSRF token' on request via frontend/UI**
 - post, put, patch or delete fetch request is likely missing X-CSRF-TOKEN header. Add the header according to the instructions at [backend/app.js](https://github.com/Osoito/ReadingDiplomaWebGame_Capstone1/blob/main/backend/app.js) (At the part that says 'Set the X-CSRF-TOKEN header in the frontend like this').

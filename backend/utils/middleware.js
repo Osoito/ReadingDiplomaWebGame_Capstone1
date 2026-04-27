@@ -54,19 +54,19 @@ const unknownEndpoint = (request, response) => {
 const errorHandler = (error, request, response, _next) => {
     /*
     > In errors with name (that exist in the list below) < (Used for more common errors)
-    const err = new Error('Unauthorized access') <-- This message is printed to console for developers to see
-    err.name = 'Forbidden'                       <-- the error message and status the client receives can be defined below
+    const err = new Error('Unauthorized access') //<-- This message is printed to console for developers to see
+    err.name = 'Forbidden'                       //<-- the error message and status the client receives can be defined below
     throw err
 
     > In errors with status and no name or details < (Used for more specific errors)
-    const err = new Error('Username already taken') <-- Shown to the user and printed in the console
-    err.status = 400                                <-- Status the client receives
+    const err = new Error('Username already taken') //<-- Shown to the user and printed in the console
+    err.status = 400                                //<-- Status the client receives
     throw err
 
     > In errors with userDetails < (Used for custom errors, most useful IMO)
-    const err = new Error('Caused by missing name') <-- Printed to console for developers to see
-    err.userDetails = 'Username already taken'      <-- Sent to the client/user
-    err.status = 400                                <-- The status the client receives
+    const err = new Error('Caused by missing name') //<-- Printed to console for developers to see
+    err.userDetails = 'Username already taken'      //<-- Sent to the client/user
+    err.status = 400                                //<-- The status the client receives
     throw err
 
     > Unhandled errors <

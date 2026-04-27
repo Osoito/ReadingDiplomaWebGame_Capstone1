@@ -31,7 +31,7 @@ try {
         //logger.info(`Env variables found: ${entries.map(e => !e[1] ? '-undefined-' : e[0])}\n`)
         logger.error(`Missing env variables required in ${process.env.NODE_ENV} environment`)
         throw new Error(`>>> Missing env variables:${entries.reduce((res, e) => {
-            if(!e[1]) {
+            if (!e[1]) {
                 res.push(` ${e[0]}`)
             }
             return res
