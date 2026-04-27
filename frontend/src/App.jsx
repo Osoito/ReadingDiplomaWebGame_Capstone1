@@ -8,6 +8,8 @@ import StudentLoginPage from './pages/StudentLoginPage'
 import TeacherDashboard from './pages/TeacherDashboard'
 import StudentDashboard from './pages/StudentDashboard'
 import TrafficWarningBanner from './components/TrafficWarningBanner'
+// Note: I think all the css of all these pages might get mixed with these imports
+// e.g. classes in TeacherDashboard.css have access to elements in StudentDashboard.jsx and vice versa, so we need to avoid using same classnames
 
 function ProtectedRoute({ children, role }) {
     const { user, loading } = useAuth()

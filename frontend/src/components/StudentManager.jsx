@@ -363,7 +363,7 @@ function StudentManager() {
                                                 return (
                                                     <span
                                                         key={level}
-                                                        className={`level-badge level-badge--${status}`}
+                                                        className={`progress-level-badge progress-level-badge--${status}`}
                                                         title={`${levelName}${status === 'complete' || status === 'reviewed' ? ' ✓' : ''}`}
                                                     >
                                                         {level}

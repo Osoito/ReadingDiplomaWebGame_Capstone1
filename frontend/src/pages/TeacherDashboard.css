@@ -624,7 +624,7 @@
     flex-wrap: wrap;
 }
 
-.level-badge {
+.progress-level-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -638,6 +638,14 @@
     color: #999;
     background: transparent;
     transition: all 0.2s;
+
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    margin-top: 0.2rem;
 }
 
 .level-status-select {
@@ -654,7 +662,7 @@
     color: #1e3a5f;
 }
 
-.level-badge--complete {
+.progress-level-badge--complete {
     background: linear-gradient(145deg, #D8B25A, #C4973A); 
     border-color: #9E7A2A;
     color: #fff;
@@ -667,7 +675,7 @@
     color: #fff;
 }
 
-.level-badge--reviewed {
+.progress-level-badge--reviewed {
     background: linear-gradient(145deg, #7BCF8A, #5BAF6C);
     border-color: #4A965A;
     color: #fff;
