@@ -338,6 +338,7 @@ describe('Progress integration tests', () => {
                 user: 1,
                 book: null,
                 current_progress: 0,
+                id: 1,
                 level_status: 'incomplete'
             },
             {
@@ -345,6 +346,7 @@ describe('Progress integration tests', () => {
                 user: 1,
                 book: null,
                 current_progress: 0,
+                id: 2,
                 level_status: 'incomplete'
             }
         ]
