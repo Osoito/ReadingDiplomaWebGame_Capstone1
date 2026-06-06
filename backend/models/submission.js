@@ -1,11 +1,20 @@
 import db from '../db/db.js'
 
 const Submission = {
-    async create({ user, question1, answer1, completedLevel, question2, answer2, question3, answer3 }, dbConn = db) {
+    async create({ user, completedLevel, question1, answer1, question2, answer2, question3, answer3 }, dbConn = db) {
         user = Number(user)
         completedLevel = Number(completedLevel)
         return dbConn('submissions')
             .insert({ user: user, question1: question1, answer1: answer1, completedLevel: completedLevel, question2: question2, answer2: answer2, question3: question3, answer3: answer3 })
+            .returning('*')
+    },
+
+    async update({ user, completedLevel, question1, answer1, question2, answer2, question3, answer3 }, dbConn = db) {
+        user = Number(user)
+        completedLevel = Number(completedLevel)
+        return dbConn('submissions')
+            .where({ user: user, completedLevel: completedLevel })
+            .update({ question1: question1, answer1: answer1, question2: question2, answer2: answer2, question3: question3, answer3: answer3 })
             .returning('*')
     },
 

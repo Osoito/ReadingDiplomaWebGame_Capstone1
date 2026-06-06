@@ -15,6 +15,7 @@ import {
     completeLevel,
     addBookToLevel,
     submitQuiz,
+    reSubmitQuiz,
     addReward
 } from '../services/api.js';
 
@@ -45,6 +46,10 @@ const ReadingState = {
     // Number of books completed & target number (8 continents)
     booksRead: 0,
     targetBooks: 8,
+
+    // Tracks which levels need resubmission (incomplete but have existing submission)
+    levelsPendingResubmission: {},
+    progressIdsByMapKey: {},
 
     /**
      * A global list of 10 books (from your original main.js's globalBooks).
@@ -122,6 +127,13 @@ const ReadingState = {
         return this.mapOrder[this.mapOrder.length - 1];
     },
 
+    /**
+     * Check if a level needs resubmission (incomplete but has existing submission).
+     */
+    isLevelPendingResubmission(mapKey) {
+        return this.levelsPendingResubmission[mapKey] === true;
+    },
+
     // ── Backend sync methods ──
 
     /**
@@ -156,7 +168,7 @@ const ReadingState = {
             if (progressData.status === 'fulfilled' && Array.isArray(progressData.value)) {
                 const progressEntries = progressData.value;
 
-                let submissionEntries = {}
+                let submissionEntries = []
                 if (submissionsData.status === 'fulfilled' && Array.isArray(submissionsData.value)) {
                     submissionEntries = submissionsData.value;
                 }
@@ -189,6 +201,9 @@ const ReadingState = {
                     
                     if (!progressEntry) continue;
 
+                    // Store the progress ID for later use in submitQuizAnswers
+                    this.progressIdsByMapKey[mapKey] = progressEntry.id;
+
                     // Restore book binding
                     if (progressEntry.book) {
                         this.mapSelectedBook[mapKey] = String(progressEntry.book);
@@ -212,19 +227,31 @@ const ReadingState = {
                     }
 
                     // [Key Change 2]: Core unlocking logic
-                    // As long as the backend indicates this level is not incomplete (the level is complete or reviewed),
-                    // the next level must be unlocked
-                    if (progressEntry.level_status !== 'incomplete') {
+                    // Unlock next level only if:
+                    // 1. Level is complete/reviewed, OR
+                    // 2. Level is incomplete but has a submission (resubmission case)
+                    const hasSubmission = !!submissionEntry;
+                    const isLevelComplete = progressEntry.level_status !== 'incomplete';
+
+                    if (isLevelComplete || hasSubmission) {
                         if (!this._continentCompletedFlags) this._continentCompletedFlags = {};
-                        this._continentCompletedFlags[mapKey] = true;
-                        
-                        this.booksRead = Math.max(this.booksRead, level);
+
+                        // Only mark as completed if truly complete; pending resubmission if incomplete + has submission
+                        if (isLevelComplete) {
+                            this._continentCompletedFlags[mapKey] = true;
+                            this.booksRead = Math.max(this.booksRead, level);
+                        }
+
+                        // Mark if pending resubmission
+                        if (progressEntry.level_status === 'incomplete' && hasSubmission) {
+                            this.levelsPendingResubmission[mapKey] = true;
+                        }
                         
                         // Unlock the next level
                         if (i + 1 < this.mapOrder.length) {
                             const nextMapKey = this.mapOrder[i + 1];
                             this.mapUnlock[nextMapKey] = true; 
-                            console.log(`Detected level ${level} completed, auto-unlocking: ${nextMapKey}`);
+                            console.log(`Detected level ${level} completed (has submission), auto-unlocking: ${nextMapKey}`);
                         }
                     }
                 }
@@ -265,8 +292,18 @@ const ReadingState = {
         if (level < this.mapOrder.length) {
             this.mapUnlock[this.mapOrder[level]] = true;
         }
+        
         try {
             await completeLevel(level, userId);
+            // Mark the bound book as completed when a level is completed
+            const boundBookId = this.mapSelectedBook[mapKey];
+            if (boundBookId) {
+                if (!this.completedBookIds) this.completedBookIds = {};
+                if (!this.completedBookIds[String(boundBookId)]) {
+                    this.completedBookIds[String(boundBookId)] = true;
+                    this.booksRead = (this.booksRead || 0) + 1;
+                }
+            }
         } catch (err) {
             console.warn('Failed to save level completion:', err);
         }
@@ -276,14 +313,30 @@ const ReadingState = {
      * Submit quiz answers to backend.
      */
     async submitQuizAnswers(mapKey, questions, answers) {
+        const progressId = this.progressIdsByMapKey[mapKey];
+        const isResubmission = this.isLevelPendingResubmission(mapKey)
+            
         try {
-            await submitQuiz({
-                question1: questions[0], answer1: answers[0],
-                question2: questions[1], answer2: answers[1],
-                question3: questions[2], answer3: answers[2]
-            });
+            if (!progressId) {
+                console.warn(`No progressId found for ${mapKey}`);
+            }
+            if (isResubmission) {
+                await reSubmitQuiz({
+                    question1: questions[0], answer1: answers[0],
+                    question2: questions[1], answer2: answers[1],
+                    question3: questions[2], answer3: answers[2]
+                }, progressId);
+            } else {
+                await submitQuiz({
+                    question1: questions[0], answer1: answers[0],
+                    question2: questions[1], answer2: answers[1],
+                    question3: questions[2], answer3: answers[2]
+                }, progressId);
+            }
+            return null;
         } catch (err) {
             console.warn('Failed to submit quiz:', err);
+            return err; // Return error for handling in ReactQuiz (To avoid marking level complete if submission fails)
         }
     },
 

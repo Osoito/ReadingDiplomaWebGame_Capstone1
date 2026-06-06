@@ -286,7 +286,8 @@ class BaseMapScene extends Phaser.Scene {
             );
             this.launchReading(mapCfg, bookData);
         });
-        if (result === 'completed') {
+        const isResubmittable = ReadingState.isLevelPendingResubmission(mapKey)
+        if (result === 'completed' || isResubmittable) {
             this.showStoryQuiz();
         }
     }

@@ -227,6 +227,7 @@ frontend/
 | GET    | `/api/submissions/my-students`       | **Unused** Gets current user's student submissions|
 | GET    | `/api/submissions/student/:id`       | Gets specified student's submissions                           |
 | GET    | `/api/submissions`                   | Gets user's submissions                                        |
+| PUT    | `/api/submissions`                   | Updates the user's submissions for a level                     |
 | DELETE | `/api/submissions/:id`               | **Unused** Deletes specific submission entry|
 ||||
 | POST   | `/api/rewards/add-reward`            | Add a reward (avatar?) for user                                |

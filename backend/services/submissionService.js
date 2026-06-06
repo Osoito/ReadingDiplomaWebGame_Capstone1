@@ -1,7 +1,7 @@
 import Submission from '../models/submission.js'
 
 const SubmissionService = {
-    async createSubmission({ user, question1, answer1, completedLevel, question2, answer2, question3, answer3 }) {
+    async createSubmission({ user, completedLevel, question1, answer1, question2, answer2, question3, answer3 }) {
         const exists = await Submission.getSpecific(user, completedLevel)
         if (exists) {
             const err = new Error('User has already submitted this question on this level')
@@ -10,14 +10,35 @@ const SubmissionService = {
         }
         return Submission.create({
             user,
+            completedLevel,
             question1,
             answer1,
-            completedLevel,
             question2,
             answer2,
             question3,
             answer3
         })
+    },
+
+    async updateSubmission({ user, completedLevel, question1, answer1, question2, answer2, question3, answer3 }) {
+        const exists = await Submission.getSpecific(user, completedLevel)
+        if (!exists) {
+            const err = new Error(`No submission entry found for this student`)
+            err.userDetails = 'Opiskelija ei ole vastannut tämän tason kysymyksiin'
+            err.status = 404
+            throw err
+        } else {
+            return Submission.update({
+                user,
+                completedLevel,
+                question1,
+                answer1,
+                question2,
+                answer2,
+                question3,
+                answer3
+            })
+        }
     },
 
     //apparently not used anywhere yet

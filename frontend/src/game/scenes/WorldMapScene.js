@@ -86,7 +86,19 @@ class WorldMapScene extends Phaser.Scene {
 
                 // Don't draw a circle dot for the current continent — panda replaces it
                 if (!isCurrent) {
-                    const btn = this.add.circle(finalX, finalY, 40 * currentZoomScale, unlocked ? 0x00ff00 : 0x555555, 0.4);
+                    // isResubmittable, for setting the level btn color different when the quiz needs to be resubmitted.
+                    const isResubmittable = ReadingState.isLevelPendingResubmission(pos.mapKey)
+                    const btn = this.add.circle(
+                        finalX,
+                        finalY,
+                        40 * currentZoomScale,
+                        unlocked
+                            ? isResubmittable
+                                ? 0x9a73f5
+                                : 0x00ff00
+                            : 0x555555,
+                        0.4
+                    );
                     if (unlocked) btn.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.scene.start(pos.mapKey));
                     this.pointGroup.add(btn);
                 }

@@ -44,10 +44,16 @@ export function addBookToLevel(level, bookId) {
 }
 export function fetchBooks() { return request('/api/books'); }
 export function fetchBook(id) { return request(`/api/books/${id}`); }
-export function submitQuiz(data) {
+export function submitQuiz(data, progressId) {
     return request('/api/submissions/add-submission', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, completedLevel: progressId }),
+    });
+}
+export function reSubmitQuiz(data, progressId) {
+    return request('/api/submissions', {
+        method: 'PUT',
+        body: JSON.stringify({ ...data, completedLevel: progressId }),
     });
 }
 export function addReward(owner, type, name) {

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import ReadingState from '../game/state.js';
+import { useAuth } from '../contexts/AuthContext'
 
 export default function ReactQuiz({ mapKey, onClose }) {
+    const { user } = useAuth()
+    const [error, setError] = useState('')
     const [step, setStep] = useState(0);
     const [answers, setAnswers] = useState(() => {
         if (ReadingState?.quizAnswers?.[mapKey]) {
@@ -10,27 +13,41 @@ export default function ReactQuiz({ mapKey, onClose }) {
         return ["", "", ""];
     });
 
-    const isReadOnly = !!(ReadingState?.quizAnswers && ReadingState.quizAnswers[mapKey]);
-    
+    const resubmittable = ReadingState.isLevelPendingResubmission(mapKey)
+    const isReadOnly = !!(!resubmittable && ReadingState?.quizAnswers && ReadingState.quizAnswers[mapKey]);
+
     const questions = [
         "Mikä on tämän tarinan juoni?",
         "Ketkä ovat tarinan päähenkilöt?",
         "Mitä ajatuksia tai tunteita tämä tarina herätti sinussa?"
     ];
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (step < questions.length - 1) {
             setStep(step + 1);
         } else {
             if (!isReadOnly) {
+                // Submit quiz answers to backend and wait for result
+                const quizError = await ReadingState.submitQuizAnswers(mapKey, questions, answers);
+                if (quizError) {
+                    setError('Vastauksien lähettäminen epäonnistui. Tarkistathan että vastaukset ovat vähintään 3 merkkiä pitkiä.');
+                    setStep(0);
+                    return;
+                }
+
+                // Makes quiz readonly only after quiz has been successfully submitted
                 if (!ReadingState.quizAnswers) ReadingState.quizAnswers = {};
                 ReadingState.quizAnswers[mapKey] = answers;
 
-                if (!ReadingState._continentCompletedFlags) ReadingState._continentCompletedFlags = {};
-                ReadingState._continentCompletedFlags[mapKey] = true;
+                // After successful submission, mark the level complete (this will also unlock the next map)
+                try {
+                    ReadingState.saveLevelComplete(mapKey, user?.id);
+                } catch (err) {
+                    console.warn('Failed to mark level complete locally:', err);
+                }
 
-                // Submit quiz answers to backend (fire-and-forget)
-                ReadingState.submitQuizAnswers(mapKey, questions, answers);
+                // clear pending resubmission flag after re-submit
+                if (resubmittable) ReadingState.levelsPendingResubmission[mapKey] = false;
             }
             onClose();
         }
@@ -82,6 +99,7 @@ export default function ReactQuiz({ mapKey, onClose }) {
                     </div>
                     <span style={styles.stepInfo}>Vaihe {step + 1} / 3</span>
                 </div>
+                {error && <p className="section-error">{error}</p>}
             </div>
         </div>
     );

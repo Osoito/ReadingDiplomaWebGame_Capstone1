@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { BUDDIES, BuddySprite, BuddyIcon } from '../components/BuddyAvatar'
 import homeBG from '../assets/HomeBG1.jpg'
 import './StudentDashboard.css'
-import { getCsrfToken } from '../services/api'
+import { getCsrfToken, fetchSubmissions } from '../services/api'
 
 const LEVELS = [
     { level: 1, name: 'Arktis' },
@@ -21,6 +21,7 @@ function StudentDashboard() {
     const { user, logout, checkAuth } = useAuth()
     const navigate = useNavigate()
     const [progress, setProgress] = useState([])
+    const [submissions, setSubmissions] = useState([])
     const [rewards, setRewards] = useState([])
     const [loading, setLoading] = useState(true)
     const [buddySelecting, setBuddySelecting] = useState(false)
@@ -32,9 +33,11 @@ function StudentDashboard() {
         Promise.all([
             fetch('/api/progress').then(r => r.ok ? r.json() : []),
             fetch('/api/rewards').then(r => r.ok ? r.json() : []),
-        ]).then(([prog, rew]) => {
+            fetchSubmissions().catch(() => []),
+        ]).then(([prog, rew, subs]) => {
             setProgress(prog)
             setRewards(Array.isArray(rew) ? rew : [])
+            setSubmissions(Array.isArray(subs) ? subs : [])
             setLoading(false)
         }).catch(() => setLoading(false))
     }, [])
@@ -80,6 +83,14 @@ function StudentDashboard() {
     const getStatus = (level) => {
         const entry = progress.find(p => p.level === level)
         return entry?.level_status ?? 'incomplete'
+    }
+
+    const progressIdsByLevel = new Map(progress.map((entry) => [entry.level, entry.id]))
+    const submissionProgressIds = new Set(submissions.map((s) => Number(s.completedLevel)))
+    const isResubmittableCheck = (level) => {
+        const status = getStatus(level)
+        const progressId = progressIdsByLevel.get(level)
+        return status === 'incomplete' && progressId != null && submissionProgressIds.has(progressId)
     }
 
     const completedCount = progress.filter(p => p.level_status !== 'incomplete').length
@@ -184,12 +195,30 @@ function StudentDashboard() {
                             <div className="level-grid">
                                 {LEVELS.map(({ level, name }) => {
                                     const done = getStatus(level) !== 'incomplete'
+                                    const isResubmittable = isResubmittableCheck(level)
                                     return (
-                                        <div key={level} className={`level-card ${done ? 'level-done' : 'level-pending'}`}>
+                                        <div key={level} className={`level-card ${
+                                            isResubmittable
+                                                ? 'level-resubmit'
+                                                : done
+                                                    ? 'level-done'
+                                                    : 'level-pending'
+                                        }`}>
                                             <span className="level-number">{level}</span>
                                             <span className="level-name">{name}</span>
-                                            <span className={`level-badge ${done ? 'badge-done' : 'badge-pending'}`}>
-                                                {done ? '✓ Suoritettu' : 'Kesken'}
+                                            <span className={`level-badge ${
+                                                isResubmittable
+                                                    ? 'badge-resubmit'
+                                                    : done
+                                                        ? 'badge-done'
+                                                        : 'badge-pending'
+                                            }`}>
+                                                {isResubmittable
+                                                    ? 'Korjaa vastaukset !!!'
+                                                    : done
+                                                        ? '✓ Suoritettu'
+                                                        : 'Kesken'
+                                                }
                                             </span>
                                         </div>
                                     )

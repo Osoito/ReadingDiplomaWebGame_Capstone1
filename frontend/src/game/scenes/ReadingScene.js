@@ -188,13 +188,15 @@ class ReadingScene extends Phaser.Scene {
                 const cfg = ReadingState.mapConfig[this.sourceMap];
                 if (cfg) {
                     ReadingState[cfg.storage] = finalPct;
-                    if (finalPct >= 100) this.handleMapUnlock();
+                    // if (finalPct >= 100) this.handleMapUnlock();
+                    // Call handleMapUnlock after the quiz has been submitted 
                 }
             }
         }
         this.exitScene();
     }
 
+    // Not used (already happens in saveLevelComplete), but keeping the logic here in case we want to trigger map unlock immediately after reading completion in the future
     handleMapUnlock() {
         if (!ReadingState.completedBookIds[this.bookData.id]) {
             ReadingState.completedBookIds[this.bookData.id] = true;

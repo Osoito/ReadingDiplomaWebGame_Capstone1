@@ -259,6 +259,12 @@
     box-shadow: 0 2px 8px rgba(44, 30, 5, 0.06);
 }
 
+.level-resubmit {
+    border-color: #7b4ce2;
+    background: rgba(155, 115, 245, 0.35);
+    box-shadow: 0 4px 16px rgba(123, 76, 226, 0.18);
+}
+
 .level-number {
     font-family: 'Cinzel Decorative', serif;
     font-size: 1.6rem;
@@ -267,6 +273,7 @@
 }
 
 .level-done .level-number { color: #C4973A; }
+.level-resubmit .level-number { color: #7b4ce2; }
 .level-pending .level-number { color: rgba(158, 122, 42, 0.35); }
 
 .level-name {
@@ -277,6 +284,7 @@
 }
 
 .level-done .level-name { color: #1e3a5f; }
+.level-resubmit .level-name { color: #2a1f4d; }
 .level-pending .level-name { color: rgba(30, 58, 95, 0.45); }
 
 /* Status badge */
@@ -294,6 +302,12 @@
     background: rgba(196, 151, 58, 0.15);
     color: #9E7A2A;
     border: 1px solid rgba(196, 151, 58, 0.4);
+}
+
+.badge-resubmit {
+    background: rgba(123, 76, 226, 0.12);
+    color: #7b4ce2;
+    border: 1px solid rgba(123, 76, 226, 0.35);
 }
 
 .badge-pending {
