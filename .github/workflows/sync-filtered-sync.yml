@@ -1,0 +1,71 @@
+name: Sync filtered-sync to partial repo (AIMlearning)
+
+on:
+  push:
+    branches:
+      - filtered-sync
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Skip the initial push that creates the branch
+      - name: Skip initial branch creation
+        if: ${{ github.event.before == '0000000000000000000000000000000000000000' }}
+        run: |
+          echo "Initial branch creation detected. Skipping full sync."
+          exit 0
+
+      - name: Determine changed files
+        id: changes
+        run: |
+          BEFORE=${{ github.event.before }}
+          AFTER=${{ github.sha }}
+          echo "Before: $BEFORE"
+          echo "After:  $AFTER"
+          git diff --name-only "$BEFORE" "$AFTER" > changed_files.txt
+          echo "Changed files:"
+          cat changed_files.txt
+
+      - name: Clone partial repo
+        run: |
+          git clone https://x-access-token:${{ secrets.PARTIAL_REPO_PAT }}@github.com/AIMlearningProject/reading-diploma-web-game.git partial
+          cd partial
+          git checkout filtered-sync || git checkout --orphan filtered-sync
+
+      - name: Apply changed files to partial repo
+        run: |
+          AFTER=${{ github.sha }}
+          mapfile -t files < changed_files.txt
+          cd partial
+          for f in "${files[@]}"; do
+            # If file exists in main repo at AFTER, copy it
+            if git --no-pager show "$AFTER:$f" > /dev/null 2>&1; then
+              mkdir -p "$(dirname "$f")"
+              git --no-pager show "$AFTER:$f" > "$f"
+              echo "Copied: $f"
+            else
+              # If file was deleted in main repo, delete it here too
+              git rm -rf --ignore-unmatch "$f" || true
+              echo "Removed: $f"
+            fi
+          done
+
+      - name: Commit and push to partial repo
+        run: |
+          cd partial
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Sync from main filtered-sync: ${{ github.sha }}"
+            git push https://x-access-token:${{ secrets.PARTIAL_REPO_PAT }}@github.com/AIMlearningProject/reading-diploma-web-game.git filtered-sync --force
+          fi
